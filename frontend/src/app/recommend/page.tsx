@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card, Table, Tag, Typography, Space, Progress } from "antd";
+import { Suspense, useEffect, useState } from "react";
+import { Card, Table, Tag, Typography, Space, Progress, Spin } from "antd";
 import { useSearchParams } from "next/navigation";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
@@ -9,7 +9,7 @@ import { RecommendResult } from "@/types";
 
 const { Title } = Typography;
 
-export default function RecommendPage() {
+function RecommendContent() {
   const params = useSearchParams();
   const [result, setResult] = useState<RecommendResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,5 +70,13 @@ export default function RecommendPage() {
         </Card>
       </Space>
     </AppLayout>
+  );
+}
+
+export default function RecommendPage() {
+  return (
+    <Suspense fallback={<Spin size="large" style={{ display: "block", margin: "100px auto" }} />}>
+      <RecommendContent />
+    </Suspense>
   );
 }

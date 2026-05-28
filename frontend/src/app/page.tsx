@@ -1,65 +1,84 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { Card, Form, InputNumber, Select, Button, Typography, Space, Row, Col } from "antd";
+import { RocketOutlined } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
+import api from "@/lib/api";
+import AppLayout from "@/components/Layout";
+
+const { Title, Paragraph } = Typography;
+
+const provinces = [
+  "北京", "天津", "上海", "重庆", "河北", "山西", "辽宁", "吉林", "黑龙江",
+  "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北", "湖南",
+  "广东", "海南", "四川", "贵州", "云南", "陕西", "甘肃", "青海", "内蒙古",
+  "广西", "西藏", "宁夏", "新疆",
+];
+
+const subjectTypes = ["文", "理", "物理类", "历史类", "综合改革"];
 
 export default function Home() {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const onFinish = async (values: { score: number; rank: number; province: string; subject_type: string }) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        const res = await api.post("/api/auth/register", {
+          phone: "13800138000",
+          password: "test123",
+        }).catch(() => api.post("/api/auth/login", { phone: "13800138000", password: "test123" }));
+        localStorage.setItem("token", res.data.access_token);
+      }
+
+      await api.put("/api/profile", { basic_info: values });
+      router.push(`/recommend?score=${values.score}&rank=${values.rank}&province=${values.province}&subject_type=${values.subject_type}`);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <AppLayout>
+      <Row justify="center" style={{ marginTop: 60 }}>
+        <Col xs={24} md={16} lg={12}>
+          <Card>
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <Title level={2} style={{ textAlign: "center" }}>
+                <RocketOutlined /> 智愿 — 你的AI高考志愿助手
+              </Title>
+              <Paragraph style={{ textAlign: "center", fontSize: 16 }}>
+                输入你的高考信息，立即获取冲/稳/保院校推荐方案
+              </Paragraph>
+
+              <Form layout="vertical" onFinish={onFinish} size="large">
+                <Form.Item name="score" label="高考分数" rules={[{ required: true, message: "请输入分数" }]}>
+                  <InputNumber min={0} max={750} style={{ width: "100%" }} placeholder="满分750" />
+                </Form.Item>
+                <Form.Item name="rank" label="省排名（位次）" rules={[{ required: true, message: "请输入位次" }]}>
+                  <InputNumber min={1} style={{ width: "100%" }} placeholder="如：5000" />
+                </Form.Item>
+                <Form.Item name="province" label="所在省份" rules={[{ required: true, message: "请选择省份" }]}>
+                  <Select placeholder="选择省份" options={provinces.map((p) => ({ value: p, label: p }))} />
+                </Form.Item>
+                <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
+                  <Select placeholder="选择科类" options={subjectTypes.map((s) => ({ value: s, label: s }))} />
+                </Form.Item>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit" block loading={loading} size="large">
+                    获取推荐方案
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
+    </AppLayout>
   );
 }

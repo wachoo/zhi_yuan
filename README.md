@@ -105,7 +105,8 @@ zhi_yuan/
 │   │   └── main.py         # FastAPI入口
 │   ├── alembic/            # 数据库迁移
 │   ├── tests/              # 单元测试
-│   └── requirements.txt    # Python依赖
+│   └── requirements.txt    # Python依赖（pip）
+├── pyproject.toml          # Python依赖（uv）
 ├── frontend/               # 前端应用
 │   ├── src/
 │   │   ├── app/           # Next.js页面
@@ -171,25 +172,22 @@ npm run dev
 #### 后端
 
 ```bash
-cd backend
-
 # 1. 安装 uv（如尚未安装）
 # macOS / Linux:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 # 或通过 Homebrew:
 brew install uv
 
-# 2. 创建虚拟环境
-uv venv --python 3.11
+# 2. 同步虚拟环境并安装所有依赖（基于 pyproject.toml）
+uv sync
+
+# 3. 激活虚拟环境
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# 3. 安装依赖
-uv pip install -r requirements.txt
-
 # 4. 配置环境变量
-cp .env.example .env
-# 编辑 .env，设置数据库和Redis连接（本地需要单独安装）
+cp backend/.env.example backend/.env
+# 编辑 backend/.env，设置数据库和Redis连接（本地需要单独安装）
 
 # 5. 安装并启动 PostgreSQL 和 Redis
 # macOS (Homebrew):
@@ -203,6 +201,7 @@ psql zhiyuan -c "CREATE USER zhiyuan WITH PASSWORD 'zhiyuan_dev_2026';"
 psql zhiyuan -c "GRANT ALL PRIVILEGES ON DATABASE zhiyuan TO zhiyuan;"
 
 # 7. 执行迁移
+cd backend
 uv run alembic upgrade head
 
 # 8. 导入种子数据
@@ -399,15 +398,15 @@ curl -X POST http://localhost:8000/api/recommend \
 ```bash
 # 运行所有测试
 cd backend
-pytest
+uv run pytest
 
 # 运行特定测试
-pytest tests/test_rank_converter.py -v
-pytest tests/test_recommendation.py -v
-pytest tests/test_adapter_scorer.py -v
+uv run pytest tests/test_rank_converter.py -v
+uv run pytest tests/test_recommendation.py -v
+uv run pytest tests/test_adapter_scorer.py -v
 
 # 测试覆盖率
-pytest --cov=app --cov-report=html
+uv run pytest --cov=app --cov-report=html
 ```
 
 ## 常见问题

@@ -105,7 +105,8 @@ zhi_yuan/
 │   │   └── main.py         # FastAPI入口
 │   ├── alembic/            # 数据库迁移
 │   ├── tests/              # 单元测试
-│   └── requirements.txt    # Python依赖
+│   └── requirements.txt    # Python依赖（pip）
+├── pyproject.toml          # Python依赖（uv）
 ├── frontend/               # 前端应用
 │   ├── src/
 │   │   ├── app/           # Next.js页面
@@ -171,25 +172,25 @@ npm run dev
 #### 后端
 
 ```bash
-cd backend
-
 # 1. 安装 uv（如尚未安装）
 # macOS / Linux:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 # 或通过 Homebrew:
 brew install uv
 
-# 2. 创建虚拟环境
-uv venv --python 3.11
+# 2. 同步虚拟环境并安装所有依赖（基于 pyproject.toml）
+uv sync
+
+# 3. 激活虚拟环境
 source .venv/bin/activate  # Linux/Mac
 # .venv\Scripts\activate   # Windows
 
-# 3. 安装依赖
-uv pip install -r requirements.txt
-
 # 4. 配置环境变量
-cp .env.example .env
-# 编辑 .env，设置数据库和Redis连接（本地需要单独安装）
+cp backend/.env.example backend/.env
+# 编辑 backend/.env，注意：
+#   本地开发时 DATABASE_URL 和 REDIS_URL 的主机名用 localhost（不是 postgres/redis）
+#   示例：DATABASE_URL=postgresql+asyncpg://zhiyuan:zhiyuan_dev_2026@localhost:5432/zhiyuan
+#   示例：REDIS_URL=redis://localhost:6379/0
 
 # 5. 安装并启动 PostgreSQL 和 Redis
 # macOS (Homebrew):
@@ -197,12 +198,14 @@ brew install postgresql@15 redis
 brew services start postgresql@15
 brew services start redis
 
-# 6. 创建数据库
+# 6. 创建数据库和用户
 createdb zhiyuan
 psql zhiyuan -c "CREATE USER zhiyuan WITH PASSWORD 'zhiyuan_dev_2026';"
 psql zhiyuan -c "GRANT ALL PRIVILEGES ON DATABASE zhiyuan TO zhiyuan;"
+psql zhiyuan -c "GRANT ALL ON SCHEMA public TO zhiyuan;"
 
-# 7. 执行迁移
+# 7. 执行数据库迁移（根据模型自动建表）
+cd backend
 uv run alembic upgrade head
 
 # 8. 导入种子数据
@@ -399,16 +402,86 @@ curl -X POST http://localhost:8000/api/recommend \
 ```bash
 # 运行所有测试
 cd backend
-pytest
+uv run pytest
 
 # 运行特定测试
-pytest tests/test_rank_converter.py -v
-pytest tests/test_recommendation.py -v
-pytest tests/test_adapter_scorer.py -v
+uv run pytest tests/test_rank_converter.py -v
+uv run pytest tests/test_recommendation.py -v
+uv run pytest tests/test_adapter_scorer.py -v
 
 # 测试覆盖率
-pytest --cov=app --cov-report=html
+uv run pytest --cov=app --cov-report=html
 ```
+
+## 数据库模型管理
+
+项目使用 **SQLAlchemy 2.0** 定义模型，**Alembic** 管理数据库迁移。模型文件位于 `backend/app/models/`。
+
+### 初始化建表（首次部署）
+
+```bash
+cd backend
+
+# 根据所有模型自动生成初始迁移脚本
+uv run alembic revision --autogenerate -m "init: create all tables"
+
+# 执行迁移，创建所有表
+uv run alembic upgrade head
+
+# 验证建表结果
+psql zhiyuan -c "\dt"
+```
+
+### 修改模型（增删字段/表）
+
+```bash
+cd backend
+
+# 1. 修改 app/models/*.py 中的模型定义
+
+# 2. 自动生成增量迁移脚本
+uv run alembic revision --autogenerate -m "描述本次变更"
+
+# 3. 检查生成的迁移脚本（alembic/versions/xxx.py），确认无误后执行
+uv run alembic upgrade head
+```
+
+### 常用迁移操作
+
+```bash
+cd backend
+
+# 查看当前数据库迁移版本
+uv run alembic current
+
+# 查看迁移历史
+uv run alembic history --verbose
+
+# 回滚到上一个版本
+uv run alembic downgrade -1
+
+# 回滚到指定版本
+uv run alembic downgrade <revision_id>
+
+# 回滚所有迁移（清空所有表结构）
+uv run alembic downgrade base
+```
+
+### 模型文件说明
+
+| 文件 | 模型 | 对应表 | 说明 |
+|------|------|--------|------|
+| `user.py` | User | users | 用户账号（手机号、密码、会员等级） |
+| `user.py` | UserProfile | user_profiles | 五维画像（JSONB 存储） |
+| `university.py` | University | universities | 院校信息 |
+| `major.py` | Major | majors | 专业信息 |
+| `major.py` | UniversityMajor | university_majors | 院校-专业关联 |
+| `admission.py` | AdmissionRecord | admission_records | 历年录取数据 |
+| `admission.py` | ScoreSegment | score_segments | 一分一段表 |
+| `recommendation.py` | Recommendation | recommendations | 推荐记录 |
+| `recommendation.py` | ChatMessage | chat_messages | AI 对话消息 |
+
+> **注意**：新增模型后需在 `app/models/__init__.py` 中导入，否则 Alembic 无法检测到新表。
 
 ## 常见问题
 

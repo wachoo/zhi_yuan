@@ -22,3 +22,16 @@ app.add_middleware(
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "service": settings.APP_NAME}
+
+
+from app.api.auth import router as auth_router
+from app.api.profile import router as profile_router
+from app.api.universities import router as universities_router
+from app.api.recommend import router as recommend_router
+from app.api.chat import router as chat_router
+
+app.include_router(auth_router)
+app.include_router(profile_router)
+app.include_router(universities_router)
+app.include_router(recommend_router)
+app.include_router(chat_router)

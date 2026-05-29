@@ -70,7 +70,7 @@ class ChatService:
         await self.msg_dao.save_message(self.user.id, self.session_id, "user", message)
 
         full_reply = []
-        async for chunk in self.llm.chat_stream(messages, profile_summary, recommendation_summary):
+        async for chunk in self.llm.chat_stream(messages, profile_summary, recommendation_summary, max_tool_rounds=80):
             full_reply.append(chunk)
             yield chunk
 

@@ -8,6 +8,7 @@ import {
   PlusOutlined,
   MessageOutlined,
   DeleteOutlined,
+  PauseCircleOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -17,6 +18,22 @@ import type { ChatSession, ChatMessage } from "@/types";
 
 const { TextArea } = Input;
 const { Text } = Typography;
+
+// 打字机光标 CSS 动画
+const streamCursorStyle = `
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.streaming-cursor::after {
+  content: "▍";
+  display: inline-block;
+  animation: blink-cursor 0.8s step-end infinite;
+  color: #1677ff;
+  font-weight: 400;
+  margin-left: 1px;
+}
+`;
 
 interface DisplayMessage {
   role: "user" | "assistant";
@@ -31,7 +48,9 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   // 加载会话列表
   const loadSessions = useCallback(async () => {
@@ -72,7 +91,9 @@ export default function ChatPage() {
 
   // 自动滚动到底部
   useEffect(() => {
-    listRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    if (listRef.current) {
+      listRef.current.scrollTop = listRef.current.scrollHeight;
+    }
   }, [messages]);
 
   // 新建对话
@@ -98,39 +119,125 @@ export default function ChatPage() {
     }
   };
 
-  // 发送消息
+  // 发送消息（流式打字机效果）
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
     const userMsg = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
     setLoading(true);
+    setStreaming(true);
+
+    // 添加空的 assistant 消息占位
+    setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
+
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     try {
       const params = new URLSearchParams({ message: userMsg });
       if (currentSessionId) params.set("session_id", currentSessionId);
-      const res = await api.post(`/api/chat?${params}`);
-      const newSessionId = res.data.session_id;
-      setCurrentSessionId(newSessionId);
-      setMessages((prev) => [...prev, { role: "assistant", content: res.data.reply }]);
-      // 刷新会话列表
-      await loadSessions();
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { detail?: string } } };
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: error.response?.data?.detail || "抱歉，发生了错误，请重试。",
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+      const response = await fetch(`${baseUrl}/api/chat/stream?${params}`, {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
         },
-      ]);
+        signal: controller.signal,
+      });
+
+      if (response.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("无法获取响应流");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let accumulated = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+
+          if (data === "[DONE]") continue;
+
+          // 解析 session_id 事件
+          if (data.startsWith("{")) {
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.session_id) {
+                setCurrentSessionId(parsed.session_id);
+                loadSessions();
+              }
+            } catch {
+              // 忽略 JSON 解析错误
+            }
+            continue;
+          }
+
+          // 内容 chunk — 追加到累积文本并更新消息
+          accumulated += data;
+          const snapshot = accumulated;
+          setMessages((prev) => {
+            const next = [...prev];
+            if (next.length > 0 && next[next.length - 1].role === "assistant") {
+              next[next.length - 1] = { ...next[next.length - 1], content: snapshot };
+            }
+            return next;
+          });
+        }
+      }
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name === "AbortError") {
+        // 用户主动取消，保留已生成的内容
+      } else {
+        setMessages((prev) => {
+          const next = [...prev];
+          if (next.length > 0 && next[next.length - 1].role === "assistant") {
+            if (!next[next.length - 1].content) {
+              next[next.length - 1] = {
+                ...next[next.length - 1],
+                content: "抱歉，发生了错误，请重试。",
+              };
+            }
+          }
+          return next;
+        });
+      }
     } finally {
       setLoading(false);
+      setStreaming(false);
+      abortRef.current = null;
     }
+  };
+
+  // 停止生成
+  const stopStreaming = () => {
+    abortRef.current?.abort();
   };
 
   return (
     <AppLayout>
+      <style>{streamCursorStyle}</style>
       <div style={{ display: "flex", height: "calc(100vh - 200px)", gap: 16 }}>
         {/* 左侧会话列表 */}
         <div
@@ -285,6 +392,10 @@ export default function ChatPage() {
                             <ReactMarkdown remarkPlugins={[remarkGfm]}>
                               {msg.content}
                             </ReactMarkdown>
+                            {streaming &&
+                              messages.indexOf(msg) === messages.length - 1 && (
+                                <span className="streaming-cursor" />
+                              )}
                           </div>
                         ) : (
                           <Text>{msg.content}</Text>
@@ -302,22 +413,34 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onPressEnter={(e) => {
-                  if (!e.shiftKey) {
+                  if (!e.shiftKey && !streaming) {
                     e.preventDefault();
                     sendMessage();
                   }
                 }}
                 placeholder="输入你的问题，如：华中科技大学的计算机专业怎么样？"
                 autoSize={{ minRows: 1, maxRows: 4 }}
+                disabled={streaming}
               />
-              <Button
-                type="primary"
-                onClick={sendMessage}
-                loading={loading}
-                style={{ height: "auto" }}
-              >
-                发送
-              </Button>
+              {streaming ? (
+                <Button
+                  danger
+                  icon={<PauseCircleOutlined />}
+                  onClick={stopStreaming}
+                  style={{ height: "auto" }}
+                >
+                  停止
+                </Button>
+              ) : (
+                <Button
+                  type="primary"
+                  onClick={sendMessage}
+                  loading={loading}
+                  style={{ height: "auto" }}
+                >
+                  发送
+                </Button>
+              )}
             </Space.Compact>
           </div>
         </div>

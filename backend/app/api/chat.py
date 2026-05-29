@@ -1,3 +1,5 @@
+import json
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 
@@ -43,8 +45,13 @@ async def chat_stream(
     svc = ChatService(user, session_id)
 
     async def generate():
+        yield f"data: {json.dumps({'session_id': svc.session_id})}\n\n"
         async for chunk in svc.chat_stream(message):
             yield f"data: {chunk}\n\n"
         yield "data: [DONE]\n\n"
 
-    return StreamingResponse(generate(), media_type="text/event-stream")
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

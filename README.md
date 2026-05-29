@@ -364,6 +364,7 @@ docker compose exec redis redis-cli info memory
 
 启动后端后访问 `http://localhost:8000/docs` 查看交互式 API 文档。
 
+启动后端后访问 http://localhost:8000/ppt/ 查看项目路演文档。
 ### 主要接口
 
 | 接口 | 方法 | 说明 |

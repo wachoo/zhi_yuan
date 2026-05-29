@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Card, Input, Button, List, Typography, Space, Avatar } from "antd";
 import { UserOutlined, RobotOutlined } from "@ant-design/icons";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
 
@@ -51,8 +53,12 @@ export default function ChatPage() {
 
   return (
     <AppLayout>
-      <Card title="AI志愿顾问" style={{ height: "calc(100vh - 200px)", display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1, overflow: "auto", marginBottom: 16 }} ref={listRef}>
+      <Card
+        title="AI志愿顾问"
+        styles={{ body: { flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", padding: "16px 24px" } }}
+        style={{ height: "calc(100vh - 200px)", display: "flex", flexDirection: "column" }}
+      >
+        <div className="chat-scroll-area" style={{ flex: 1, overflowY: "auto", overflowX: "hidden", marginBottom: 16, paddingRight: 4 }} ref={listRef}>
           <List
             dataSource={messages}
             renderItem={(msg) => (
@@ -60,13 +66,23 @@ export default function ChatPage() {
                 <List.Item.Meta
                   avatar={<Avatar icon={msg.role === "user" ? <UserOutlined /> : <RobotOutlined />} />}
                   title={msg.role === "user" ? "我" : "智愿AI"}
-                  description={<Text>{msg.content}</Text>}
+                  description={
+                    msg.role === "assistant" ? (
+                      <div className="markdown-body">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <Text>{msg.content}</Text>
+                    )
+                  }
                 />
               </List.Item>
             )}
           />
         </div>
-        <Space.Compact style={{ width: "100%" }}>
+        <Space.Compact style={{ width: "100%", flexShrink: 0 }}>
           <TextArea
             value={input}
             onChange={(e) => setInput(e.target.value)}

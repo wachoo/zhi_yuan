@@ -4,6 +4,7 @@ from fastapi import HTTPException
 
 from app.dao.profile import ProfileDAO
 from app.dao.user import UserDAO
+from app.models.enums import MembershipTier
 
 FREE_DAILY_LIMIT = 3
 
@@ -42,7 +43,7 @@ class UserService:
         """限流检查 + 持久化每日对话计数"""
         today = date.today().isoformat()
 
-        if getattr(user, "membership_tier", "free") == "free":
+        if user.membership_tier == MembershipTier.free:
             current = getattr(user, "daily_chat_count", 0)
             last_date = getattr(user, "last_chat_date", None)
             if last_date == today and current >= free_daily_limit:

@@ -4,6 +4,7 @@ from sqlalchemy import String, Text, Integer, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
+from app.models.enums import MembershipTier
 
 
 class Recommendation(Base):
@@ -13,7 +14,7 @@ class Recommendation(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     input_snapshot: Mapped[dict] = mapped_column(JSONB, nullable=False)
     result: Mapped[dict] = mapped_column(JSONB, nullable=False)  # {rush: [...], stable: [...], safe: [...]}
-    tier: Mapped[str] = mapped_column(String(20), default="free")
+    tier: Mapped[str] = mapped_column(String(20), default=MembershipTier.free)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

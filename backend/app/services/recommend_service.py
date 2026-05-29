@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.dao.profile import ProfileDAO
 from app.dao.admission import AdmissionDAO
 from app.dao.recommend import RecommendDAO
+from app.models.enums import MembershipTier
 from app.models.recommendation import Recommendation
 from app.services.recommendation_engine import RecommendationEngine
 from app.services.adapter_scorer import AdapterScorer
@@ -87,7 +88,7 @@ class RecommendService:
 
         # 5. 会员限制
         tier = user.membership_tier
-        categorized = engine.limit_for_tier(categorized, tier=tier, max_per_group=1 if tier == "free" else 999)
+        categorized = engine.limit_for_tier(categorized, tier=tier, max_per_group=1 if tier == MembershipTier.free else 999)
 
         # 6. 评分
         scorer = AdapterScorer()

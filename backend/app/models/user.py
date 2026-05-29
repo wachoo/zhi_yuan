@@ -4,6 +4,7 @@ from sqlalchemy import String, Text, Float, DateTime, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
+from app.models.enums import MembershipTier
 
 
 class User(Base):
@@ -13,7 +14,7 @@ class User(Base):
     phone: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
     nickname: Mapped[str] = mapped_column(String(50), nullable=True)
-    membership_tier: Mapped[str] = mapped_column(String(20), default="free")  # free/standard/deep/vip
+    membership_tier: Mapped[str] = mapped_column(String(20), default=MembershipTier.free)
     membership_expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
     daily_chat_count: Mapped[int] = mapped_column(default=0)
     last_chat_date: Mapped[str] = mapped_column(String(10), nullable=True)  # YYYY-MM-DD

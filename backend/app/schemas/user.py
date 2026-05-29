@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from pydantic import BaseModel, Field
+from app.models.enums import MembershipTier
 
 
 class UserRegister(BaseModel):
@@ -23,7 +24,7 @@ class UserInfo(BaseModel):
     id: uuid.UUID
     phone: str
     nickname: str | None
-    membership_tier: str
+    membership_tier: MembershipTier
     created_at: datetime
 
     class Config:

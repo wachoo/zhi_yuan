@@ -1,3 +1,6 @@
+from app.models.enums import MembershipTier
+
+
 class RecommendationEngine:
     """推荐引擎核心：冲/稳/保分类 + 硬性条件过滤"""
 
@@ -56,9 +59,9 @@ class RecommendationEngine:
 
         return {"rush": rush, "stable": stable, "safe": safe}
 
-    def limit_for_tier(self, result: dict, tier: str = "free",
+    def limit_for_tier(self, result: dict, tier: str | MembershipTier = MembershipTier.free,
                        max_per_group: int = 1) -> dict:
-        if tier == "free":
+        if tier == MembershipTier.free:
             return {
                 "rush": result["rush"][:max_per_group],
                 "stable": result["stable"][:max_per_group],

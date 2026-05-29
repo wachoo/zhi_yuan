@@ -19,6 +19,18 @@ class RecommendService:
         rec = await RecommendDAO().get_latest_by_user(user_id)
         return str(rec.result) if rec else ""
 
+    async def get_latest_recommendation_detail(self, user_id: uuid.UUID) -> dict:
+        """获取用户最近一次推荐结果详情（供工具调用）"""
+        rec = await RecommendDAO().get_latest_by_user(user_id)
+        if not rec:
+            return {"message": "该用户暂无推荐记录，请先使用「智能推荐」功能生成推荐"}
+        return {
+            "input": rec.input_snapshot,
+            "result": rec.result,
+            "tier": rec.tier,
+            "created_at": rec.created_at.isoformat() if rec.created_at else None,
+        }
+
     async def get_recommendation(self, user, request: RecommendRequest) -> RecommendResult:
         """完整推荐流程：画像 → 录取数据 → 筛选 → 分类 → 评分 → 持久化"""
         # 1. 获取画像

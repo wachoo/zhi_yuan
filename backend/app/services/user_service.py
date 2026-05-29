@@ -24,6 +24,20 @@ class UserService:
             f"科类: {b.get('subject_type', '未知')}"
         )
 
+    async def get_profile_detail(self, user_id) -> dict:
+        """获取用户画像完整详情（供工具调用）"""
+        profile = await ProfileDAO().get_by_user_id(user_id)
+        if not profile:
+            return {"message": "用户尚未创建画像"}
+        return {
+            "basic_info": profile.basic_info,
+            "family_info": profile.family_info,
+            "personality": profile.personality,
+            "ability": profile.ability,
+            "values_info": profile.values_info,
+            "completeness": profile.completeness,
+        }
+
     async def update_daily_chat(self, user, session_id: str, free_daily_limit: int = FREE_DAILY_LIMIT):
         """限流检查 + 持久化每日对话计数"""
         today = date.today().isoformat()

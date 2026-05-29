@@ -25,7 +25,7 @@ class ChatService:
         self.user_svc = user_svc or UserService()
         self.rec_svc = rec_svc or RecommendService()
         self.msg_dao = msg_dao or MessageDAO()
-        self.llm = llm or LLMService(llm_provider)
+        self.llm = llm or LLMService(llm_provider, user_id=user.id)
 
     async def _gather_context(self) -> tuple[str, str]:
         profile_summary = await self.user_svc.get_profile_summary(self.user.id)

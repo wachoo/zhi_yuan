@@ -69,7 +69,7 @@ async def chat(
     db.add(user_msg)
 
     # Call LLM
-    llm = LLMService()
+    llm = LLMService("qwen")
     reply = await llm.chat(messages, profile_summary, recommendation_summary)
 
     # Save AI reply

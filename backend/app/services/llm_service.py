@@ -7,12 +7,12 @@ LLM_CONFIGS = {
     "deepseek": {
         "api_key": settings.DEEPSEEK_API_KEY,
         "base_url": settings.DEEPSEEK_BASE_URL,
-        "model": "deepseek-chat",
+        "model": "deepseek-v4-pro",
     },
     "qwen": {
         "api_key": settings.QWEN_API_KEY,
         "base_url": settings.QWEN_BASE_URL,
-        "model": "qwen-plus",
+        "model": "qwen3.7-max",
     },
 }
 
@@ -67,7 +67,7 @@ TOOLS = [
 
 class LLMService:
     def __init__(self, provider: str = "deepseek"):
-        config = LLM_CONFIGS.get(provider, LLM_CONFIGS["deepseek"])
+        config = LLM_CONFIGS.get(provider, LLM_CONFIGS["qwen"])
         self.client = AsyncOpenAI(api_key=config["api_key"], base_url=config["base_url"])
         self.model = config["model"]
 

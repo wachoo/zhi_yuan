@@ -18,7 +18,7 @@
 | 智能推荐 | 输入分数和位次，生成冲/稳/保三档院校推荐 |
 | 院校查询 | 按省份、层次、类型等条件筛选院校 |
 | 五维画像 | 渐进式完善个人信息，提升推荐精准度 |
-| AI对话 | 与AI顾问实时对话，获取个性化建议 |
+| AI对话 | 与AI顾问流式打字机对话，支持工具调用查询真实数据 |
 | 专业库 | 浏览专业信息、课程设置、就业方向 |
 
 ## 技术架构
@@ -32,22 +32,31 @@
 │  Pages: Home / Recommend / Universities / Chat / Profile│
 └────────────────────────┬────────────────────────────────┘
                          │
-                         │ HTTP/REST API
+                         │ HTTP/REST + SSE (流式对话)
                          │
 ┌────────────────────────┴────────────────────────────────┐
 │                    Backend (FastAPI)                    │
 │                                                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
 │  │  Auth API    │  │ Recommend API│  │   Chat API   │ │
-│  │  (JWT)       │  │              │  │  (Streaming) │ │
+│  │  (JWT)       │  │              │  │ (SSE Stream) │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
 │                                                        │
 │  ┌──────────────────────────────────────────────────┐ │
-│  │              Services Layer                      │ │
-│  │  - RankConverter (位次换算)                       │ │
-│  │  - RecommendationEngine (推荐引擎)                │ │
-│  │  - AdapterScorer (五维适配评分)                   │ │
-│  │  - LLMService (大模型服务)                        │ │
+│  │              Services Layer (业务逻辑)            │ │
+│  │  AuthService / ProfileService / ChatService      │ │
+│  │  RecommendService / UniversityService            │ │
+│  │  UserService / MajorService / AdmissionService   │ │
+│  │  LLMService (Tool Calling + 流式输出)            │ │
+│  │  RecommendationEngine / AdapterScorer            │ │
+│  └──────────────────────┬───────────────────────────┘ │
+│                         │                             │
+│  ┌──────────────────────┴───────────────────────────┐ │
+│  │              DAO Layer (数据访问)                 │ │
+│  │  UserDAO / ProfileDAO / MessageDAO               │ │
+│  │  UniversityDAO / MajorDAO / AdmissionDAO         │ │
+│  │  RecommendDAO                                    │ │
+│  │  每个 DAO 方法自管理 async_session + commit       │ │
 │  └──────────────────────────────────────────────────┘ │
 └────────────────────────┬────────────────────────────────┘
                          │
@@ -67,8 +76,9 @@
 - **数据库**: PostgreSQL 15 (异步驱动: asyncpg)
 - **ORM**: SQLAlchemy 2.0 + Alembic (迁移)
 - **缓存**: Redis 7
-- **认证**: JWT (python-jose)
-- **LLM**: DeepSeek API / 通义千问 API (OpenAI 兼容接口)
+- **认证**: JWT (python-jose) + bcrypt
+- **LLM**: DeepSeek API / 通义千问 API (OpenAI 兼容接口，支持 Tool Calling)
+- **包管理**: uv (开发) / pip (Docker 构建)
 
 **前端**
 - **框架**: Next.js 14 (App Router)
@@ -87,37 +97,57 @@
 zhi_yuan/
 ├── backend/                 # 后端服务
 │   ├── app/
-│   │   ├── api/            # API 路由层
+│   │   ├── api/            # API 路由层（仅参数解析，无 DB 操作）
+│   │   │   ├── deps.py         # 依赖注入（JWT 鉴权）
 │   │   │   ├── auth.py         # 认证接口
 │   │   │   ├── profile.py      # 用户画像
 │   │   │   ├── universities.py # 院校查询
 │   │   │   ├── recommend.py    # 智能推荐
-│   │   │   └── chat.py         # AI对话
-│   │   ├── models/         # 数据模型
-│   │   ├── schemas/        # Pydantic schemas
+│   │   │   └── chat.py         # AI对话（SSE 流式）
+│   │   ├── dao/            # 数据访问层（每个方法自管理 session）
+│   │   │   ├── user.py         # 用户账号
+│   │   │   ├── profile.py      # 用户画像
+│   │   │   ├── message.py      # 聊天消息
+│   │   │   ├── university.py   # 院校
+│   │   │   ├── major.py        # 专业
+│   │   │   ├── admission.py    # 录取记录 + 一分一段
+│   │   │   └── recommend.py    # 推荐记录
+│   │   ├── models/         # 数据模型（SQLAlchemy ORM）
+│   │   ├── schemas/        # Pydantic 请求/响应模型
 │   │   ├── services/       # 业务逻辑层
-│   │   │   ├── rank_converter.py        # 位次换算
-│   │   │   ├── recommendation_engine.py # 推荐引擎
-│   │   │   ├── adapter_scorer.py        # 适配评分
-│   │   │   └── llm_service.py           # LLM服务
+│   │   │   ├── auth_service.py          # 注册/登录
+│   │   │   ├── profile_service.py       # 画像管理
+│   │   │   ├── chat_service.py          # 对话编排 + 限流
+│   │   │   ├── llm_service.py           # LLM 调用 + Tool Calling
+│   │   │   ├── recommend_service.py     # 推荐流程
+│   │   │   ├── university_service.py    # 院校查询
+│   │   │   ├── major_service.py         # 专业查询
+│   │   │   ├── admission_service.py     # 录取数据查询
+│   │   │   ├── user_service.py          # 用户画像摘要
+│   │   │   ├── recommendation_engine.py # 冲/稳/保分类引擎
+│   │   │   ├── adapter_scorer.py        # 五维适配评分
+│   │   │   └── rank_converter.py        # 位次换算
 │   │   ├── config.py       # 配置管理
-│   │   ├── database.py     # 数据库连接
-│   │   └── main.py         # FastAPI入口
+│   │   ├── database.py     # 数据库连接（engine + async_session）
+│   │   └── main.py         # FastAPI 入口（含 /ppt 静态挂载）
 │   ├── alembic/            # 数据库迁移
 │   ├── tests/              # 单元测试
-│   └── requirements.txt    # Python依赖（pip）
-├── pyproject.toml          # Python依赖（uv）
+│   ├── pyproject.toml      # Python 依赖（uv）
+│   └── requirements.txt    # Python 依赖（pip / Docker）
 ├── frontend/               # 前端应用
 │   ├── src/
-│   │   ├── app/           # Next.js页面
-│   │   ├── components/    # React组件
+│   │   ├── app/           # Next.js 页面
+│   │   ├── components/    # React 组件
 │   │   ├── lib/           # 工具函数
-│   │   └── types/         # TypeScript类型
+│   │   └── types/         # TypeScript 类型
 │   └── package.json
-├── scripts/               # 数据脚本
+├── ppt/                    # 项目路演 PPT（静态 HTML）
+│   └── index.html
+├── scripts/                # 数据脚本
 │   ├── seed_universities.py  # 院校种子数据
 │   └── seed_majors.py        # 专业种子数据
-└── docker-compose.yml     # 容器编排
+├── pyproject.toml          # 项目级依赖配置
+└── docker-compose.yml      # 容器编排
 ```
 
 ## 快速开始
@@ -165,6 +195,7 @@ npm run dev
 访问：
 - **前端**: http://localhost:3000
 - **后端API文档**: http://localhost:8000/docs
+- **项目路演 PPT**: http://localhost:8000/ppt/
 - **数据库**: localhost:5432 (用户: zhiyuan, 密码: zhiyuan_dev_2026)
 
 ### 方式二：本地开发环境
@@ -313,6 +344,18 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $http_host;
+
+        # SSE 流式对话支持
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 300s;
+        chunked_transfer_encoding on;
+    }
+
+    location /ppt {
+        proxy_pass http://localhost:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
     }
 }
 ```
@@ -364,7 +407,8 @@ docker compose exec redis redis-cli info memory
 
 启动后端后访问 `http://localhost:8000/docs` 查看交互式 API 文档。
 
-启动后端后访问 http://localhost:8000/ppt/ 查看项目路演文档。
+启动后端后访问 `http://localhost:8000/ppt/` 查看项目路演 PPT。
+
 ### 主要接口
 
 | 接口 | 方法 | 说明 |
@@ -372,10 +416,11 @@ docker compose exec redis redis-cli info memory
 | `/api/auth/register` | POST | 用户注册 |
 | `/api/auth/login` | POST | 用户登录 |
 | `/api/profile` | GET/PUT | 用户画像管理 |
-| `/api/universities` | GET | 院校列表查询 |
-| `/api/recommend` | POST | 获取智能推荐 |
-| `/api/chat` | POST | AI对话（普通） |
-| `/api/chat/stream` | POST | AI对话（流式） |
+| `/api/universities` | GET | 院校列表查询（支持分页/筛选） |
+| `/api/recommend` | POST | 获取智能推荐（冲/稳/保） |
+| `/api/chat` | POST | AI 对话（SSE 流式输出，打字机效果） |
+| `/health` | GET | 健康检查 |
+| `/ppt/` | GET | 项目路演 PPT（静态页面） |
 
 ### 示例：获取推荐
 
@@ -397,6 +442,62 @@ curl -X POST http://localhost:8000/api/recommend \
     "subject_type": "综合改革"
   }'
 ```
+
+### 示例：AI 对话（流式）
+
+```bash
+# SSE 流式对话，逐字输出
+curl -N -X POST "http://localhost:8000/api/chat?message=浙大多少分能上" \
+  -H "Authorization: Bearer $TOKEN"
+
+# 返回格式（Server-Sent Events）:
+# event: start
+# data: {"session_id": "xxx-xxx"}
+#
+# event: delta
+# data: 根
+#
+# event: delta
+# data: 据
+#
+# event: done
+# data: {"session_id": "xxx-xxx"}
+```
+
+前端对接（fetch + ReadableStream）：
+
+```javascript
+const res = await fetch("/api/chat?message=你好", {
+  method: "POST",
+  headers: { "Authorization": `Bearer ${token}` }
+});
+const reader = res.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  const text = decoder.decode(value);
+  // 解析 SSE event: delta / data: xxx
+  const matches = text.matchAll(/event: delta\ndata: (.+)\n\n/g);
+  for (const m of matches) {
+    container.textContent += m[1];  // 逐字追加
+  }
+}
+```
+
+### LLM Tool Calling 工具
+
+AI 对话支持 6 个工具，LLM 会根据用户问题自动调用：
+
+| 工具 | 用途 | 示例问题 |
+|------|------|---------|
+| `query_university` | 院校基本信息 | "浙大是什么层次？" |
+| `query_major` | 专业详情 | "计算机专业学什么？" |
+| `query_admission_score` | 历年录取分数/位次 | "浙大在浙江多少分能上？" |
+| `query_score_segment` | 一分一段表 | "620分对应什么位次？" |
+| `get_user_profile` | 用户五维画像 | "根据我的情况分析..." |
+| `get_user_recommendation` | 用户推荐结果 | "帮我解读推荐方案" |
 
 ## 测试
 
@@ -484,6 +585,25 @@ uv run alembic downgrade base
 
 > **注意**：新增模型后需在 `app/models/__init__.py` 中导入，否则 Alembic 无法检测到新表。
 
+## 后端架构说明
+
+项目采用 **API → Service → DAO → Model** 四层架构：
+
+```
+请求 → API（参数解析 + 鉴权）→ Service（业务编排）→ DAO（数据访问）→ Model（ORM）
+```
+
+| 层 | 职责 | 规则 |
+|---|------|------|
+| **API** | 路由分发、参数校验、依赖注入 | 不含任何 DB 操作，不含 `self.db` |
+| **Service** | 业务逻辑编排、限流、上下文采集 | 不含 DB 操作，通过 DAO 访问数据 |
+| **DAO** | 数据访问、session 管理 | 每个方法 `async with async_session()` 自管理事务 |
+| **Model** | ORM 定义 | 纯数据结构 |
+
+### 当前已知限制
+
+DAO 层每个方法独立管理 session，跨 DAO 的操作（如 `AuthService.register` 中创建用户 + 创建画像）**不支持事务回滚**。如需生产级事务保障，可改为 Service 层管理 session、DAO 接受 session 参数。
+
 ## 常见问题
 
 **Q: 数据库连接失败？**  
@@ -498,13 +618,24 @@ A: 检查 `frontend/.env.local` 中的 `NEXT_PUBLIC_API_URL` 是否正确，默�
 **Q: 如何添加更多院校/专业数据？**  
 A: 编辑 `scripts/seed_universities.py` 和 `scripts/seed_majors.py`，然后重新运行脚本。
 
+**Q: 注册时报 `ValueError: password cannot be longer than 72 bytes`？**  
+A: 这是 `passlib` 与 `bcrypt>=4.1` 不兼容导致的。本项目已移除 `passlib`，直接使用 `bcrypt` 库。如仍遇此问题，确认 `pyproject.toml` 中依赖为 `bcrypt>=4.0` 而非 `passlib[bcrypt]`。
+
+**Q: AI 对话没有返回内容？**  
+A: LLM 启用 Tool Calling 后，首次返回的 `message.content` 为 `None`（工具调用请求）。`LLMService` 已实现完整的 tool calling 循环，确保依赖版本 `openai>=1.0`。
+
 ## 开发计划
 
+- [x] 五维画像 + 智能推荐 + AI 对话（Tool Calling + SSE 流式）
+- [x] 三层架构重构（API / Service / DAO）
+- [x] Alembic 数据库迁移
+- [x] 项目路演 PPT
 - [ ] 数据爬取模块（阳光高考网、各省考试院）
-- [ ] 深度报告生成（PDF导出）
+- [ ] 深度报告生成（PDF 导出）
 - [ ] 会员系统与支付集成
+- [ ] DAO 层事务支持（Service 管理 session）
 - [ ] 移动端适配（PWA / 小程序）
-- [ ] 性能优化（缓存、CDN）
+- [ ] 性能优化（Redis 缓存、CDN）
 - [ ] SEO 优化
 
 ## 许可证

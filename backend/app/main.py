@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+
 from app.config import get_settings
 
 settings = get_settings()
@@ -17,6 +21,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 挂载 PPT 静态文件
+_ppt_dir = Path(__file__).resolve().parent.parent.parent / "ppt"
+if _ppt_dir.is_dir():
+    app.mount("/ppt", StaticFiles(directory=_ppt_dir, html=True), name="ppt")
 
 
 @app.get("/health")

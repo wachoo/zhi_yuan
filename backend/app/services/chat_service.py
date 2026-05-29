@@ -27,6 +27,16 @@ class ChatService:
         self.msg_dao = msg_dao or MessageDAO()
         self.llm = llm or LLMService(llm_provider, user_id=user.id)
 
+    @staticmethod
+    async def list_sessions(user_id: uuid.UUID) -> list[dict]:
+        """获取用户的所有会话列表"""
+        return await MessageDAO().list_sessions(user_id)
+
+    @staticmethod
+    async def get_session_messages(user_id: uuid.UUID, session_id: str) -> list:
+        """获取指定会话的消息列表"""
+        return await MessageDAO().get_session_messages(user_id, session_id)
+
     async def _gather_context(self) -> tuple[str, str]:
         profile_summary = await self.user_svc.get_profile_summary(self.user.id)
         recommendation_summary = await self.rec_svc.get_latest_recommendation_summary(self.user.id)

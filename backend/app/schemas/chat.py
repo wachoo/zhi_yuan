@@ -1,0 +1,21 @@
+import uuid
+from datetime import datetime
+from pydantic import BaseModel
+
+
+class ChatSessionOut(BaseModel):
+    session_id: str
+    title: str
+    message_count: int
+    last_message_at: datetime | None = None
+
+
+class ChatMessageOut(BaseModel):
+    id: uuid.UUID
+    session_id: str
+    role: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

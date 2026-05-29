@@ -153,3 +153,12 @@ body {
 .chat-scroll-area::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.25);
 }
+
+/* Session list item */
+.session-item:hover {
+  background: #fafafa !important;
+}
+
+.session-item .anticon-delete:hover {
+  color: #ff4d4f !important;
+}

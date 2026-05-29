@@ -3,9 +3,25 @@ from fastapi.responses import StreamingResponse
 
 from app.api.deps import get_current_user
 from app.models.user import User
+from app.schemas.chat import ChatSessionOut, ChatMessageOut
 from app.services.chat_service import ChatService
 
 router = APIRouter(prefix="/api/chat", tags=["AI对话"])
+
+
+@router.get("/sessions", response_model=list[ChatSessionOut])
+async def list_sessions(user: User = Depends(get_current_user)):
+    """获取当前用户的所有会话列表"""
+    return await ChatService.list_sessions(user.id)
+
+
+@router.get("/sessions/{session_id}/messages", response_model=list[ChatMessageOut])
+async def get_session_messages(
+    session_id: str,
+    user: User = Depends(get_current_user),
+):
+    """获取指定会话的消息列表"""
+    return await ChatService.get_session_messages(user.id, session_id)
 
 
 @router.post("")

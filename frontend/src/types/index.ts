@@ -40,3 +40,18 @@ export interface UserProfile {
   values_info: Record<string, unknown> | null;
   completeness: number;
 }
+
+export interface ChatSession {
+  session_id: string;
+  title: string;
+  message_count: number;
+  last_message_at: string | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  session_id: string;
+  role: "user" | "assistant" | "system" | "tool";
+  content: string;
+  created_at: string;
+}

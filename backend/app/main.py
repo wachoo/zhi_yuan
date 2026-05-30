@@ -1,12 +1,14 @@
-from pathlib import Path
-
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-
+from fastapi.responses import JSONResponse
 from app.config import get_settings
 
 settings = get_settings()
+
+_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
 app = FastAPI(
     title=settings.APP_NAME,
@@ -16,7 +18,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,6 +28,13 @@ app.add_middleware(
 _ppt_dir = Path(__file__).resolve().parent.parent.parent / "ppt"
 if _ppt_dir.is_dir():
     app.mount("/ppt", StaticFiles(directory=_ppt_dir, html=True), name="ppt")
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    # Unhandled 500s otherwise omit CORS headers; the browser reports that as a CORS failure.
+    detail = str(exc) if settings.DEBUG else "Internal server error"
+    return JSONResponse(status_code=500, content={"detail": detail})
 
 
 @app.get("/health")

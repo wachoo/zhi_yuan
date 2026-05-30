@@ -195,8 +195,8 @@ function RecommendContent() {
         {result?.profile_completeness !== undefined && result.profile_completeness < 0.4 && (
           <Card>
             <Progress percent={Math.round(result.profile_completeness * 100)}
-              format={(p) => `画像完整度 ${p}%`} />
-            <p>完善个人画像可获得更精准的推荐结果</p>
+              format={(p) => `完整度 ${p}%`} />
+            <p>完善个人详情可获得更精准的推荐结果</p>
           </Card>
         )}
 

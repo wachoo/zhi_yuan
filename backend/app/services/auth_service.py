@@ -28,7 +28,7 @@ def _create_access_token(user_id: uuid.UUID) -> str:
 
 
 class AuthService:
-    """认证相关业务：注册、登录"""
+    """认证相关业务：注册、登录、修改密码"""
 
     async def register(self, phone: str, password: str) -> dict:
         existing = await UserDAO().get_by_phone(phone)
@@ -55,3 +55,11 @@ class AuthService:
 
         token = _create_access_token(user.id)
         return {"access_token": token, "user_id": user.id}
+
+    async def change_password(self, user_id: uuid.UUID, old_password: str, new_password: str):
+        user = await UserDAO().get_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="用户不存在")
+        if not _verify_password(old_password, user.password_hash):
+            raise HTTPException(status_code=400, detail="原密码错误")
+        await UserDAO().update_password(user_id, _hash_password(new_password))

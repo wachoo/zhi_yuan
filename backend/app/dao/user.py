@@ -26,6 +26,16 @@ class UserDAO:
             await db.refresh(user)
             return user
 
+    async def update_password(self, user_id: uuid.UUID, new_hash: str):
+        """更新用户密码"""
+        async with async_session() as db:
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if not user:
+                return
+            user.password_hash = new_hash
+            await db.commit()
+
     async def update_daily_chat(self, user_id: uuid.UUID, session_id: str):
         """重置/递增每日对话计数"""
         today = date.today().isoformat()

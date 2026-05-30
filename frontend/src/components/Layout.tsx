@@ -1,14 +1,16 @@
 "use client";
 
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Button } from "antd";
 import {
   HomeOutlined,
   SearchOutlined,
   RobotOutlined,
-  UserOutlined,
+  SettingOutlined,
   StarOutlined,
+  LogoutOutlined,
 } from "@ant-design/icons";
 import { useRouter, usePathname } from "next/navigation";
+import { logout } from "@/lib/api";
 
 const { Header, Content, Footer } = Layout;
 
@@ -17,7 +19,7 @@ const menuItems = [
   { key: "/recommend", icon: <StarOutlined />, label: "智能推荐" },
   { key: "/universities", icon: <SearchOutlined />, label: "院校查询" },
   { key: "/chat", icon: <RobotOutlined />, label: "AI顾问" },
-  { key: "/profile", icon: <UserOutlined />, label: "我的画像" },
+  { key: "/profile", icon: <SettingOutlined />, label: "个人中心" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -26,8 +28,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Header>
-        <div style={{ float: "left", color: "#fff", fontSize: 20, fontWeight: "bold", marginRight: 40 }}>
+      <Header style={{ display: "flex", alignItems: "center" }}>
+        <div style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginRight: 40 }}>
           智愿
         </div>
         <Menu
@@ -36,7 +38,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           selectedKeys={[pathname]}
           items={menuItems}
           onClick={(e) => router.push(e.key)}
+          style={{ flex: 1 }}
         />
+        <Button
+          type="text"
+          icon={<LogoutOutlined />}
+          onClick={logout}
+          style={{ color: "rgba(255,255,255,0.85)", flexShrink: 0 }}
+        >
+          退出
+        </Button>
       </Header>
       <Content style={{ padding: "24px 48px" }}>
         {children}

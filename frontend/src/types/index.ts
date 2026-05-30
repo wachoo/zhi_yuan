@@ -1,3 +1,16 @@
+/** 科类枚举 */
+export enum SubjectType {
+  PHYSICS = "物理类",
+  HISTORY = "历史类",
+  COMPREHENSIVE_REFORM = "综合改革",
+}
+
+export const SUBJECT_TYPE_OPTIONS = [
+  { value: SubjectType.PHYSICS, label: "物理类" },
+  { value: SubjectType.HISTORY, label: "历史类" },
+  { value: SubjectType.COMPREHENSIVE_REFORM, label: "综合改革" },
+];
+
 export interface University {
   id: string;
   name: string;

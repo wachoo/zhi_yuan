@@ -7,7 +7,7 @@ import {
 } from "antd";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
-import { UserProfile } from "@/types";
+import { UserProfile, SUBJECT_TYPE_OPTIONS } from "@/types";
 
 const interests = [
   "计算机", "编程", "设计", "音乐", "运动", "阅读", "数学", "物理",
@@ -160,12 +160,7 @@ export default function ProfilePage() {
                 <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
                   <Select
                     placeholder="选择科类"
-                    options={[
-                      { value: "物理类", label: "物理类（理科）" },
-                      { value: "历史类", label: "历史类（文科）" },
-                      { value: "理科", label: "理科（老高考）" },
-                      { value: "文科", label: "文科（老高考）" },
-                    ]}
+                    options={SUBJECT_TYPE_OPTIONS}
                   />
                 </Form.Item>
               </Col>

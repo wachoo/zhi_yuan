@@ -6,6 +6,7 @@ import { RocketOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
+import { SUBJECT_TYPE_OPTIONS } from "@/types";
 
 const { Title, Paragraph } = Typography;
 
@@ -15,8 +16,6 @@ const provinces = [
   "广东", "海南", "四川", "贵州", "云南", "陕西", "甘肃", "青海", "内蒙古",
   "广西", "西藏", "宁夏", "新疆",
 ];
-
-const subjectTypes = ["文", "理", "物理类", "历史类", "综合改革"];
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -67,7 +66,7 @@ export default function Home() {
                   <Select placeholder="选择省份" options={provinces.map((p) => ({ value: p, label: p }))} />
                 </Form.Item>
                 <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
-                  <Select placeholder="选择科类" options={subjectTypes.map((s) => ({ value: s, label: s }))} />
+                  <Select placeholder="选择科类" options={SUBJECT_TYPE_OPTIONS} />
                 </Form.Item>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" block loading={loading} size="large">

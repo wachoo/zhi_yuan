@@ -21,21 +21,31 @@
 | AI对话 | 与AI顾问流式打字机对话，支持工具调用查询真实数据 |
 | 专业库 | 浏览专业信息、课程设置、就业方向 |
 
+### 特色功能：考试科类
+
+系统支持三种考试科类，智能推荐会根据用户的考试科类筛选对应专业：
+
+| 考试科类 | 说明 |
+|---------|------|
+| 普通类 | 标准高考科目（物理类/历史类/综合改革） |
+| 艺术类 | 艺术类专业考试（文化课+专业课） |
+| 体育类 | 体育类专业考试（文化课+体育测试） |
+
 ## 技术架构
 
 ### 整体架构
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Frontend (Next.js 14)                │
-│  TypeScript + Tailwind CSS + Ant Design                │
+│                    Frontend (Next.js 16)                │
+│  React 19 + TypeScript + Ant Design 5                  │
 │  Pages: Home / Recommend / Universities / Chat / Profile│
 └────────────────────────┬────────────────────────────────┘
                          │
                          │ HTTP/REST + SSE (流式对话)
                          │
 ┌────────────────────────┴────────────────────────────────┐
-│                    Backend (FastAPI)                    │
+│                    Backend (FastAPI 0.111)               │
 │                                                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
 │  │  Auth API    │  │ Recommend API│  │   Chat API   │ │
@@ -72,24 +82,47 @@
 ### 技术栈
 
 **后端**
-- **框架**: FastAPI (Python 3.11+)
+- **框架**: FastAPI 0.111.0 (Python 3.11+)
 - **数据库**: PostgreSQL 15 (异步驱动: asyncpg)
-- **ORM**: SQLAlchemy 2.0 + Alembic (迁移)
+- **ORM**: SQLAlchemy 2.0.30 + Alembic (迁移)
 - **缓存**: Redis 7
 - **认证**: JWT (python-jose) + bcrypt
 - **LLM**: DeepSeek API / 通义千问 API (OpenAI 兼容接口，支持 Tool Calling)
 - **包管理**: uv (开发) / pip (Docker 构建)
 
 **前端**
-- **框架**: Next.js 14 (App Router)
+- **框架**: Next.js 16.2.6 (App Router)
+- **React**: React 19.2.4
 - **语言**: TypeScript
 - **样式**: Tailwind CSS
-- **组件库**: Ant Design
+- **组件库**: Ant Design 5
 - **HTTP**: Axios
 
 **部署**
 - **容器化**: Docker + Docker Compose
 - **服务编排**: PostgreSQL / Redis / Backend 一键启动
+
+### 数据规模
+
+| 数据类型 | 数量 | 说明 |
+|---------|------|------|
+| 院校 | 342 所 | 覆盖 985/211/双一流/普通本科 |
+| 专业 | 126 个 | 涵盖 12 大学科门类 |
+| 录取记录 | 379,550 条 | 31 省 × 6 年 × 多科类 |
+| 一分一段 | 150,974 条 | 各省各年分数段分布 |
+
+### 新高考改革覆盖
+
+系统完整覆盖全国 31 个省份的新高考改革进程，自动识别各省份改革年份并切换科类：
+
+| 改革批次 | 起始年份 | 省份 |
+|---------|---------|------|
+| 第 1 批 | 2017 | 浙江、上海 |
+| 第 2 批 | 2020 | 北京、天津、山东、海南 |
+| 第 3 批 | 2021 | 河北、辽宁、江苏、福建、湖北、湖南、广东、重庆 |
+| 第 4 批 | 2024 | 吉林、黑龙江、安徽、江西、广西、贵州、甘肃 |
+| 第 5 批 | 2025 | 山西、河南、陕西、内蒙古、四川、云南、宁夏、青海 |
+| 尚未改革 | - | 西藏、新疆（仍用物理类+历史类） |
 
 ### 项目结构
 
@@ -104,6 +137,7 @@ zhi_yuan/
 │   │   │   ├── universities.py # 院校查询
 │   │   │   ├── recommend.py    # 智能推荐
 │   │   │   └── chat.py         # AI对话（SSE 流式）
+│   │   ├── constants.py    # 常量定义（SubjectType, ExamType）
 │   │   ├── dao/            # 数据访问层（每个方法自管理 session）
 │   │   │   ├── user.py         # 用户账号
 │   │   │   ├── profile.py      # 用户画像
@@ -145,7 +179,8 @@ zhi_yuan/
 │   └── index.html
 ├── scripts/                # 数据脚本
 │   ├── seed_universities.py  # 院校种子数据
-│   └── seed_majors.py        # 专业种子数据
+│   ├── seed_majors.py        # 专业种子数据
+│   └── seed_admission.py     # 录取记录 + 一分一段数据
 ├── pyproject.toml          # 项目级依赖配置
 └── docker-compose.yml      # 容器编排
 ```
@@ -181,6 +216,7 @@ docker compose exec backend alembic upgrade head
 # 5. 导入种子数据
 docker compose exec backend python scripts/seed_universities.py
 docker compose exec backend python scripts/seed_majors.py
+docker compose exec backend python scripts/seed_admission.py
 
 # 6. 验证服务
 curl http://localhost:8000/health
@@ -243,6 +279,7 @@ uv run alembic upgrade head
 cd ..
 PYTHONPATH=backend uv run --directory backend python ../scripts/seed_universities.py
 PYTHONPATH=backend uv run --directory backend python ../scripts/seed_majors.py
+PYTHONPATH=backend uv run --directory backend python ../scripts/seed_admission.py
 
 # 9. 启动服务
 cd backend
@@ -320,6 +357,7 @@ docker compose logs -f backend
 docker compose exec backend alembic upgrade head
 docker compose exec backend python scripts/seed_universities.py
 docker compose exec backend python scripts/seed_majors.py
+docker compose exec backend python scripts/seed_admission.py
 ```
 
 #### 4. Nginx 反向代理
@@ -380,7 +418,7 @@ docker compose exec -T postgres psql -U zhiyuan zhiyuan < backup_20260528.sql
 
 # 查看数据库统计
 docker compose exec postgres psql -U zhiyuan -d zhiyuan -c "
-  SELECT 
+  SELECT
     (SELECT count(*) FROM universities) as universities,
     (SELECT count(*) FROM majors) as majors,
     (SELECT count(*) FROM users) as users;
@@ -431,7 +469,7 @@ TOKEN=$(curl -X POST http://localhost:8000/api/auth/register \
   -d '{"phone":"13800138000","password":"test123"}' \
   | jq -r '.access_token')
 
-# 2. 获取推荐
+# 2. 获取推荐（普通类）
 curl -X POST http://localhost:8000/api/recommend \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
@@ -439,7 +477,20 @@ curl -X POST http://localhost:8000/api/recommend \
     "score": 620,
     "rank": 5000,
     "province": "浙江",
-    "subject_type": "综合改革"
+    "subject_type": "综合改革",
+    "exam_type": "普通类"
+  }'
+
+# 3. 获取推荐（艺术类）
+curl -X POST http://localhost:8000/api/recommend \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "score": 520,
+    "rank": 8000,
+    "province": "浙江",
+    "subject_type": "综合改革",
+    "exam_type": "艺术类"
   }'
 ```
 
@@ -624,12 +675,23 @@ A: 这是 `passlib` 与 `bcrypt>=4.1` 不兼容导致的。本项目已移除 `p
 **Q: AI 对话没有返回内容？**  
 A: LLM 启用 Tool Calling 后，首次返回的 `message.content` 为 `None`（工具调用请求）。`LLMService` 已实现完整的 tool calling 循环，确保依赖版本 `openai>=1.0`。
 
+**Q: 智能推荐返回空结果？**  
+A: 检查以下几点：
+1. 确保已导入录取数据：`python scripts/seed_admission.py`
+2. 检查请求参数中的 `exam_type` 是否正确（普通类/艺术类/体育类）
+3. 艺术类和体育类专业数量较少，系统会自动从相关专业池中选取
+4. 查看后端日志确认查询条件
+
 ## 开发计划
 
 - [x] 五维画像 + 智能推荐 + AI 对话（Tool Calling + SSE 流式）
 - [x] 三层架构重构（API / Service / DAO）
 - [x] Alembic 数据库迁移
 - [x] 项目路演 PPT
+- [x] 考试科类支持（普通类/艺术类/体育类）
+- [x] 新高考改革省份全覆盖（31 省）
+- [x] 大规模录取数据生成（379,550 条）
+- [x] 院校列表分页与排序
 - [ ] 数据爬取模块（阳光高考网、各省考试院）
 - [ ] 深度报告生成（PDF 导出）
 - [ ] 会员系统与支付集成

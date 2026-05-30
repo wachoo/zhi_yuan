@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import {
   Card, Form, Select, Button, Progress, message, Space, Row, Col,
-  InputNumber, Checkbox, Slider, Divider,
+  InputNumber, Checkbox, Slider, Divider, Radio, Typography,
 } from "antd";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
 import { UserProfile, SUBJECT_TYPE_OPTIONS, EXAM_TYPE_OPTIONS } from "@/types";
+
+const { Text } = Typography;
 
 const interests = [
   "计算机", "编程", "设计", "音乐", "运动", "阅读", "数学", "物理",
@@ -35,6 +37,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [examType, setExamType] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -52,6 +55,7 @@ export default function ProfilePage() {
           initialValues.province = data.basic_info.province;
           initialValues.subject_type = data.basic_info.subject_type;
           initialValues.exam_type = data.basic_info.exam_type;
+          setExamType(data.basic_info.exam_type);
         }
         if (data.personality) {
           initialValues.interests = (data.personality as Record<string, unknown>).interests;
@@ -176,17 +180,39 @@ export default function ProfilePage() {
                 </Form.Item>
               </Col>
             </Row>
-            <Row gutter={16}>
-              <Col span={6}>
-                <Form.Item name="exam_type" label="考试科类">
-                  <Select
-                    placeholder="选择考试科类"
-                    options={EXAM_TYPE_OPTIONS}
-                    allowClear
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+            <Form.Item name="exam_type" label="考试科类" style={{ marginBottom: 0 }}>
+              <Radio.Group
+                onChange={(e) => setExamType(e.target.value)}
+                style={{ display: "flex", flexDirection: "column", gap: 8 }}
+              >
+                {EXAM_TYPE_OPTIONS.map((opt) => (
+                  <Radio
+                    key={opt.value}
+                    value={opt.value}
+                    style={{
+                      padding: "10px 16px",
+                      borderRadius: 8,
+                      border: "1px solid #f0f0f0",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontWeight: 500 }}>{opt.label}</div>
+                      <Text type="secondary" style={{ fontSize: 12, lineHeight: 1.6 }}>
+                        {opt.description}
+                      </Text>
+                    </div>
+                  </Radio>
+                ))}
+              </Radio.Group>
+            </Form.Item>
+            {examType && (
+              <div style={{ marginTop: 12, padding: "10px 16px", background: "#f5f5f5", borderRadius: 8, fontSize: 13, color: "#666" }}>
+                {examType === "普通类" && <>普通类考生可报考工学、理学、医学、经济学、管理学、法学、文学、历史学、哲学、农学等学科门类的专业，覆盖大部分本科专业。</>}
+                {examType === "艺术类" && <>艺术类考生需参加省统考或校考，可报考视觉传达设计、音乐学、美术学、表演、播音与主持艺术、舞蹈学、动画、广播电视编导等艺术类专业。</>}
+                {examType === "体育类" && <>体育类考生需参加体育专业测试，可报考体育教育、运动训练、武术与民族传统体育等专业。部分院校体育教育也可通过普通类报考。</>}
+              </div>
+            )}
           </Card>
 
           <Card title="兴趣与偏好" style={{ marginTop: 16 }}>

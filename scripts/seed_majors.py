@@ -568,7 +568,8 @@ MAJORS = [
      "courses": ["运动解剖学", "运动生理学", "学校体育学", "体育教学论", "田径"],
      "career_directions": ["体育教师", "教练员", "健身教练", "体育管理"],
      "avg_salary": 6500,
-     "subject_requirements": {}},
+     "subject_requirements": {},
+     "is_sports": True},
     {"name": "特殊教育", "category": "教育学", "duration": 4,
      "courses": ["特殊教育学", "听力障碍教育", "智力障碍教育", "自闭症教育", "手语"],
      "career_directions": ["特教教师", "康复训练师", "残联系统", "公益组织"],
@@ -681,12 +682,14 @@ MAJORS = [
      "courses": ["运动训练学", "运动生理学", "运动心理学", "体育竞赛", "专项训练"],
      "career_directions": ["教练员", "体育教师", "运动康复", "体育管理"],
      "avg_salary": 6500,
-     "subject_requirements": {}},
+     "subject_requirements": {},
+     "is_normal": False, "is_sports": True},
     {"name": "武术与民族传统体育", "category": "教育学", "duration": 4,
      "courses": ["武术套路", "散打", "太极拳", "民族传统体育", "武术理论"],
      "career_directions": ["武术教练", "体育教师", "安保", "影视武指"],
      "avg_salary": 6000,
-     "subject_requirements": {}},
+     "subject_requirements": {},
+     "is_normal": False, "is_sports": True},
 ]
 
 
@@ -700,6 +703,10 @@ async def seed():
         print(f"Deleted {result.rowcount} existing majors")
 
         for data in MAJORS:
+            # 艺术学专业默认标记为艺术类（除非数据中已显式设置）
+            if data.get("category") == "艺术学" and "is_art" not in data:
+                data["is_art"] = True
+                data.setdefault("is_normal", False)
             major = Major(id=uuid.uuid4(), **data)
             session.add(major)
         await session.commit()

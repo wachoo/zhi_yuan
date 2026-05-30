@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import String, Text, Integer, Float, ARRAY, ForeignKey
+from sqlalchemy import String, Text, Integer, Float, Boolean, ARRAY, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
@@ -18,6 +18,11 @@ class Major(Base):
     career_directions: Mapped[list] = mapped_column(ARRAY(String), default=list)
     avg_salary: Mapped[int] = mapped_column(Integer, nullable=True)  # 参考月薪(元)
     subject_requirements: Mapped[dict] = mapped_column(JSONB, nullable=True)  # 新高考选科要求
+
+    # 考试科类标记：标记该专业可通过哪些考试科类报考
+    is_normal: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")   # 普通类
+    is_art: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")    # 艺术类
+    is_sports: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false") # 体育类
 
     university_majors = relationship("UniversityMajor", back_populates="major")
 

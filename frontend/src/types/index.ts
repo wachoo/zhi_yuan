@@ -19,9 +19,21 @@ export enum ExamType {
 }
 
 export const EXAM_TYPE_OPTIONS = [
-  { value: ExamType.NORMAL, label: "普通类" },
-  { value: ExamType.ART, label: "艺术类" },
-  { value: ExamType.SPORTS, label: "体育类" },
+  {
+    value: ExamType.NORMAL,
+    label: "普通类",
+    description: "普通高考文化课考试，可选工学、理学、医学、经济学、管理学、法学、文学、历史学、哲学、农学等专业",
+  },
+  {
+    value: ExamType.ART,
+    label: "艺术类",
+    description: "需参加艺术类专业考试（省统考/校考），可选视觉传达设计、音乐学、表演、播音主持、动画、舞蹈等专业",
+  },
+  {
+    value: ExamType.SPORTS,
+    label: "体育类",
+    description: "需参加体育类专业测试，可选体育教育、运动训练、武术与民族传统体育等专业",
+  },
 ];
 
 export interface University {

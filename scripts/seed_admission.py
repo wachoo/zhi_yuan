@@ -101,22 +101,20 @@ async def seed_admission_records():
         uni_rows = (await db.execute(select(University))).scalars().all()
         major_rows = (await db.execute(select(Major))).scalars().all()
 
-        # 按类别分组专业
-        sci_majors = [m for m in major_rows if m.category in ("工学", "理学", "医学")]
-        art_majors = [m for m in major_rows if m.category in ("文学", "法学", "历史学", "教育学", "管理学", "经济学", "哲学")]
-        all_majors = major_rows or [None]
+        # 按考试科类分组专业（使用 is_normal / is_art / is_sports 布尔字段）
+        normal_majors = [m for m in major_rows if m.is_normal]
+        art_exam_majors = [m for m in major_rows if m.is_art]
+        sports_exam_majors = [m for m in major_rows if m.is_sports]
 
-        # 艺术类专用专业池
-        art_exam_majors = [m for m in major_rows if m.category == "艺术学"]
+        # 普通类内部再按学科分：物理类偏理工，历史类偏文史
+        sci_majors = [m for m in normal_majors if m.category in ("工学", "理学", "医学")]
+        art_majors = [m for m in normal_majors if m.category in ("文学", "法学", "历史学", "教育学", "管理学", "经济学", "哲学")]
+        all_majors = normal_majors or major_rows or [None]
+
         if not art_exam_majors:
             art_exam_majors = all_majors
-
-        # 体育类专用专业池（教育学下的体育相关专业）
-        sports_major_names = {"体育教育", "运动训练", "武术与民族传统体育", "社会体育指导与管理"}
-        sports_exam_majors = [m for m in major_rows if m.name in sports_major_names]
         if not sports_exam_majors:
             sports_exam_majors = all_majors
-
         if not sci_majors:
             sci_majors = all_majors
         if not art_majors:

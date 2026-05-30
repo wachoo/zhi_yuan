@@ -39,6 +39,11 @@ class ChatService:
         """获取指定会话的消息列表"""
         return await MessageDAO().get_session_messages(user_id, session_id)
 
+    @staticmethod
+    async def rename_session(user_id: uuid.UUID, session_id: str, new_title: str) -> bool:
+        """重命名会话标题"""
+        return await MessageDAO().rename_session(user_id, session_id, new_title)
+
     async def _gather_context(self) -> tuple[str, str]:
         profile_summary = await self.user_svc.get_profile_summary(self.user.id)
         recommendation_summary = await self.rec_svc.get_latest_recommendation_summary(self.user.id)

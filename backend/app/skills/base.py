@@ -10,7 +10,7 @@ class Skill:
 
     Attributes:
         id: 唯一标识符，用于 API 传参（如 "default", "zhangxuefeng"）
-        name: 显示名称（如 "默认顾问", "张雪峰视角"）
+        name: 显示名称（如 "默认顾问", "名师张视角"）
         description: 简短描述，用于前端展示
         system_prompt_template: System Prompt 模板，接受 {profile_summary} 和 {recommendation_summary} 占位符
         tools_description: 工具描述列表（可选覆盖默认值）

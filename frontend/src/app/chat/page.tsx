@@ -9,6 +9,8 @@ import {
   MessageOutlined,
   DeleteOutlined,
   PauseCircleOutlined,
+  EditOutlined,
+  CheckOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -90,6 +92,8 @@ export default function ChatPage() {
   const [streaming, setStreaming] = useState(false);
   const [skills, setSkills] = useState<Skill[]>([]);
   const [currentSkillId, setCurrentSkillId] = useState("default");
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -171,6 +175,37 @@ export default function ChatPage() {
       setCurrentSessionId(null);
       setMessages([]);
     }
+  };
+
+  // 开始重命名
+  const handleRenameStart = (e: React.MouseEvent, session: ChatSession) => {
+    e.stopPropagation();
+    setEditingSessionId(session.session_id);
+    setEditingTitle(session.title);
+  };
+
+  // 提交重命名
+  const handleRenameCommit = async () => {
+    if (!editingSessionId) return;
+    const newTitle = editingTitle.trim();
+    const targetId = editingSessionId;
+    setEditingSessionId(null);
+    if (!newTitle) return;
+    try {
+      await api.put(`/api/chat/sessions/${targetId}`, { title: newTitle });
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.session_id === targetId ? { ...s, title: newTitle } : s
+        )
+      );
+    } catch {
+      // 失败时静默处理，保留原标题
+    }
+  };
+
+  // 取消重命名
+  const handleRenameCancel = () => {
+    setEditingSessionId(null);
   };
 
   // 发送消息（流式打字机效果）
@@ -352,25 +387,63 @@ export default function ChatPage() {
                   >
                     <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 8 }}>
                       <MessageOutlined style={{ color: "#8c8c8c", flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Text
-                          ellipsis
-                          style={{
-                            display: "block",
-                            fontWeight:
-                              session.session_id === currentSessionId ? 600 : 400,
-                          }}
-                        >
-                          {session.title}
-                        </Text>
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {session.message_count} 条消息
-                        </Text>
-                      </div>
-                      <DeleteOutlined
-                        style={{ color: "#bfbfbf", flexShrink: 0 }}
-                        onClick={(e) => handleDeleteSession(e, session.session_id)}
-                      />
+                      {editingSessionId === session.session_id ? (
+                        <>
+                          <Input
+                            size="small"
+                            value={editingTitle}
+                            onChange={(e) => setEditingTitle(e.target.value)}
+                            onPressEnter={(e) => {
+                              e.stopPropagation();
+                              handleRenameCommit();
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Escape") {
+                                e.stopPropagation();
+                                handleRenameCancel();
+                              }
+                            }}
+                            onBlur={() => handleRenameCommit()}
+                            onClick={(e) => e.stopPropagation()}
+                            autoFocus
+                            maxLength={100}
+                            style={{ flex: 1 }}
+                          />
+                          <CheckOutlined
+                            style={{ color: "#1677ff", flexShrink: 0, cursor: "pointer" }}
+                            onMouseDown={(e) => {
+                              e.preventDefault(); // 阻止 blur 先触发
+                              handleRenameCommit();
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <Text
+                              ellipsis
+                              style={{
+                                display: "block",
+                                fontWeight:
+                                  session.session_id === currentSessionId ? 600 : 400,
+                              }}
+                            >
+                              {session.title}
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {session.message_count} 条消息
+                            </Text>
+                          </div>
+                          <EditOutlined
+                            style={{ color: "#bfbfbf", flexShrink: 0, cursor: "pointer" }}
+                            onClick={(e) => handleRenameStart(e, session)}
+                          />
+                          <DeleteOutlined
+                            style={{ color: "#bfbfbf", flexShrink: 0, cursor: "pointer" }}
+                            onClick={(e) => handleDeleteSession(e, session.session_id)}
+                          />
+                        </>
+                      )}
                     </div>
                   </List.Item>
                 )}

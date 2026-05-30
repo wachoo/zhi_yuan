@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Input, Button, List, Typography, Space, Avatar, Empty, Spin } from "antd";
+import { Input, Button, List, Typography, Space, Avatar, Empty, Spin, Select } from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -73,6 +73,12 @@ interface DisplayMessage {
   content: string;
 }
 
+interface Skill {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export default function ChatPage() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -82,6 +88,8 @@ export default function ChatPage() {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [currentSkillId, setCurrentSkillId] = useState("default");
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -121,6 +129,19 @@ export default function ChatPage() {
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
+
+  // 加载可用的 Skills
+  useEffect(() => {
+    const loadSkills = async () => {
+      try {
+        const res = await api.get<Skill[]>("/api/chat/skills");
+        setSkills(res.data);
+      } catch {
+        setSkills([{ id: "default", name: "智愿顾问", description: "" }]);
+      }
+    };
+    loadSkills();
+  }, []);
 
   // 自动滚动到底部
   useEffect(() => {
@@ -170,6 +191,7 @@ export default function ChatPage() {
     try {
       const params = new URLSearchParams({ message: userMsg });
       if (currentSessionId) params.set("session_id", currentSessionId);
+      params.set("skill_id", currentSkillId);
 
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -373,16 +395,29 @@ export default function ChatPage() {
             style={{
               padding: "12px 20px",
               borderBottom: "1px solid #f0f0f0",
-              fontWeight: 600,
-              fontSize: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
             }}
           >
-            AI志愿顾问
-            {currentSessionId && (
-              <Text type="secondary" style={{ fontSize: 13, fontWeight: 400, marginLeft: 8 }}>
-                {sessions.find((s) => s.session_id === currentSessionId)?.title}
-              </Text>
-            )}
+            <div>
+              <span style={{ fontWeight: 600, fontSize: 16 }}>AI志愿顾问</span>
+              {currentSessionId && (
+                <Text type="secondary" style={{ fontSize: 13, fontWeight: 400, marginLeft: 8 }}>
+                  {sessions.find((s) => s.session_id === currentSessionId)?.title}
+                </Text>
+              )}
+            </div>
+            <Select
+              value={currentSkillId}
+              onChange={setCurrentSkillId}
+              style={{ width: 150 }}
+              size="small"
+              options={skills.map((s) => ({
+                value: s.id,
+                label: s.name,
+              }))}
+            />
           </div>
           <div
             className="chat-scroll-area"

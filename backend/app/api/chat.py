@@ -7,8 +7,15 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.schemas.chat import ChatSessionOut, ChatMessageOut
 from app.services.chat_service import ChatService
+from app.skills import SkillRegistry
 
 router = APIRouter(prefix="/api/chat", tags=["AI对话"])
+
+
+@router.get("/skills")
+async def list_skills():
+    """获取可用的对话风格列表"""
+    return SkillRegistry.list()
 
 
 @router.get("/sessions", response_model=list[ChatSessionOut])
@@ -30,9 +37,10 @@ async def get_session_messages(
 async def chat(
     message: str,
     session_id: str | None = None,
+    skill_id: str = "default",
     user: User = Depends(get_current_user),
 ):
-    svc = ChatService(user, session_id)
+    svc = ChatService(user, session_id, skill_id=skill_id)
     return await svc.chat(message)
 
 
@@ -40,9 +48,10 @@ async def chat(
 async def chat_stream(
     message: str,
     session_id: str | None = None,
+    skill_id: str = "default",
     user: User = Depends(get_current_user),
 ):
-    svc = ChatService(user, session_id)
+    svc = ChatService(user, session_id, skill_id=skill_id)
 
     async def generate():
         yield f"data: {json.dumps({'session_id': svc.session_id})}\n\n"

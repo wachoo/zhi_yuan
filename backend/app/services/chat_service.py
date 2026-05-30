@@ -14,6 +14,7 @@ class ChatService:
         self,
         user: User,
         session_id: str | None = None,
+        skill_id: str = "default",
         user_svc: UserService | None = None,
         rec_svc: RecommendService | None = None,
         msg_dao: MessageDAO | None = None,
@@ -22,6 +23,7 @@ class ChatService:
     ):
         self.user = user
         self.session_id = session_id or str(uuid.uuid4())
+        self.skill_id = skill_id
         self.user_svc = user_svc or UserService()
         self.rec_svc = rec_svc or RecommendService()
         self.msg_dao = msg_dao or MessageDAO()
@@ -55,7 +57,7 @@ class ChatService:
 
         await self.msg_dao.save_message(self.user.id, self.session_id, "user", message)
 
-        reply = await self.llm.chat(messages, profile_summary, recommendation_summary)
+        reply = await self.llm.chat(messages, profile_summary, recommendation_summary, self.skill_id)
 
         await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", reply)
 
@@ -70,7 +72,7 @@ class ChatService:
         await self.msg_dao.save_message(self.user.id, self.session_id, "user", message)
 
         full_reply = []
-        async for chunk in self.llm.chat_stream(messages, profile_summary, recommendation_summary, max_tool_rounds=80):
+        async for chunk in self.llm.chat_stream(messages, profile_summary, recommendation_summary, self.skill_id, max_tool_rounds=80):
             full_reply.append(chunk)
             yield chunk
 

@@ -10,6 +10,7 @@ from app.services.university_service import UniversityService
 from app.services.major_service import MajorService
 from app.services.admission_service import AdmissionService
 from app.services.user_service import UserService
+from app.skills import SkillRegistry
 from app.services.recommend_service import RecommendService
 
 settings = get_settings()
@@ -316,12 +317,11 @@ class LLMService:
         messages: list[dict],
         profile_summary: str = "",
         recommendation_summary: str = "",
+        skill_id: str = "default",
         max_tool_rounds: int = 5,
     ) -> str:
-        system = SYSTEM_PROMPT.format(
-            profile_summary=profile_summary or "用户尚未填写个人画像",
-            recommendation_summary=recommendation_summary or "暂无推荐结果",
-        )
+        skill = SkillRegistry.get(skill_id) or SkillRegistry.get("default")
+        system = skill.render_system_prompt(profile_summary, recommendation_summary)
         full_messages = [{"role": "system", "content": system}] + messages
 
         try:
@@ -373,11 +373,10 @@ class LLMService:
             return f"抱歉，AI服务暂时不可用，请稍后再试。（错误: {str(e)}）"
 
     async def chat_stream(self, messages: list[dict], profile_summary: str = "",
-                          recommendation_summary: str = "", max_tool_rounds: int = 5):
-        system = SYSTEM_PROMPT.format(
-            profile_summary=profile_summary or "用户尚未填写个人画像",
-            recommendation_summary=recommendation_summary or "暂无推荐结果",
-        )
+                          recommendation_summary: str = "", skill_id: str = "default",
+                          max_tool_rounds: int = 5):
+        skill = SkillRegistry.get(skill_id) or SkillRegistry.get("default")
+        system = skill.render_system_prompt(profile_summary, recommendation_summary)
         full_messages = [{"role": "system", "content": system}] + messages
 
         try:

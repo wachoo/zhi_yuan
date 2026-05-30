@@ -1,10 +1,13 @@
 import uuid
 
+from app.config import get_settings
 from app.models.user import User
 from app.dao.message import MessageDAO
 from app.services.llm_service import LLMService
 from app.services.user_service import UserService
 from app.services.recommend_service import RecommendService
+
+settings = get_settings()
 
 
 class ChatService:
@@ -19,7 +22,7 @@ class ChatService:
         rec_svc: RecommendService | None = None,
         msg_dao: MessageDAO | None = None,
         llm: LLMService | None = None,
-        llm_provider: str = "qwen",
+        llm_provider: str | None = None,
     ):
         self.user = user
         self.session_id = session_id or str(uuid.uuid4())
@@ -27,7 +30,7 @@ class ChatService:
         self.user_svc = user_svc or UserService()
         self.rec_svc = rec_svc or RecommendService()
         self.msg_dao = msg_dao or MessageDAO()
-        self.llm = llm or LLMService(llm_provider, user_id=user.id)
+        self.llm = llm or LLMService(llm_provider or settings.LLM_CHAT_PROVIDER, user_id=user.id)
 
     @staticmethod
     async def list_sessions(user_id: uuid.UUID) -> list[dict]:

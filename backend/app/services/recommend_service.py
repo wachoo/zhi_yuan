@@ -123,7 +123,7 @@ class RecommendService:
 
         # 5. 会员限制
         tier = user.membership_tier
-        categorized = engine.limit_for_tier(categorized, tier=tier, max_per_group=1 if tier == MembershipTier.free else 999)
+        categorized = engine.limit_for_tier(categorized, tier=tier, max_per_group=8 if tier == MembershipTier.free else 999)
 
         # 6. 评分
         scorer = AdapterScorer()

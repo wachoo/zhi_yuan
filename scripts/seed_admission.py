@@ -92,6 +92,70 @@ def generate_score_from_rank(min_rank: int) -> int:
     return random.randint(400, 520)
 
 
+def rank_range_for_art(ranking: int | None, level: str | None) -> tuple[int, int]:
+    """艺术类位次范围 — 按院校层次分布（考生人数介于体育类和普通类之间）"""
+    if ranking and ranking <= 10:
+        return (100, 1000)
+    if ranking and ranking <= 40:
+        return (500, 5000)
+    if ranking and ranking <= 120:
+        return (2000, 12000)
+    if level == "985":
+        return (1000, 8000)
+    if level == "211":
+        return (5000, 20000)
+    if level == "双一流":
+        return (8000, 35000)
+    return (15000, 80000)     # 普通本科
+
+
+def rank_range_for_sports(ranking: int | None, level: str | None) -> tuple[int, int]:
+    """体育类位次范围 — 按院校层次分布（考生少，范围比普通类窄）"""
+    if ranking and ranking <= 10:
+        return (50, 500)        # 顶尖院校
+    if ranking and ranking <= 40:
+        return (200, 2000)      # 985 前段
+    if ranking and ranking <= 120:
+        return (800, 5000)      # 985 后段 / 强 211
+    if level == "985":
+        return (500, 3000)
+    if level == "211":
+        return (1500, 8000)
+    if level == "双一流":
+        return (3000, 15000)
+    return (5000, 25000)        # 普通本科
+
+
+def generate_art_score_from_rank(min_rank: int) -> int:
+    """艺术类分数生成（文化课分数线低于普通类，高于体育类）"""
+    if min_rank < 1000:
+        return random.randint(530, 600)
+    if min_rank < 5000:
+        return random.randint(450, 550)
+    if min_rank < 15000:
+        return random.randint(380, 480)
+    if min_rank < 35000:
+        return random.randint(320, 420)
+    return random.randint(250, 380)
+
+
+def generate_sports_score_from_rank(min_rank: int) -> int:
+    """体育类分数生成（文化课分数线通常低于普通类）"""
+    if min_rank < 500:
+        return random.randint(550, 620)
+    if min_rank < 1500:
+        return random.randint(480, 560)
+    if min_rank < 3000:
+        return random.randint(420, 500)
+    if min_rank < 5000:
+        return random.randint(360, 440)
+    if min_rank < 10000:
+        return random.randint(300, 400)
+    if min_rank < 15000:
+        return random.randint(260, 360)
+    return random.randint(200, 320)
+
+
 async def seed_admission_records():
     async with async_session() as db:
         # 清空旧数据
@@ -172,11 +236,14 @@ async def seed_admission_records():
                                 actual_count=max(1, actual_count),
                             ))
 
-                            # 艺术类：约 20% 的普通类记录同时生成艺术类，文化课位次更高（分数更低）
-                            # 只用艺术学专业
+                            # 艺术类：约 20% 的普通类记录同时生成艺术类
+                            # 位次按院校层次分布，只用艺术学专业
                             if random.random() < 0.2:
                                 art_major = random.choice(art_exam_majors)
-                                art_rank = max(1, int(min_rank * random.uniform(1.5, 3.0)))
+                                art_low, art_high = rank_range_for_art(uni.ranking, uni.level)
+                                base_art_rank = random.randint(art_low, art_high)
+                                # 不同年份有波动 ±15%
+                                art_rank = max(1, int(base_art_rank * random.uniform(0.85, 1.15)))
                                 art_avg_rank = max(1, art_rank - random.randint(50, 300))
                                 records.append(AdmissionRecord(
                                     id=uuid.uuid4(),
@@ -187,21 +254,24 @@ async def seed_admission_records():
                                     batch=random.choice(BATCHES),
                                     subject_type=subject_type,
                                     exam_type=ExamType.ART.value,
-                                    min_score=generate_score_from_rank(art_rank),
-                                    avg_score=generate_score_from_rank(art_avg_rank),
-                                    max_score=generate_score_from_rank(art_rank) + random.randint(1, 10),
+                                    min_score=generate_art_score_from_rank(art_rank),
+                                    avg_score=generate_art_score_from_rank(art_avg_rank),
+                                    max_score=generate_art_score_from_rank(art_rank) + random.randint(1, 10),
                                     min_rank=art_rank,
                                     avg_rank=art_avg_rank,
                                     plan_count=random.randint(3, 30),
                                     actual_count=random.randint(3, 30),
                                 ))
 
-                            # 体育类：约 15% 的普通类记录同时生成体育类
-                            # 只用体育类专业
-                            if random.random() < 0.15:
+                            # 体育类：约 70% 的普通类记录同时生成体育类
+                            # 位次按院校层次分布，覆盖 50-25000
+                            if random.random() < 0.70:
                                 sport_major = random.choice(sports_exam_majors)
-                                sport_rank = max(1, int(min_rank * random.uniform(1.3, 2.5)))
-                                sport_avg_rank = max(1, sport_rank - random.randint(50, 300))
+                                sport_low, sport_high = rank_range_for_sports(uni.ranking, uni.level)
+                                base_sport_rank = random.randint(sport_low, sport_high)
+                                # 不同年份有波动 ±15%
+                                sport_rank = max(1, int(base_sport_rank * random.uniform(0.85, 1.15)))
+                                sport_avg_rank = max(1, sport_rank - random.randint(20, 200))
                                 records.append(AdmissionRecord(
                                     id=uuid.uuid4(),
                                     university_id=uni.id,
@@ -211,9 +281,9 @@ async def seed_admission_records():
                                     batch=random.choice(BATCHES),
                                     subject_type=subject_type,
                                     exam_type=ExamType.SPORTS.value,
-                                    min_score=generate_score_from_rank(sport_rank),
-                                    avg_score=generate_score_from_rank(sport_avg_rank),
-                                    max_score=generate_score_from_rank(sport_rank) + random.randint(1, 10),
+                                    min_score=generate_sports_score_from_rank(sport_rank),
+                                    avg_score=generate_sports_score_from_rank(sport_avg_rank),
+                                    max_score=generate_sports_score_from_rank(sport_rank) + random.randint(1, 10),
                                     min_rank=sport_rank,
                                     avg_rank=sport_avg_rank,
                                     plan_count=random.randint(2, 20),

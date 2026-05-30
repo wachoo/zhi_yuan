@@ -22,12 +22,12 @@ LLM_CONFIGS = {
     "deepseek": {
         "api_key": settings.DEEPSEEK_API_KEY,
         "base_url": settings.DEEPSEEK_BASE_URL,
-        "model": "deepseek-v4-pro",
+        "model": settings.DEEPSEEK_MODEL,
     },
     "qwen": {
         "api_key": settings.QWEN_API_KEY,
         "base_url": settings.QWEN_BASE_URL,
-        "model": "qwen3.7-max",
+        "model": settings.QWEN_MODEL,
     },
 }
 
@@ -147,7 +147,8 @@ TOOLS = [
 
 
 class LLMService:
-    def __init__(self, provider: str = "deepseek", user_id: uuid.UUID | None = None):
+    def __init__(self, provider: str | None = None, user_id: uuid.UUID | None = None):
+        provider = provider or settings.LLM_SEMANTIC_PROVIDER
         config = LLM_CONFIGS.get(provider, LLM_CONFIGS["qwen"])
         self.client = AsyncOpenAI(api_key=config["api_key"], base_url=config["base_url"])
         self.model = config["model"]
@@ -295,8 +296,8 @@ class LLMService:
                     {"role": "system", "content": "你是一个专业的语义扩展助手，只返回 JSON 格式的结果。"},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
-                max_tokens=1500,
+                temperature=settings.LLM_SEMANTIC_TEMPERATURE,
+                max_tokens=settings.LLM_SEMANTIC_MAX_TOKENS,
             )
             content = response.choices[0].message.content or "{}"
             # 尝试解析 JSON
@@ -330,8 +331,8 @@ class LLMService:
                     model=self.model,
                     messages=full_messages,
                     tools=TOOLS,
-                    temperature=0.7,
-                    max_tokens=2000,
+                    temperature=settings.LLM_CHAT_TEMPERATURE,
+                    max_tokens=settings.LLM_CHAT_MAX_TOKENS,
                 )
                 choice = response.choices[0]
                 msg = choice.message
@@ -365,7 +366,8 @@ class LLMService:
 
             response = await self.client.chat.completions.create(
                 model=self.model, messages=full_messages,
-                temperature=0.7, max_tokens=2000,
+                temperature=settings.LLM_CHAT_TEMPERATURE,
+                max_tokens=settings.LLM_CHAT_MAX_TOKENS,
             )
             return response.choices[0].message.content or ""
 
@@ -383,7 +385,8 @@ class LLMService:
             for _ in range(max_tool_rounds):
                 response = await self.client.chat.completions.create(
                     model=self.model, messages=full_messages, tools=TOOLS,
-                    temperature=0.7, max_tokens=2000,
+                    temperature=settings.LLM_CHAT_TEMPERATURE,
+                    max_tokens=settings.LLM_CHAT_MAX_TOKENS,
                 )
                 choice = response.choices[0]
                 msg = choice.message
@@ -412,7 +415,8 @@ class LLMService:
 
             stream = await self.client.chat.completions.create(
                 model=self.model, messages=full_messages,
-                temperature=0.7, max_tokens=2000, stream=True,
+                temperature=settings.LLM_CHAT_TEMPERATURE,
+                max_tokens=settings.LLM_CHAT_MAX_TOKENS, stream=True,
             )
             async for chunk in stream:
                 if chunk.choices and chunk.choices[0].delta.content:

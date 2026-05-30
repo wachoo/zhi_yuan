@@ -52,6 +52,20 @@ class Settings(BaseSettings):
     DEEPSEEK_BASE_URL: str = "https://api.deepseek.com"
     QWEN_BASE_URL: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
+    # 模型名称（可自定义）
+    DEEPSEEK_MODEL: str = "deepseek-v4-pro"
+    QWEN_MODEL: str = "qwen3.7-max"
+
+    # 默认 Provider：chat 用 qwen，semantic_expand 用 deepseek
+    LLM_CHAT_PROVIDER: str = "qwen"
+    LLM_SEMANTIC_PROVIDER: str = "deepseek"
+
+    # 生成参数
+    LLM_CHAT_TEMPERATURE: float = 0.7
+    LLM_SEMANTIC_TEMPERATURE: float = 0.3
+    LLM_CHAT_MAX_TOKENS: int = 2000
+    LLM_SEMANTIC_MAX_TOKENS: int = 1500
+
     model_config = SettingsConfigDict(extra="ignore")
 
 

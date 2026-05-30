@@ -10,6 +10,14 @@ export interface University {
   tuition_max: number | null;
   website: string | null;
   logo_url: string | null;
+  description: string | null;
+}
+
+export interface PaginatedUniversityResponse {
+  items: University[];
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 export interface RecommendItem {

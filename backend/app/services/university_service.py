@@ -1,4 +1,5 @@
 from app.dao.university import UniversityDAO
+from app.schemas.university import PaginatedUniversityOut
 
 
 class UniversityService:
@@ -35,12 +36,19 @@ class UniversityService:
         keyword: str | None = None,
         page: int = 1,
         page_size: int = 20,
-    ) -> list:
+    ) -> PaginatedUniversityOut:
         """按条件筛选并分页查询院校"""
+        dao = UniversityDAO()
         offset = (page - 1) * page_size
-        return await UniversityDAO().list_with_filters(
+        items = await dao.list_with_filters(
             province=province, level=level, type=type,
             keyword=keyword, offset=offset, limit=page_size,
+        )
+        total = await dao.count_with_filters(
+            province=province, level=level, type=type, keyword=keyword,
+        )
+        return PaginatedUniversityOut(
+            items=items, total=total, page=page, page_size=page_size,
         )
 
     async def get_university(self, university_id: str):

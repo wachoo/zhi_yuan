@@ -14,6 +14,14 @@ class UniversityOut(BaseModel):
     tuition_max: int | None
     website: str | None
     logo_url: str | None
+    description: str | None = None
 
     class Config:
         from_attributes = True
+
+
+class PaginatedUniversityOut(BaseModel):
+    items: list[UniversityOut]
+    total: int
+    page: int
+    page_size: int

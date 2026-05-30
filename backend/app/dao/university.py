@@ -1,10 +1,22 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.models.university import University
 from app.database import async_session
 
 
 class UniversityDAO:
+
+    def _build_filter_stmt(self, stmt, province, level, type, keyword):
+        """构建通用筛选条件"""
+        if province:
+            stmt = stmt.where(University.province == province)
+        if level:
+            stmt = stmt.where(University.level == level)
+        if type:
+            stmt = stmt.where(University.type == type)
+        if keyword:
+            stmt = stmt.where(University.name.ilike(f"%{keyword}%"))
+        return stmt
 
     async def search_by_name(
         self, name: str, province: str | None = None, limit: int = 5
@@ -30,17 +42,24 @@ class UniversityDAO:
         """按条件筛选并分页查询院校列表"""
         async with async_session() as db:
             stmt = select(University)
-            if province:
-                stmt = stmt.where(University.province == province)
-            if level:
-                stmt = stmt.where(University.level == level)
-            if type:
-                stmt = stmt.where(University.type == type)
-            if keyword:
-                stmt = stmt.where(University.name.ilike(f"%{keyword}%"))
-            stmt = stmt.offset(offset).limit(limit)
+            stmt = self._build_filter_stmt(stmt, province, level, type, keyword)
+            stmt = stmt.order_by(University.name).offset(offset).limit(limit)
             result = await db.execute(stmt)
             return list(result.scalars().all())
+
+    async def count_with_filters(
+        self,
+        province: str | None = None,
+        level: str | None = None,
+        type: str | None = None,
+        keyword: str | None = None,
+    ) -> int:
+        """按相同筛选条件统计院校总数"""
+        async with async_session() as db:
+            stmt = select(func.count()).select_from(University)
+            stmt = self._build_filter_stmt(stmt, province, level, type, keyword)
+            result = await db.execute(stmt)
+            return result.scalar() or 0
 
     async def get_by_id(self, university_id: str) -> University | None:
         """按 ID 查询单个院校"""

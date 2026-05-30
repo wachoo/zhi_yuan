@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Query
 
-from app.schemas.university import UniversityOut
+from app.schemas.university import UniversityOut, PaginatedUniversityOut
 from app.services.university_service import UniversityService
 
 router = APIRouter(prefix="/api/universities", tags=["院校"])
 
 
-@router.get("", response_model=list[UniversityOut])
+@router.get("", response_model=PaginatedUniversityOut)
 async def list_universities(
     province: str | None = None,
     level: str | None = None,

@@ -25,15 +25,48 @@ const streamCursorStyle = `
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
-.streaming-cursor::after {
-  content: "▍";
+.streaming-cursor {
   display: inline-block;
   animation: blink-cursor 0.8s step-end infinite;
   color: #1677ff;
   font-weight: 400;
-  margin-left: 1px;
 }
 `;
+
+// 流式 Markdown 渲染组件：自动修复未闭合的代码块，并在末尾显示闪烁光标
+function StreamingMarkdown({ content }: { content: string }) {
+  // 修复未闭合的代码块，避免解析异常
+  let displayContent = content;
+  const fenceCount = (content.match(/^```/gm) || []).length;
+  const inCodeBlock = fenceCount % 2 !== 0;
+
+  if (inCodeBlock) {
+    // 检查是否在围栏声明行中间（如 ```py 还没输完语言名）
+    const lines = content.split("\n");
+    const lastLine = lines[lines.length - 1] || "";
+    const lastFenceIdx = content.lastIndexOf("```");
+    const fenceLine = content.substring(lastFenceIdx).split("\n")[0];
+
+    if (fenceLine === "```" || fenceLine === "``") {
+      // 围栏行是完整的，代码块未关闭 → 补上闭合
+      displayContent = content + "\n```";
+    } else if (lastLine.startsWith("```") && lastLine !== "```") {
+      // 正在输入围栏声明（如 ```python），先补全换行再关闭
+      displayContent = content + "\n```\n";
+    } else {
+      displayContent = content + "\n```";
+    }
+  }
+
+  return (
+    <div className="markdown-body">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {displayContent}
+      </ReactMarkdown>
+      <span className="streaming-cursor">▍</span>
+    </div>
+  );
+}
 
 interface DisplayMessage {
   role: "user" | "assistant";
@@ -388,15 +421,16 @@ export default function ChatPage() {
                       title={msg.role === "user" ? "我" : "智愿AI"}
                       description={
                         msg.role === "assistant" ? (
-                          <div className="markdown-body">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                              {msg.content}
-                            </ReactMarkdown>
-                            {streaming &&
-                              messages.indexOf(msg) === messages.length - 1 && (
-                                <span className="streaming-cursor" />
-                              )}
-                          </div>
+                          streaming &&
+                          messages.indexOf(msg) === messages.length - 1 ? (
+                            <StreamingMarkdown content={msg.content} />
+                          ) : (
+                            <div className="markdown-body">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                {msg.content}
+                              </ReactMarkdown>
+                            </div>
+                          )
                         ) : (
                           <Text>{msg.content}</Text>
                         )

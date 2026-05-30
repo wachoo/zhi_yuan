@@ -43,7 +43,7 @@ class UniversityDAO:
         async with async_session() as db:
             stmt = select(University)
             stmt = self._build_filter_stmt(stmt, province, level, type, keyword)
-            stmt = stmt.order_by(University.name).offset(offset).limit(limit)
+            stmt = stmt.order_by(University.ranking.asc().nullslast(), University.name).offset(offset).limit(limit)
             result = await db.execute(stmt)
             return list(result.scalars().all())
 

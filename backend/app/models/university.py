@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import String, Text, Float, ARRAY
+from sqlalchemy import String, Text, Float, Integer, ARRAY
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
@@ -19,6 +19,7 @@ class University(Base):
     tuition_max: Mapped[int] = mapped_column(nullable=True)
     website: Mapped[str] = mapped_column(String(500), nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=True)
+    ranking: Mapped[int] = mapped_column(Integer, nullable=True)  # 全国排名
     latitude: Mapped[float] = mapped_column(Float, nullable=True)
     longitude: Mapped[float] = mapped_column(Float, nullable=True)
     logo_url: Mapped[str] = mapped_column(String(500), nullable=True)

@@ -11,6 +11,7 @@ export interface University {
   website: string | null;
   logo_url: string | null;
   description: string | null;
+  ranking: number | null;
 }
 
 export interface PaginatedUniversityResponse {

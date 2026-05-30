@@ -15,6 +15,7 @@ class UniversityOut(BaseModel):
     website: str | None
     logo_url: str | None
     description: str | None = None
+    ranking: int | None = None
 
     class Config:
         from_attributes = True

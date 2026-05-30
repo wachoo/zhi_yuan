@@ -49,6 +49,7 @@ export default function UniversitiesPage() {
   };
 
   const columns = [
+    { title: "排名", dataIndex: "ranking", key: "ranking", width: 80, render: (ranking: number | null) => ranking ? `#${ranking}` : "-" },
     { title: "院校名称", dataIndex: "name", key: "name" },
     { title: "所在地", dataIndex: "city", key: "city", render: (city: string, r: University) => `${r.province} · ${city}` },
     { title: "层次", dataIndex: "level", key: "level", render: (level: string) => <Tag color="blue">{level}</Tag> },

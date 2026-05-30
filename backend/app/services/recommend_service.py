@@ -50,12 +50,13 @@ class RecommendService:
         rank = request.rank or basic.get("rank", 0)
         province = request.province or basic.get("province", "")
         subject_type = request.subject_type or basic.get("subject_type", "")
+        exam_type = request.exam_type or basic.get("exam_type", "普通类")
 
         if not rank or not province or not subject_type:
             raise HTTPException(status_code=400, detail="请至少提供位次、省份和科类")
 
         # 2. 查询录取数据
-        raw_records = await AdmissionDAO().query_records_with_details(province, subject_type)
+        raw_records = await AdmissionDAO().query_records_with_details(province, subject_type, exam_type)
         records = []
         for admission, uni, major in raw_records:
             records.append({
@@ -101,7 +102,7 @@ class RecommendService:
         rec = Recommendation(
             id=uuid.uuid4(),
             user_id=user.id,
-            input_snapshot={"rank": rank, "province": province, "subject_type": subject_type},
+            input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type},
             result={k: [{"university_name": i["university_name"], "major_name": i["major_name"],
                           "adapter_score": i.get("adapter_score")} for i in v]
                     for k, v in categorized.items()},

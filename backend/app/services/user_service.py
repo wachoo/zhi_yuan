@@ -18,12 +18,23 @@ class UserService:
         if not profile or not profile.basic_info:
             return ""
         b = profile.basic_info
-        return (
+        summary = (
             f"分数: {b.get('score', '未知')}, "
             f"位次: {b.get('rank', '未知')}, "
             f"省份: {b.get('province', '未知')}, "
             f"科类: {b.get('subject_type', '未知')}"
         )
+        
+        # 添加兴趣和厌恶信息
+        if profile.personality:
+            interests = profile.personality.get('interests', [])
+            dislikes = profile.personality.get('dislikes', [])
+            if interests:
+                summary += f", 兴趣爱好: {', '.join(interests)}"
+            if dislikes:
+                summary += f", 厌恶领域: {', '.join(dislikes)}"
+        
+        return summary
 
     async def get_profile_detail(self, user_id) -> dict:
         """获取用户画像完整详情（供工具调用）"""

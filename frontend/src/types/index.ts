@@ -11,6 +11,19 @@ export const SUBJECT_TYPE_OPTIONS = [
   { value: SubjectType.COMPREHENSIVE_REFORM, label: "综合改革" },
 ];
 
+/** 考试科类枚举 */
+export enum ExamType {
+  NORMAL = "普通类",
+  ART = "艺术类",
+  SPORTS = "体育类",
+}
+
+export const EXAM_TYPE_OPTIONS = [
+  { value: ExamType.NORMAL, label: "普通类" },
+  { value: ExamType.ART, label: "艺术类" },
+  { value: ExamType.SPORTS, label: "体育类" },
+];
+
 export interface University {
   id: string;
   name: string;
@@ -55,6 +68,7 @@ export interface UserProfile {
     rank: number;
     province: string;
     subject_type: string;
+    exam_type: string | null;
   } | null;
   family_info: Record<string, unknown> | null;
   personality: Record<string, unknown> | null;

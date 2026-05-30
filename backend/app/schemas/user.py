@@ -36,6 +36,7 @@ class ProfileBasicInfo(BaseModel):
     rank: int = Field(..., ge=0)
     province: str
     subject_type: str
+    exam_type: str | None = None
 
 
 class ProfileFamilyInfo(BaseModel):
@@ -47,6 +48,7 @@ class ProfileFamilyInfo(BaseModel):
 
 class ProfilePersonality(BaseModel):
     interests: list[str] | None = None
+    dislikes: list[str] | None = None
     holland_code: str | None = None
     mbti: str | None = None
     introvert_extrovert: str | None = None

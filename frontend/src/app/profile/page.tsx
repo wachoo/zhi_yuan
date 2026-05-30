@@ -7,11 +7,18 @@ import {
 } from "antd";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
-import { UserProfile, SUBJECT_TYPE_OPTIONS } from "@/types";
+import { UserProfile, SUBJECT_TYPE_OPTIONS, EXAM_TYPE_OPTIONS } from "@/types";
 
 const interests = [
   "计算机", "编程", "设计", "音乐", "运动", "阅读", "数学", "物理",
   "化学", "生物", "经济", "法律", "医学", "教育", "艺术", "机械",
+  "表演", "体育", "手工",
+];
+
+const dislikes = [
+  "编程", "数学", "物理", "化学", "生物", "设计", "绘画", "音乐",
+  "背诵", "写作", "实验", "解剖", "户外工作", "出差", "加班", "夜班",
+  "机械操作", "手工", "表演", "体育", "销售", "会计",
 ];
 
 const cities = ["北京", "上海", "广州", "深圳", "杭州", "南京", "成都", "武汉", "西安", "长沙"];
@@ -44,9 +51,11 @@ export default function ProfilePage() {
           initialValues.rank = data.basic_info.rank;
           initialValues.province = data.basic_info.province;
           initialValues.subject_type = data.basic_info.subject_type;
+          initialValues.exam_type = data.basic_info.exam_type;
         }
         if (data.personality) {
           initialValues.interests = (data.personality as Record<string, unknown>).interests;
+          initialValues.dislikes = (data.personality as Record<string, unknown>).dislikes;
         }
         if (data.family_info) {
           initialValues.tuition_max = (data.family_info as Record<string, unknown>).tuition_max;
@@ -79,12 +88,13 @@ export default function ProfilePage() {
       const updateData: Record<string, unknown> = {};
 
       // basic_info
-      if (values.score != null || values.rank != null || values.province || values.subject_type) {
+      if (values.score != null || values.rank != null || values.province || values.subject_type || values.exam_type) {
         updateData.basic_info = {
           score: values.score,
           rank: values.rank,
           province: values.province,
           subject_type: values.subject_type,
+          exam_type: values.exam_type,
         };
       }
 
@@ -95,6 +105,7 @@ export default function ProfilePage() {
       };
       updateData.personality = {
         interests: values.interests,
+        dislikes: values.dislikes,
       };
 
       // ability
@@ -165,17 +176,35 @@ export default function ProfilePage() {
                 </Form.Item>
               </Col>
             </Row>
+            <Row gutter={16}>
+              <Col span={6}>
+                <Form.Item name="exam_type" label="考试科类">
+                  <Select
+                    placeholder="选择考试科类"
+                    options={EXAM_TYPE_OPTIONS}
+                    allowClear
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
           </Card>
 
           <Card title="兴趣与偏好" style={{ marginTop: 16 }}>
             <Form.Item name="interests" label="兴趣爱好">
-              <Checkbox.Group>
-                <Row>
-                  {interests.map((i) => (
-                    <Col span={6} key={i}><Checkbox value={i}>{i}</Checkbox></Col>
-                  ))}
-                </Row>
-              </Checkbox.Group>
+              <Select
+                mode="tags"
+                placeholder="从列表选择，或输入自定义关键词后回车添加"
+                style={{ width: "100%" }}
+                options={interests.map((i) => ({ value: i, label: i }))}
+              />
+            </Form.Item>
+            <Form.Item name="dislikes" label="厌恶领域">
+              <Select
+                mode="tags"
+                placeholder="从列表选择，或输入自定义关键词后回车添加（如：编程、数学、实验等）"
+                style={{ width: "100%" }}
+                options={dislikes.map((d) => ({ value: d, label: d }))}
+              />
             </Form.Item>
             <Row gutter={16}>
               <Col span={12}>

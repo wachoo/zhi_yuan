@@ -74,6 +74,10 @@ class AdapterScorer:
         if interests and major_name:
             match_count = sum(1 for i in interests if i in major_name or major_name in i)
             score += match_count * 25.0
+        dislikes = personality.get("dislikes", [])
+        if dislikes and major_name:
+            dislike_count = sum(1 for d in dislikes if d in major_name or major_name in d)
+            score -= dislike_count * 30.0
         return min(100, max(0, score))
 
     def _score_ability(self, profile: dict, record: dict) -> float:

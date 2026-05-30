@@ -6,7 +6,7 @@ import { RocketOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
-import { SUBJECT_TYPE_OPTIONS } from "@/types";
+import { SUBJECT_TYPE_OPTIONS, EXAM_TYPE_OPTIONS } from "@/types";
 
 const { Title, Paragraph } = Typography;
 
@@ -21,7 +21,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const onFinish = async (values: { score: number; rank: number; province: string; subject_type: string }) => {
+  const onFinish = async (values: { score: number; rank: number; province: string; subject_type: string; exam_type: string }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -34,7 +34,14 @@ export default function Home() {
       }
 
       await api.put("/api/profile", { basic_info: values });
-      router.push(`/recommend?score=${values.score}&rank=${values.rank}&province=${values.province}&subject_type=${values.subject_type}`);
+      const params = new URLSearchParams({
+        score: String(values.score),
+        rank: String(values.rank),
+        province: values.province,
+        subject_type: values.subject_type,
+      });
+      if (values.exam_type) params.set("exam_type", values.exam_type);
+      router.push(`/recommend?${params}`);
     } catch (err) {
       console.error(err);
     } finally {
@@ -67,6 +74,9 @@ export default function Home() {
                 </Form.Item>
                 <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
                   <Select placeholder="选择科类" options={SUBJECT_TYPE_OPTIONS} />
+                </Form.Item>
+                <Form.Item name="exam_type" label="考试科类" initialValue="普通类">
+                  <Select placeholder="选择考试科类" options={EXAM_TYPE_OPTIONS} />
                 </Form.Item>
                 <Form.Item>
                   <Button type="primary" htmlType="submit" block loading={loading} size="large">

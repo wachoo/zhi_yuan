@@ -76,3 +76,26 @@ class TestAdapterScorer:
                   "tuition_max": 6000, "career_directions": ["软件工程师"]}
         score = self.scorer.score(profile=profile, record=record)
         assert 0 <= score["total"] <= 100
+    def test_dislike_penalty_reduces_personality_score(self):
+        """厌恶领域匹配时降低人格维度得分"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "personality": {"interests": ["计算机"], "dislikes": ["化学", "生物"]},
+        }
+        record_match = {"university_name": "A", "major_name": "化学工程", "min_rank": 5000}
+        record_miss = {"university_name": "B", "major_name": "土木工程", "min_rank": 5000}
+        score_match = self.scorer.score(profile=profile, record=record_match)
+        score_miss = self.scorer.score(profile=profile, record=record_miss)
+        # 化学工程匹配到"化学"厌恶项，得分应该低于土木工程（无厌恶匹配）
+        assert score_match["dimensions"]["personality"] < score_miss["dimensions"]["personality"]
+
+    def test_interest_and_dislike_combined(self):
+        """兴趣和厌恶同时存在时，得分合理"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "personality": {"interests": ["计算机"], "dislikes": ["编程"]},
+        }
+        record = {"university_name": "A", "major_name": "计算机科学与技术", "min_rank": 5000}
+        score = self.scorer.score(profile=profile, record=record)
+        # "计算机"匹配major_name(+25), "编程"不匹配"计算机科学与技术"(-0), 基础50, 总计75
+        assert score["dimensions"]["personality"] == 75.0

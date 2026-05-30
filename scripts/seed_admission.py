@@ -1,6 +1,7 @@
 """种子数据：院校录取记录（admission_records）+ 一分一段表（score_segments）
 
 为推荐引擎生成模拟录取数据，覆盖 物理类/历史类/综合改革 三种科类。
+31 个省份 × 6 年（2020-2025），按新高考改革批次自动切换科类。
 """
 import asyncio
 import random
@@ -13,9 +14,9 @@ from app.database import async_session
 from app.models.admission import AdmissionRecord, ScoreSegment
 from app.models.university import University
 from app.models.major import Major
-from app.constants import SubjectType
+from app.constants import SubjectType, ExamType
 
-# ── 覆盖的主要省份 ──────────────────────────────────────────────
+# ── 全部 31 个省份 ──────────────────────────────────────────────
 PROVINCES = [
     "北京", "天津", "上海", "重庆", "河北", "山西", "辽宁", "吉林", "黑龙江",
     "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北", "湖南",
@@ -23,11 +24,26 @@ PROVINCES = [
     "广西", "西藏", "宁夏", "新疆",
 ]
 
-# 新高考省份 → 综合改革；传统理综省份 → 物理类 + 历史类
-COMPREHENSIVE_REFORM_PROVINCES = {"北京", "天津", "上海", "浙江", "山东", "海南", "江苏", "福建", "广东", "湖南", "湖北", "河北", "辽宁", "重庆"}
+# 新高考改革分 4 批，每批从对应年份起使用综合改革科类
+# 第 1 批（2017 起）: 浙江、上海
+# 第 2 批（2020 起）: 北京、天津、山东、海南
+# 第 3 批（2021 起）: 河北、辽宁、江苏、福建、湖北、湖南、广东、重庆
+# 第 4 批（2024 起）: 吉林、黑龙江、安徽、江西、广西、贵州、甘肃
+# 第 5 批（2025 起）: 山西、河南、陕西、内蒙古、四川、云南、宁夏、青海
+# 尚未改革: 西藏、新疆（仍用物理类+历史类）
+COMPREHENSIVE_REFORM_YEAR = {
+    "浙江": 2017, "上海": 2017,
+    "北京": 2020, "天津": 2020, "山东": 2020, "海南": 2020,
+    "河北": 2021, "辽宁": 2021, "江苏": 2021, "福建": 2021,
+    "湖北": 2021, "湖南": 2021, "广东": 2021, "重庆": 2021,
+    "吉林": 2024, "黑龙江": 2024, "安徽": 2024, "江西": 2024,
+    "广西": 2024, "贵州": 2024, "甘肃": 2024,
+    "山西": 2025, "河南": 2025, "陕西": 2025, "内蒙古": 2025,
+    "四川": 2025, "云南": 2025, "宁夏": 2025, "青海": 2025,
+}
 
 # 年份覆盖
-YEARS = [2023, 2024, 2025]
+YEARS = [2020, 2021, 2022, 2023, 2024, 2025]
 
 # 录取批次
 BATCHES = ["本科一批", "本科批"]
@@ -51,7 +67,16 @@ def rank_range_for_university(ranking: int | None, level: str | None) -> tuple[i
     return (40000, 150000)      # 普通本科
 
 
-def generate_score_from_rank(min_rank: int, province: str) -> int:
+def get_subject_types(province: str, year: int) -> list[str]:
+    """根据省份和年份确定该年使用的科类列表"""
+    reform_year = COMPREHENSIVE_REFORM_YEAR.get(province)
+    if reform_year and year >= reform_year:
+        return [SubjectType.COMPREHENSIVE_REFORM.value]
+    else:
+        return [SubjectType.PHYSICS.value, SubjectType.HISTORY.value]
+
+
+def generate_score_from_rank(min_rank: int) -> int:
     """粗略根据位次反推分数（仅供模拟）"""
     # 高分段（位次低）→ 分数高
     if min_rank < 1000:
@@ -81,6 +106,17 @@ async def seed_admission_records():
         art_majors = [m for m in major_rows if m.category in ("文学", "法学", "历史学", "教育学", "管理学", "经济学", "哲学")]
         all_majors = major_rows or [None]
 
+        # 艺术类专用专业池
+        art_exam_majors = [m for m in major_rows if m.category == "艺术学"]
+        if not art_exam_majors:
+            art_exam_majors = all_majors
+
+        # 体育类专用专业池（教育学下的体育相关专业）
+        sports_major_names = {"体育教育", "运动训练", "武术与民族传统体育", "社会体育指导与管理"}
+        sports_exam_majors = [m for m in major_rows if m.name in sports_major_names]
+        if not sports_exam_majors:
+            sports_exam_majors = all_majors
+
         if not sci_majors:
             sci_majors = all_majors
         if not art_majors:
@@ -91,35 +127,29 @@ async def seed_admission_records():
             low, high = rank_range_for_university(uni.ranking, uni.level)
 
             for province in PROVINCES:
-                # 根据省份决定科类
-                if province in COMPREHENSIVE_REFORM_PROVINCES:
-                    subject_types = [SubjectType.COMPREHENSIVE_REFORM.value]
-                    majors_pool = all_majors
-                else:
-                    subject_types = [SubjectType.PHYSICS.value, SubjectType.HISTORY.value]
-                    majors_pool = all_majors
+                for year in YEARS:
+                    subject_types = get_subject_types(province, year)
 
-                for subject_type in subject_types:
-                    # 选专业：物理类偏理工，历史类偏文史，综合改革随机
-                    if subject_type == SubjectType.PHYSICS.value:
-                        pool = sci_majors if sci_majors else majors_pool
-                    elif subject_type == SubjectType.HISTORY.value:
-                        pool = art_majors if art_majors else majors_pool
-                    else:
-                        pool = majors_pool
+                    for subject_type in subject_types:
+                        # 选专业：物理类偏理工，历史类偏文史，综合改革随机
+                        if subject_type == SubjectType.PHYSICS.value:
+                            pool = sci_majors if sci_majors else all_majors
+                        elif subject_type == SubjectType.HISTORY.value:
+                            pool = art_majors if art_majors else all_majors
+                        else:
+                            pool = all_majors
 
-                    # 每所大学每省选 2-4 个专业
-                    n_majors = min(random.randint(2, 4), len(pool))
-                    selected_majors = random.sample(pool, n_majors)
+                        # 每所大学每省每科类选 2-4 个专业
+                        n_majors = min(random.randint(2, 4), len(pool))
+                        selected_majors = random.sample(pool, n_majors)
 
-                    for major in selected_majors:
-                        for year in YEARS:
+                        for major in selected_majors:
                             base_rank = random.randint(low, high)
                             # 不同年份有波动 ±15%
                             min_rank = max(1, int(base_rank * random.uniform(0.85, 1.15)))
                             avg_rank = max(1, min_rank - random.randint(50, 500))
 
-                            min_score = generate_score_from_rank(min_rank, province)
+                            min_score = generate_score_from_rank(min_rank)
                             avg_score = min_score + random.randint(1, 8)
                             max_score = avg_score + random.randint(1, 15)
 
@@ -134,6 +164,7 @@ async def seed_admission_records():
                                 year=year,
                                 batch=random.choice(BATCHES),
                                 subject_type=subject_type,
+                                exam_type=ExamType.NORMAL.value,
                                 min_score=min_score,
                                 avg_score=avg_score,
                                 max_score=max_score,
@@ -142,6 +173,54 @@ async def seed_admission_records():
                                 plan_count=plan_count,
                                 actual_count=max(1, actual_count),
                             ))
+
+                            # 艺术类：约 20% 的普通类记录同时生成艺术类，文化课位次更高（分数更低）
+                            # 只用艺术学专业
+                            if random.random() < 0.2:
+                                art_major = random.choice(art_exam_majors)
+                                art_rank = max(1, int(min_rank * random.uniform(1.5, 3.0)))
+                                art_avg_rank = max(1, art_rank - random.randint(50, 300))
+                                records.append(AdmissionRecord(
+                                    id=uuid.uuid4(),
+                                    university_id=uni.id,
+                                    major_id=art_major.id if art_major else None,
+                                    province=province,
+                                    year=year,
+                                    batch=random.choice(BATCHES),
+                                    subject_type=subject_type,
+                                    exam_type=ExamType.ART.value,
+                                    min_score=generate_score_from_rank(art_rank),
+                                    avg_score=generate_score_from_rank(art_avg_rank),
+                                    max_score=generate_score_from_rank(art_rank) + random.randint(1, 10),
+                                    min_rank=art_rank,
+                                    avg_rank=art_avg_rank,
+                                    plan_count=random.randint(3, 30),
+                                    actual_count=random.randint(3, 30),
+                                ))
+
+                            # 体育类：约 15% 的普通类记录同时生成体育类
+                            # 只用体育类专业
+                            if random.random() < 0.15:
+                                sport_major = random.choice(sports_exam_majors)
+                                sport_rank = max(1, int(min_rank * random.uniform(1.3, 2.5)))
+                                sport_avg_rank = max(1, sport_rank - random.randint(50, 300))
+                                records.append(AdmissionRecord(
+                                    id=uuid.uuid4(),
+                                    university_id=uni.id,
+                                    major_id=sport_major.id if sport_major else None,
+                                    province=province,
+                                    year=year,
+                                    batch=random.choice(BATCHES),
+                                    subject_type=subject_type,
+                                    exam_type=ExamType.SPORTS.value,
+                                    min_score=generate_score_from_rank(sport_rank),
+                                    avg_score=generate_score_from_rank(sport_avg_rank),
+                                    max_score=generate_score_from_rank(sport_rank) + random.randint(1, 10),
+                                    min_rank=sport_rank,
+                                    avg_rank=sport_avg_rank,
+                                    plan_count=random.randint(2, 20),
+                                    actual_count=random.randint(2, 20),
+                                ))
 
         # 批量插入
         db.add_all(records)
@@ -156,13 +235,10 @@ async def seed_score_segments():
 
         segments = []
         for province in PROVINCES:
-            if province in COMPREHENSIVE_REFORM_PROVINCES:
-                subject_types = [SubjectType.COMPREHENSIVE_REFORM.value]
-            else:
-                subject_types = [SubjectType.PHYSICS.value, SubjectType.HISTORY.value]
+            for year in YEARS:
+                subject_types = get_subject_types(province, year)
 
-            for subject_type in subject_types:
-                for year in YEARS:
+                for subject_type in subject_types:
                     cumulative = 0
                     # 从 750 分往下到 200 分
                     for score in range(750, 199, -1):

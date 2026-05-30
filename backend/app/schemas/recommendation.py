@@ -7,6 +7,7 @@ class RecommendRequest(BaseModel):
     rank: int | None = None
     province: str | None = None
     subject_type: str | None = None
+    exam_type: str | None = None
 
 
 class RecommendItem(BaseModel):

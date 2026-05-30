@@ -15,6 +15,7 @@ class AdmissionRecord(Base):
     year: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     batch: Mapped[str] = mapped_column(String(30), nullable=True)  # 本科一批/二批/提前批
     subject_type: Mapped[str] = mapped_column(String(20), nullable=False)  # 文/理/物理类/历史类/综合改革
+    exam_type: Mapped[str] = mapped_column(String(20), nullable=False, default="普通类", server_default="普通类")  # 普通类/艺术类/体育类
     min_score: Mapped[int] = mapped_column(Integer, nullable=True)
     avg_score: Mapped[int] = mapped_column(Integer, nullable=True)
     max_score: Mapped[int] = mapped_column(Integer, nullable=True)

@@ -9,7 +9,7 @@ from app.database import async_session
 class AdmissionDAO:
 
     async def query_records_with_details(
-        self, province: str, subject_type: str
+        self, province: str, subject_type: str, exam_type: str = "普通类"
     ) -> list[tuple[AdmissionRecord, University, Major | None]]:
         """查询录取记录，关联院校和专业信息"""
         async with async_session() as db:
@@ -19,6 +19,7 @@ class AdmissionDAO:
                 .outerjoin(Major, AdmissionRecord.major_id == Major.id)
                 .where(AdmissionRecord.province == province)
                 .where(AdmissionRecord.subject_type == subject_type)
+                .where(AdmissionRecord.exam_type == exam_type)
             )
             return list(result.all())
 

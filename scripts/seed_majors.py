@@ -647,15 +647,55 @@ MAJORS = [
      "subject_requirements": {}},
     {"name": "产品设计", "category": "艺术学", "duration": 4,
      "courses": ["工业设计史", "产品设计方法", "人机工程学", "材料与工艺", "产品造型"],
-     "career_directions": ["产品设计师", "工业设计师", "用户体验", "CMF设计"],
-     "avg_salary": 9000,
+     "career_directions": ["产品设计师", "交互设计", "家具设计", "文创产品"],
+     "avg_salary": 8000,
+     "subject_requirements": {}},
+    {"name": "表演", "category": "艺术学", "duration": 4,
+     "courses": ["表演基础", "台词", "形体训练", "声乐", "剧目排练"],
+     "career_directions": ["演员", "话剧演员", "影视表演", "模特"],
+     "avg_salary": 7000,
+     "subject_requirements": {}},
+    {"name": "播音与主持艺术", "category": "艺术学", "duration": 4,
+     "courses": ["普通话语音", "播音发声", "播音创作基础", "节目主持", "新闻播音"],
+     "career_directions": ["主持人", "播音员", "记者", "自媒体主播"],
+     "avg_salary": 8000,
+     "subject_requirements": {}},
+    {"name": "舞蹈学", "category": "艺术学", "duration": 4,
+     "courses": ["舞蹈基础训练", "中国古典舞", "民族民间舞", "舞蹈编导", "舞蹈史"],
+     "career_directions": ["舞蹈演员", "舞蹈教师", "编舞", "文艺团体"],
+     "avg_salary": 6000,
+     "subject_requirements": {}},
+    {"name": "戏剧影视文学", "category": "艺术学", "duration": 4,
+     "courses": ["戏剧概论", "电影史", "编剧基础", "影视评论", "剧本创作"],
+     "career_directions": ["编剧", "剧评人", "影视策划", "文学编辑"],
+     "avg_salary": 7000,
+     "subject_requirements": {}},
+    {"name": "书法学", "category": "艺术学", "duration": 4,
+     "courses": ["楷书", "行书", "草书", "篆刻", "书法史"],
+     "career_directions": ["书法家", "书法教师", "篆刻家", "文化传播"],
+     "avg_salary": 5500,
+     "subject_requirements": {}},
+
+    # ── 体育类（教育学下，体育方向）───────────────────────────
+    {"name": "运动训练", "category": "教育学", "duration": 4,
+     "courses": ["运动训练学", "运动生理学", "运动心理学", "体育竞赛", "专项训练"],
+     "career_directions": ["教练员", "体育教师", "运动康复", "体育管理"],
+     "avg_salary": 6500,
+     "subject_requirements": {}},
+    {"name": "武术与民族传统体育", "category": "教育学", "duration": 4,
+     "courses": ["武术套路", "散打", "太极拳", "民族传统体育", "武术理论"],
+     "career_directions": ["武术教练", "体育教师", "安保", "影视武指"],
+     "avg_salary": 6000,
      "subject_requirements": {}},
 ]
 
 
 async def seed():
     async with async_session() as session:
-        # 清空已有数据
+        # 先清理关联的录取记录，再删除专业
+        from app.models.admission import AdmissionRecord
+        result = await session.execute(delete(AdmissionRecord))
+        print(f"Deleted {result.rowcount} admission records")
         result = await session.execute(delete(Major))
         print(f"Deleted {result.rowcount} existing majors")
 

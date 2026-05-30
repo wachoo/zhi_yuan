@@ -22,6 +22,7 @@ function RecommendContent() {
           rank: Number(params.get("rank")),
           province: params.get("province"),
           subject_type: params.get("subject_type"),
+          exam_type: params.get("exam_type") || "普通类",
         });
         setResult(res.data);
       } catch (err) {

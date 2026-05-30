@@ -7,7 +7,7 @@
 智愿是一款面向高考考生和家长的AI志愿助手，通过**结构化数据引擎 + LLM智能解读**的方式，帮助用户：
 
 - **精准定位**：基于历年录取数据和位次换算，推荐"冲/稳/保"院校组合
-- **五维画像**：综合考虑基础信息、家庭背景、性格特质、能力优势、价值观五个维度
+- **六维画像**：综合考虑基础信息、家庭背景、城市偏好、性格特质、能力优势、价值观六个维度
 - **AI顾问**：提供24小时在线的智能对话，解答志愿填报相关问题
 - **数据驱动**：所有推荐基于真实录取数据，AI仅负责解读和建议
 
@@ -17,8 +17,9 @@
 |---------|------|
 | 智能推荐 | 输入分数和位次，生成冲/稳/保三档院校推荐 |
 | 院校查询 | 按省份、层次、类型等条件筛选院校 |
-| 五维画像 | 渐进式完善个人信息，提升推荐精准度 |
-| AI对话 | 与AI顾问流式打字机对话，支持工具调用查询真实数据 |
+| 六维画像 | 渐进式完善个人信息，提升推荐精准度 |
+| AI对话 | 与AI顾问流式打字机对话，支持工具调用查询真实数据，支持会话重命名 |
+| 志愿导出 | 将推荐方案导出为格式化的 Excel 表格 |
 | 专业库 | 浏览专业信息、课程设置、就业方向 |
 
 ### 特色功能：考试科类
@@ -38,7 +39,7 @@
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Frontend (Next.js 16)                │
-│  React 19 + TypeScript + Ant Design 5                  │
+│  React 19 + TypeScript + Ant Design 6                  │
 │  Pages: Home / Recommend / Universities / Chat / Profile│
 └────────────────────────┬────────────────────────────────┘
                          │
@@ -57,8 +58,9 @@
 │  │  AuthService / ProfileService / ChatService      │ │
 │  │  RecommendService / UniversityService            │ │
 │  │  UserService / MajorService / AdmissionService   │ │
-│  │  LLMService (Tool Calling + 流式输出)            │ │
-│  │  RecommendationEngine / AdapterScorer            │ │
+│  │  LLMService (Tool Calling + 流式输出 + 语义扩展)    │ │
+│  │  RecommendationEngine / AdapterScorer (六维评分)    │ │
+│  │  ExportService (Excel 志愿表导出)                   │ │
 │  └──────────────────────┬───────────────────────────┘ │
 │                         │                             │
 │  ┌──────────────────────┴───────────────────────────┐ │
@@ -95,7 +97,7 @@
 - **React**: React 19.2.4
 - **语言**: TypeScript
 - **样式**: Tailwind CSS
-- **组件库**: Ant Design 5
+- **组件库**: Ant Design 6
 - **HTTP**: Axios
 
 **部署**
@@ -152,14 +154,15 @@ zhi_yuan/
 │   │   │   ├── auth_service.py          # 注册/登录
 │   │   │   ├── profile_service.py       # 画像管理
 │   │   │   ├── chat_service.py          # 对话编排 + 限流
-│   │   │   ├── llm_service.py           # LLM 调用 + Tool Calling
+│   │   │   ├── llm_service.py           # LLM 调用 + Tool Calling + 语义扩展
 │   │   │   ├── recommend_service.py     # 推荐流程
 │   │   │   ├── university_service.py    # 院校查询
 │   │   │   ├── major_service.py         # 专业查询
 │   │   │   ├── admission_service.py     # 录取数据查询
 │   │   │   ├── user_service.py          # 用户画像摘要
-│   │   │   ├── recommendation_engine.py # 冲/稳/保分类引擎
-│   │   │   ├── adapter_scorer.py        # 五维适配评分
+│   │   │   ├── export_service.py        # Excel 志愿表导出
+│   │   │   ├── recommendation_engine.py # 冲/稳/保分类引擎 + 厌恶词过滤
+│   │   │   ├── adapter_scorer.py        # 六维适配评分（含城市偏好）
 │   │   │   └── rank_converter.py        # 位次换算
 │   │   ├── config.py       # 配置管理
 │   │   ├── database.py     # 数据库连接（engine + async_session）
@@ -456,7 +459,11 @@ docker compose exec redis redis-cli info memory
 | `/api/profile` | GET/PUT | 用户画像管理 |
 | `/api/universities` | GET | 院校列表查询（支持分页/筛选） |
 | `/api/recommend` | POST | 获取智能推荐（冲/稳/保） |
+| `/api/recommend/export` | GET | 导出志愿表（Excel） |
 | `/api/chat` | POST | AI 对话（SSE 流式输出，打字机效果） |
+| `/api/chat/sessions` | GET | 获取会话列表 |
+| `/api/chat/sessions/{id}` | PUT | 重命名会话标题 |
+| `/api/chat/sessions/{id}/messages` | GET | 获取会话消息 |
 | `/health` | GET | 健康检查 |
 | `/ppt/` | GET | 项目路演 PPT（静态页面） |
 
@@ -633,6 +640,7 @@ uv run alembic downgrade base
 | `admission.py` | ScoreSegment | score_segments | 一分一段表 |
 | `recommendation.py` | Recommendation | recommendations | 推荐记录 |
 | `recommendation.py` | ChatMessage | chat_messages | AI 对话消息 |
+| `chat_session.py` | ChatSession | chat_sessions | 会话元数据（自定义标题） |
 
 > **注意**：新增模型后需在 `app/models/__init__.py` 中导入，否则 Alembic 无法检测到新表。
 
@@ -692,6 +700,10 @@ A: 检查以下几点：
 - [x] 新高考改革省份全覆盖（31 省）
 - [x] 大规模录取数据生成（379,550 条）
 - [x] 院校列表分页与排序
+- [x] 六维适配评分（新增城市偏好权重）
+- [x] LLM 语义扩展（厌恶领域过滤，避免字面匹配遗漏）
+- [x] 志愿表 Excel 导出（冲/稳/保格式化表格）
+- [x] AI 对话会话重命名
 - [ ] 数据爬取模块（阳光高考网、各省考试院）
 - [ ] 深度报告生成（PDF 导出）
 - [ ] 会员系统与支付集成

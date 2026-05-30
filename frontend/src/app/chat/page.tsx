@@ -11,6 +11,7 @@ import {
   PauseCircleOutlined,
   EditOutlined,
   CheckOutlined,
+  SendOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -30,30 +31,26 @@ const streamCursorStyle = `
 .streaming-cursor {
   display: inline-block;
   animation: blink-cursor 0.8s step-end infinite;
-  color: #1677ff;
+  color: var(--zy-primary);
   font-weight: 400;
 }
 `;
 
-// 流式 Markdown 渲染组件：自动修复未闭合的代码块，并在末尾显示闪烁光标
+// 流式 Markdown 渲染组件
 function StreamingMarkdown({ content }: { content: string }) {
-  // 修复未闭合的代码块，避免解析异常
   let displayContent = content;
   const fenceCount = (content.match(/^```/gm) || []).length;
   const inCodeBlock = fenceCount % 2 !== 0;
 
   if (inCodeBlock) {
-    // 检查是否在围栏声明行中间（如 ```py 还没输完语言名）
     const lines = content.split("\n");
     const lastLine = lines[lines.length - 1] || "";
     const lastFenceIdx = content.lastIndexOf("```");
     const fenceLine = content.substring(lastFenceIdx).split("\n")[0];
 
     if (fenceLine === "```" || fenceLine === "``") {
-      // 围栏行是完整的，代码块未关闭 → 补上闭合
       displayContent = content + "\n```";
     } else if (lastLine.startsWith("```") && lastLine !== "```") {
-      // 正在输入围栏声明（如 ```python），先补全换行再关闭
       displayContent = content + "\n```\n";
     } else {
       displayContent = content + "\n```";
@@ -97,7 +94,6 @@ export default function ChatPage() {
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // 加载会话列表
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
     try {
@@ -110,7 +106,6 @@ export default function ChatPage() {
     }
   }, []);
 
-  // 加载指定会话的消息
   const loadSessionMessages = useCallback(async (sessionId: string) => {
     setHistoryLoading(true);
     try {
@@ -129,12 +124,10 @@ export default function ChatPage() {
     }
   }, []);
 
-  // 初始化加载会话列表
   useEffect(() => {
     loadSessions();
   }, [loadSessions]);
 
-  // 加载可用的 Skills
   useEffect(() => {
     const loadSkills = async () => {
       try {
@@ -147,27 +140,23 @@ export default function ChatPage() {
     loadSkills();
   }, []);
 
-  // 自动滚动到底部
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // 新建对话
   const handleNewChat = () => {
     setCurrentSessionId(null);
     setMessages([]);
     setInput("");
   };
 
-  // 切换会话
   const handleSelectSession = (sessionId: string) => {
     if (sessionId === currentSessionId) return;
     loadSessionMessages(sessionId);
   };
 
-  // 删除会话（本地移除）
   const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
     setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
@@ -177,14 +166,12 @@ export default function ChatPage() {
     }
   };
 
-  // 开始重命名
   const handleRenameStart = (e: React.MouseEvent, session: ChatSession) => {
     e.stopPropagation();
     setEditingSessionId(session.session_id);
     setEditingTitle(session.title);
   };
 
-  // 提交重命名
   const handleRenameCommit = async () => {
     if (!editingSessionId) return;
     const newTitle = editingTitle.trim();
@@ -199,16 +186,14 @@ export default function ChatPage() {
         )
       );
     } catch {
-      // 失败时静默处理，保留原标题
+      // 失败时静默处理
     }
   };
 
-  // 取消重命名
   const handleRenameCancel = () => {
     setEditingSessionId(null);
   };
 
-  // 发送消息（流式打字机效果）
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
     const userMsg = input.trim();
@@ -217,7 +202,6 @@ export default function ChatPage() {
     setLoading(true);
     setStreaming(true);
 
-    // 添加空的 assistant 消息占位
     setMessages((prev) => [...prev, { role: "assistant", content: "" }]);
 
     const controller = new AbortController();
@@ -270,7 +254,6 @@ export default function ChatPage() {
 
           if (data === "[DONE]") continue;
 
-          // 解析 session_id 事件
           if (data.startsWith("{")) {
             try {
               const parsed = JSON.parse(data);
@@ -279,12 +262,11 @@ export default function ChatPage() {
                 loadSessions();
               }
             } catch {
-              // 忽略 JSON 解析错误
+              // 忽略
             }
             continue;
           }
 
-          // 内容 chunk — 追加到累积文本并更新消息
           accumulated += data;
           const snapshot = accumulated;
           setMessages((prev) => {
@@ -298,7 +280,7 @@ export default function ChatPage() {
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name === "AbortError") {
-        // 用户主动取消，保留已生成的内容
+        // 用户主动取消
       } else {
         setMessages((prev) => {
           const next = [...prev];
@@ -320,7 +302,6 @@ export default function ChatPage() {
     }
   };
 
-  // 停止生成
   const stopStreaming = () => {
     abortRef.current?.abort();
   };
@@ -329,25 +310,15 @@ export default function ChatPage() {
     <AppLayout>
       <style>{streamCursorStyle}</style>
       <div style={{ display: "flex", height: "calc(100vh - 200px)", gap: 16 }}>
-        {/* 左侧会话列表 */}
-        <div
-          style={{
-            width: 260,
-            flexShrink: 0,
-            display: "flex",
-            flexDirection: "column",
-            background: "#fff",
-            borderRadius: 8,
-            border: "1px solid #f0f0f0",
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #f0f0f0" }}>
+        {/* Sidebar */}
+        <div className="zy-chat-sidebar" style={{ width: 280, flexShrink: 0 }}>
+          <div style={{ padding: 16, borderBottom: "1px solid var(--zy-border)" }}>
             <Button
               type="primary"
               icon={<PlusOutlined />}
               block
               onClick={handleNewChat}
+              style={{ height: 42, borderRadius: 8, fontWeight: 500 }}
             >
               新建对话
             </Button>
@@ -369,24 +340,24 @@ export default function ChatPage() {
                 renderItem={(session) => (
                   <List.Item
                     onClick={() => handleSelectSession(session.session_id)}
+                    className="session-item"
                     style={{
-                      padding: "10px 16px",
+                      padding: "12px 16px",
                       cursor: "pointer",
                       background:
                         session.session_id === currentSessionId
-                          ? "#e6f4ff"
+                          ? "var(--zy-muted)"
                           : "transparent",
                       borderLeft:
                         session.session_id === currentSessionId
-                          ? "3px solid #1677ff"
+                          ? "3px solid var(--zy-primary)"
                           : "3px solid transparent",
                       marginBottom: 0,
                       borderBottom: "none",
                     }}
-                    className="session-item"
                   >
-                    <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 8 }}>
-                      <MessageOutlined style={{ color: "#8c8c8c", flexShrink: 0 }} />
+                    <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 10 }}>
+                      <MessageOutlined style={{ color: "var(--zy-text-muted)", flexShrink: 0 }} />
                       {editingSessionId === session.session_id ? (
                         <>
                           <Input
@@ -410,9 +381,9 @@ export default function ChatPage() {
                             style={{ flex: 1 }}
                           />
                           <CheckOutlined
-                            style={{ color: "#1677ff", flexShrink: 0, cursor: "pointer" }}
+                            style={{ color: "var(--zy-primary)", flexShrink: 0, cursor: "pointer" }}
                             onMouseDown={(e) => {
-                              e.preventDefault(); // 阻止 blur 先触发
+                              e.preventDefault();
                               handleRenameCommit();
                             }}
                           />
@@ -424,8 +395,8 @@ export default function ChatPage() {
                               ellipsis
                               style={{
                                 display: "block",
-                                fontWeight:
-                                  session.session_id === currentSessionId ? 600 : 400,
+                                fontWeight: session.session_id === currentSessionId ? 600 : 400,
+                                fontSize: 14,
                               }}
                             >
                               {session.title}
@@ -435,11 +406,13 @@ export default function ChatPage() {
                             </Text>
                           </div>
                           <EditOutlined
-                            style={{ color: "#bfbfbf", flexShrink: 0, cursor: "pointer" }}
+                            className="anticon-edit"
+                            style={{ color: "var(--zy-text-muted)", flexShrink: 0, cursor: "pointer", fontSize: 13 }}
                             onClick={(e) => handleRenameStart(e, session)}
                           />
                           <DeleteOutlined
-                            style={{ color: "#bfbfbf", flexShrink: 0, cursor: "pointer" }}
+                            className="anticon-delete"
+                            style={{ color: "var(--zy-text-muted)", flexShrink: 0, cursor: "pointer", fontSize: 13 }}
                             onClick={(e) => handleDeleteSession(e, session.session_id)}
                           />
                         </>
@@ -452,39 +425,45 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* 右侧对话区域 */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            background: "#fff",
-            borderRadius: 8,
-            border: "1px solid #f0f0f0",
-            overflow: "hidden",
-          }}
-        >
+        {/* Main chat area */}
+        <div className="zy-chat-main" style={{ flex: 1 }}>
+          {/* Header */}
           <div
             style={{
-              padding: "12px 20px",
-              borderBottom: "1px solid #f0f0f0",
+              padding: "14px 24px",
+              borderBottom: "1px solid var(--zy-border)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
+              background: "var(--zy-surface)",
             }}
           >
-            <div>
-              <span style={{ fontWeight: 600, fontSize: 16 }}>AI志愿顾问</span>
-              {currentSessionId && (
-                <Text type="secondary" style={{ fontSize: 13, fontWeight: 400, marginLeft: 8 }}>
-                  {sessions.find((s) => s.session_id === currentSessionId)?.title}
-                </Text>
-              )}
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                borderRadius: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+              }}>
+                <RobotOutlined />
+              </div>
+              <div>
+                <Text strong style={{ fontSize: 15 }}>AI志愿顾问</Text>
+                {currentSessionId && (
+                  <Text type="secondary" style={{ fontSize: 12, display: "block" }}>
+                    {sessions.find((s) => s.session_id === currentSessionId)?.title}
+                  </Text>
+                )}
+              </div>
             </div>
             <Select
               value={currentSkillId}
               onChange={setCurrentSkillId}
-              style={{ width: 150 }}
+              style={{ width: 140 }}
               size="small"
               options={skills.map((s) => ({
                 value: s.id,
@@ -492,13 +471,16 @@ export default function ChatPage() {
               }))}
             />
           </div>
+
+          {/* Messages */}
           <div
             className="chat-scroll-area"
             style={{
               flex: 1,
               overflowY: "auto",
               overflowX: "hidden",
-              padding: "16px 24px",
+              padding: "20px 28px",
+              background: "var(--zy-bg)",
             }}
             ref={listRef}
           >
@@ -508,29 +490,51 @@ export default function ChatPage() {
               </div>
             ) : messages.length === 0 ? (
               <div style={{ textAlign: "center", padding: 48 }}>
-                <RobotOutlined style={{ fontSize: 48, color: "#d9d9d9" }} />
-                <div style={{ marginTop: 16, color: "#8c8c8c" }}>
-                  你好！我是智愿AI顾问，可以帮你查询院校、专业、录取分数等信息。
+                <div style={{
+                  width: 72,
+                  height: 72,
+                  background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                  borderRadius: 20,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 20px",
+                  color: "white",
+                  fontSize: 32,
+                }}>
+                  <RobotOutlined />
                 </div>
+                <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                  你好！我是智愿AI顾问
+                </Text>
+                <Text type="secondary">
+                  可以帮你查询院校、专业、录取分数等信息，试试问我吧
+                </Text>
               </div>
             ) : (
               <List
                 dataSource={messages}
                 renderItem={(msg) => (
-                  <List.Item style={{ borderBottom: "none", padding: "8px 0" }}>
+                  <List.Item style={{ borderBottom: "none", padding: "10px 0" }}>
                     <List.Item.Meta
                       avatar={
                         <Avatar
-                          icon={
-                            msg.role === "user" ? <UserOutlined /> : <RobotOutlined />
-                          }
+                          style={{
+                            background: msg.role === "user"
+                              ? "var(--zy-primary)"
+                              : "linear-gradient(135deg, #1E3A5F, #2563EB)",
+                          }}
+                          icon={msg.role === "user" ? <UserOutlined /> : <RobotOutlined />}
                         />
                       }
-                      title={msg.role === "user" ? "我" : "智愿AI"}
+                      title={
+                        <Text strong style={{ fontSize: 13 }}>
+                          {msg.role === "user" ? "我" : "智愿AI"}
+                        </Text>
+                      }
                       description={
                         msg.role === "assistant" ? (
-                          streaming &&
-                          messages.indexOf(msg) === messages.length - 1 ? (
+                          streaming && messages.indexOf(msg) === messages.length - 1 ? (
                             <StreamingMarkdown content={msg.content} />
                           ) : (
                             <div className="markdown-body">
@@ -540,7 +544,16 @@ export default function ChatPage() {
                             </div>
                           )
                         ) : (
-                          <Text>{msg.content}</Text>
+                          <div style={{
+                            background: "var(--zy-surface)",
+                            padding: "12px 16px",
+                            borderRadius: "4px 12px 12px 12px",
+                            border: "1px solid var(--zy-border)",
+                            display: "inline-block",
+                            maxWidth: "80%",
+                          }}>
+                            <Text>{msg.content}</Text>
+                          </div>
                         )
                       }
                     />
@@ -549,8 +562,14 @@ export default function ChatPage() {
               />
             )}
           </div>
-          <div style={{ padding: "12px 24px", borderTop: "1px solid #f0f0f0" }}>
-            <Space.Compact style={{ width: "100%" }}>
+
+          {/* Input area */}
+          <div style={{
+            padding: "16px 24px",
+            borderTop: "1px solid var(--zy-border)",
+            background: "var(--zy-surface)",
+          }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
               <TextArea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -563,27 +582,29 @@ export default function ChatPage() {
                 placeholder="输入你的问题，如：华中科技大学的计算机专业怎么样？"
                 autoSize={{ minRows: 1, maxRows: 4 }}
                 disabled={streaming}
+                style={{ flex: 1, borderRadius: 10, resize: "none" }}
               />
               {streaming ? (
                 <Button
                   danger
                   icon={<PauseCircleOutlined />}
                   onClick={stopStreaming}
-                  style={{ height: "auto" }}
+                  style={{ height: 42, borderRadius: 10 }}
                 >
                   停止
                 </Button>
               ) : (
                 <Button
                   type="primary"
+                  icon={<SendOutlined />}
                   onClick={sendMessage}
                   loading={loading}
-                  style={{ height: "auto" }}
+                  style={{ height: 42, borderRadius: 10 }}
                 >
                   发送
                 </Button>
               )}
-            </Space.Compact>
+            </div>
           </div>
         </div>
       </div>

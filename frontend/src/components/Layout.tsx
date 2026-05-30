@@ -8,6 +8,7 @@ import {
   SettingOutlined,
   StarOutlined,
   LogoutOutlined,
+  AimOutlined,
 } from "@ant-design/icons";
 import { useRouter, usePathname } from "next/navigation";
 import { logout } from "@/lib/api";
@@ -27,32 +28,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Header style={{ display: "flex", alignItems: "center" }}>
-        <div style={{ color: "#fff", fontSize: 20, fontWeight: "bold", marginRight: 40 }}>
-          智愿
+    <Layout style={{ minHeight: "100vh", background: "var(--zy-bg)" }}>
+      <Header className="zy-header">
+        <div className="zy-logo">
+          <div className="zy-logo-icon">
+            <AimOutlined />
+          </div>
+          <span>智愿</span>
         </div>
         <Menu
-          theme="dark"
           mode="horizontal"
           selectedKeys={[pathname]}
           items={menuItems}
           onClick={(e) => router.push(e.key)}
-          style={{ flex: 1 }}
         />
         <Button
           type="text"
           icon={<LogoutOutlined />}
           onClick={logout}
-          style={{ color: "rgba(255,255,255,0.85)", flexShrink: 0 }}
+          style={{ color: "var(--zy-text-secondary)", flexShrink: 0 }}
         >
           退出
         </Button>
       </Header>
-      <Content style={{ padding: "24px 48px" }}>
+      <Content className="zy-content">
         {children}
       </Content>
-      <Footer style={{ textAlign: "center" }}>
+      <Footer className="zy-footer">
         智愿 &copy; 2026 — 所有推荐结果仅供参考，请结合多方信息综合决策
       </Footer>
     </Layout>

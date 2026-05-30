@@ -2,13 +2,13 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { Card, Table, Tag, Typography, Space, Progress, Spin, Alert, Button } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import AppLayout from "@/components/Layout";
 import { RecommendResult } from "@/types";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 function RecommendContent() {
   const params = useSearchParams();
@@ -24,7 +24,6 @@ function RecommendContent() {
   const exam_type = params.get("exam_type");
 
   useEffect(() => {
-    // URL 参数优先，缺失时从用户画像获取
     const fetchAndRecommend = async () => {
       let pScore = score;
       let pRank = rank;
@@ -32,7 +31,6 @@ function RecommendContent() {
       let pSubjectType = subject_type;
       let pExamType = exam_type;
 
-      // URL 参数不全，尝试从画像补全
       if (!pScore || !pRank || !pProvince || !pSubjectType) {
         let token = localStorage.getItem("token");
         if (!token) {
@@ -72,8 +70,6 @@ function RecommendContent() {
         }
       }
 
-      console.log("[Recommend] Params:", { pScore, pRank, pProvince, pSubjectType, pExamType });
-
       if (!pScore || !pRank || !pProvince || !pSubjectType) {
         setError("缺少必要参数（分数、位次、省份、科类），请先从首页填写信息");
         setLoading(false);
@@ -90,14 +86,11 @@ function RecommendContent() {
           subject_type: pSubjectType,
           exam_type: pExamType || "普通类",
         };
-        console.log("[Recommend] Request payload:", payload);
         const res = await api.post("/api/recommend", payload);
-        console.log("[Recommend] Response:", res.status, res.data);
         setResult(res.data);
       } catch (err: any) {
         const status = err?.response?.status;
         const detail = err?.response?.data?.detail || err?.message || "未知错误";
-        console.error("[Recommend] Error:", status, detail, err);
         setError(`请求失败 (${status || "网络错误"}): ${detail}`);
       } finally {
         setLoading(false);
@@ -107,11 +100,21 @@ function RecommendContent() {
   }, [score, rank, province, subject_type, exam_type]);
 
   const columns = [
-    { title: "院校", dataIndex: "university_name", key: "university_name" },
+    { title: "院校", dataIndex: "university_name", key: "university_name", render: (name: string) => <Text strong>{name}</Text> },
     { title: "专业", dataIndex: "major_name", key: "major_name" },
-    { title: "历年最低位次", dataIndex: "min_rank", key: "min_rank" },
-    { title: "适配度", dataIndex: "adapter_score", key: "adapter_score",
-      render: (score: number) => score ? <Progress percent={score} size="small" /> : "-" },
+    { title: "历年最低位次", dataIndex: "min_rank", key: "min_rank", render: (r: number) => r ? r.toLocaleString() : "-" },
+    {
+      title: "适配度",
+      dataIndex: "adapter_score",
+      key: "adapter_score",
+      render: (score: number) => score ? (
+        <Progress
+          percent={score}
+          size="small"
+          strokeColor={score >= 80 ? "var(--zy-accent)" : score >= 60 ? "var(--zy-secondary)" : "var(--zy-text-muted)"}
+        />
+      ) : "-",
+    },
   ];
 
   const handleExport = () => {
@@ -124,7 +127,6 @@ function RecommendContent() {
     const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const exportURL = `${baseURL}/api/recommend/export`;
 
-    // Use fetch to add auth header and download as blob
     fetch(exportURL, {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -153,20 +155,53 @@ function RecommendContent() {
   return (
     <AppLayout>
       <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Title level={3} style={{ margin: 0 }}>推荐方案</Title>
+          <div>
+            <Button
+              type="text"
+              icon={<ArrowLeftOutlined />}
+              onClick={() => router.push("/")}
+              style={{ padding: 0, marginBottom: 8, color: "var(--zy-text-secondary)" }}
+            >
+              返回首页
+            </Button>
+            <Title level={3} style={{ margin: 0 }}>推荐方案</Title>
+          </div>
           {result && !isEmpty && (
             <Button
               type="primary"
               icon={<DownloadOutlined />}
               onClick={handleExport}
-              loading={loading}
+              size="large"
+              style={{ borderRadius: 8, fontWeight: 500 }}
             >
               导出志愿表
             </Button>
           )}
         </div>
 
+        {/* Profile completeness */}
+        {result?.profile_completeness !== undefined && result.profile_completeness < 0.4 && (
+          <Card style={{ borderRadius: 12, border: "1px solid var(--zy-border)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <Progress
+                type="circle"
+                percent={Math.round(result.profile_completeness * 100)}
+                size={60}
+                strokeColor="var(--zy-primary)"
+              />
+              <div>
+                <Text strong>完善个人详情，获得更精准的推荐</Text>
+                <br />
+                <Text type="secondary">当前画像完整度较低，前往个人中心补充更多信息</Text>
+              </div>
+              <Button type="link" onClick={() => router.push("/profile")}>去完善</Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Error */}
         {error && (
           <Alert
             type="error"
@@ -180,39 +215,79 @@ function RecommendContent() {
                 </Button>
               </Space>
             }
+            style={{ borderRadius: 12 }}
           />
         )}
 
+        {/* Empty */}
         {!loading && !error && isEmpty && (
           <Alert
             type="warning"
             showIcon
             message="暂无推荐结果"
             description="当前条件下未找到匹配的院校，请尝试调整分数或位次后重新查询。"
+            style={{ borderRadius: 12 }}
           />
         )}
 
-        {result?.profile_completeness !== undefined && result.profile_completeness < 0.4 && (
-          <Card>
-            <Progress percent={Math.round(result.profile_completeness * 100)}
-              format={(p) => `完整度 ${p}%`} />
-            <p>完善个人详情可获得更精准的推荐结果</p>
-          </Card>
-        )}
-
-        <Card title={<span><Tag color="red">冲</Tag> 冲刺院校</span>}>
-          <Table dataSource={result?.rush || []} columns={columns} rowKey={(r) => `${r.university_name}-${r.major_name}`}
-            loading={loading} pagination={false} />
+        {/* Rush (冲) */}
+        <Card
+          className="zy-category-card zy-rush"
+          title={
+            <Space>
+              <Tag color="error" style={{ borderRadius: 4, fontWeight: 600, padding: "2px 10px" }}>冲</Tag>
+              <Text strong>冲刺院校</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>录取概率较低，但值得一试</Text>
+            </Space>
+          }
+        >
+          <Table
+            dataSource={result?.rush || []}
+            columns={columns}
+            rowKey={(r) => `${r.university_name}-${r.major_name}`}
+            loading={loading}
+            pagination={false}
+          />
         </Card>
 
-        <Card title={<span><Tag color="blue">稳</Tag> 稳妥院校</span>}>
-          <Table dataSource={result?.stable || []} columns={columns} rowKey={(r) => `${r.university_name}-${r.major_name}`}
-            loading={loading} pagination={false} />
+        {/* Stable (稳) */}
+        <Card
+          className="zy-category-card zy-stable"
+          title={
+            <Space>
+              <Tag color="processing" style={{ borderRadius: 4, fontWeight: 600, padding: "2px 10px" }}>稳</Tag>
+              <Text strong>稳妥院校</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>录取概率较高，重点考虑</Text>
+            </Space>
+          }
+        >
+          <Table
+            dataSource={result?.stable || []}
+            columns={columns}
+            rowKey={(r) => `${r.university_name}-${r.major_name}`}
+            loading={loading}
+            pagination={false}
+          />
         </Card>
 
-        <Card title={<span><Tag color="green">保</Tag> 保底院校</span>}>
-          <Table dataSource={result?.safe || []} columns={columns} rowKey={(r) => `${r.university_name}-${r.major_name}`}
-            loading={loading} pagination={false} />
+        {/* Safe (保) */}
+        <Card
+          className="zy-category-card zy-safe"
+          title={
+            <Space>
+              <Tag color="success" style={{ borderRadius: 4, fontWeight: 600, padding: "2px 10px" }}>保</Tag>
+              <Text strong>保底院校</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>基本可以确保录取</Text>
+            </Space>
+          }
+        >
+          <Table
+            dataSource={result?.safe || []}
+            columns={columns}
+            rowKey={(r) => `${r.university_name}-${r.major_name}`}
+            loading={loading}
+            pagination={false}
+          />
         </Card>
       </Space>
     </AppLayout>

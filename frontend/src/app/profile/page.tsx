@@ -3,15 +3,21 @@
 import { useEffect, useState } from "react";
 import {
   Card, Form, Select, Button, Progress, message, Space, Row, Col,
-  InputNumber, Checkbox, Slider, Divider, Radio, Typography, Tabs,
+  InputNumber, Checkbox, Slider, Radio, Typography, Tabs,
   Input, Modal,
 } from "antd";
-import { LockOutlined } from "@ant-design/icons";
+import {
+  LockOutlined,
+  UserOutlined,
+  HeartOutlined,
+  TrophyOutlined,
+  AimOutlined,
+} from "@ant-design/icons";
 import api, { logout } from "@/lib/api";
 import AppLayout from "@/components/Layout";
 import { UserProfile, SUBJECT_TYPE_OPTIONS, EXAM_TYPE_OPTIONS } from "@/types";
 
-const { Text } = Typography;
+const { Text, Title } = Typography;
 const { Password } = Input;
 
 const interests = [
@@ -51,7 +57,6 @@ export default function ProfilePage() {
         const data = res.data as UserProfile;
         setProfile(data);
 
-        // 回显表单数据
         const initialValues: Record<string, unknown> = {};
 
         if (data.basic_info) {
@@ -96,7 +101,6 @@ export default function ProfilePage() {
     try {
       const updateData: Record<string, unknown> = {};
 
-      // basic_info
       if (values.score != null || values.rank != null || values.province || values.subject_type || values.exam_type) {
         updateData.basic_info = {
           score: values.score,
@@ -107,7 +111,6 @@ export default function ProfilePage() {
         };
       }
 
-      // family_info + personality
       updateData.family_info = {
         tuition_max: values.tuition_max,
         prefer_city: values.prefer_city,
@@ -117,14 +120,12 @@ export default function ProfilePage() {
         dislikes: values.dislikes,
       };
 
-      // ability
       updateData.ability = {
         strong_subjects: values.strong_subjects,
         social_ability: values.social_ability,
         english_level: values.english_level,
       };
 
-      // values_info
       updateData.values_info = {
         career_values: values.career_values,
         distance_preference: values.distance_preference,
@@ -169,29 +170,49 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) return <AppLayout><Card loading /></AppLayout>;
+  if (loading) return <AppLayout><Card loading style={{ borderRadius: 12 }} /></AppLayout>;
 
   const profileTab = (
-    <Space direction="vertical" size="large" style={{ width: "100%" }}>
-      <Card title="画像完整度">
-        <Progress percent={Math.round((profile?.completeness || 0) * 100)} />
-        <p>完善更多维度的信息，获得更精准的推荐</p>
+    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+      {/* Completeness card */}
+      <Card style={{ borderRadius: 12, border: "1px solid var(--zy-border)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <Progress
+            type="circle"
+            percent={Math.round((profile?.completeness || 0) * 100)}
+            size={80}
+            strokeColor="var(--zy-primary)"
+          />
+          <div>
+            <Title level={5} style={{ margin: "0 0 4px" }}>画像完整度</Title>
+            <Text type="secondary">完善更多维度的信息，获得更精准的推荐</Text>
+          </div>
+        </div>
       </Card>
 
       <Form form={form} layout="vertical" onFinish={onSave}>
-        <Card title="基本信息">
+        {/* Basic Info */}
+        <Card
+          title={
+            <Space>
+              <UserOutlined style={{ color: "var(--zy-primary)" }} />
+              <span>基本信息</span>
+            </Space>
+          }
+          style={{ borderRadius: 12, border: "1px solid var(--zy-border)" }}
+        >
           <Row gutter={16}>
-            <Col span={6}>
+            <Col xs={12} sm={6}>
               <Form.Item name="score" label="高考分数" rules={[{ required: true, message: "请输入分数" }]}>
                 <InputNumber min={0} max={750} style={{ width: "100%" }} placeholder="如：620" />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col xs={12} sm={6}>
               <Form.Item name="rank" label="省排名" rules={[{ required: true, message: "请输入排名" }]}>
                 <InputNumber min={0} style={{ width: "100%" }} placeholder="如：5000" />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col xs={12} sm={6}>
               <Form.Item name="province" label="省份" rules={[{ required: true, message: "请选择省份" }]}>
                 <Select
                   showSearch
@@ -203,12 +224,9 @@ export default function ProfilePage() {
                 />
               </Form.Item>
             </Col>
-            <Col span={6}>
+            <Col xs={12} sm={6}>
               <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
-                <Select
-                  placeholder="选择科类"
-                  options={SUBJECT_TYPE_OPTIONS}
-                />
+                <Select placeholder="选择科类" options={SUBJECT_TYPE_OPTIONS} />
               </Form.Item>
             </Col>
           </Row>
@@ -222,10 +240,11 @@ export default function ProfilePage() {
                   key={opt.value}
                   value={opt.value}
                   style={{
-                    padding: "10px 16px",
-                    borderRadius: 8,
-                    border: "1px solid #f0f0f0",
+                    padding: "12px 16px",
+                    borderRadius: 10,
+                    border: "1px solid var(--zy-border)",
                     alignItems: "flex-start",
+                    transition: "all 0.2s",
                   }}
                 >
                   <div>
@@ -239,7 +258,15 @@ export default function ProfilePage() {
             </Radio.Group>
           </Form.Item>
           {examType && (
-            <div style={{ marginTop: 12, padding: "10px 16px", background: "#f5f5f5", borderRadius: 8, fontSize: 13, color: "#666" }}>
+            <div style={{
+              marginTop: 12,
+              padding: "12px 16px",
+              background: "var(--zy-muted)",
+              borderRadius: 8,
+              fontSize: 13,
+              color: "var(--zy-text-secondary)",
+              borderLeft: "3px solid var(--zy-primary)",
+            }}>
               {examType === "普通类" && <>普通类考生可报考工学、理学、医学、经济学、管理学、法学、文学、历史学、哲学、农学等学科门类的专业，覆盖大部分本科专业。</>}
               {examType === "艺术类" && <>艺术类考生需参加省统考或校考，可报考视觉传达设计、音乐学、美术学、表演、播音与主持艺术、舞蹈学、动画、广播电视编导等艺术类专业。</>}
               {examType === "体育类" && <>体育类考生需参加体育专业测试，可报考体育教育、运动训练、武术与民族传统体育等专业。部分院校体育教育也可通过普通类报考。</>}
@@ -247,7 +274,16 @@ export default function ProfilePage() {
           )}
         </Card>
 
-        <Card title="兴趣与偏好" style={{ marginTop: 16 }}>
+        {/* Interests & Preferences */}
+        <Card
+          title={
+            <Space>
+              <HeartOutlined style={{ color: "var(--zy-accent)" }} />
+              <span>兴趣与偏好</span>
+            </Space>
+          }
+          style={{ borderRadius: 12, border: "1px solid var(--zy-border)", marginTop: 16 }}
+        >
           <Form.Item name="interests" label="兴趣爱好">
             <Select
               mode="tags"
@@ -265,7 +301,7 @@ export default function ProfilePage() {
             />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="prefer_city" label="偏好城市">
                 <Select
                   mode="multiple"
@@ -274,7 +310,7 @@ export default function ProfilePage() {
                 />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="tuition_max" label="可接受最高学费（元/年）">
                 <InputNumber min={0} max={200000} style={{ width: "100%" }} placeholder="如：10000" />
               </Form.Item>
@@ -282,7 +318,16 @@ export default function ProfilePage() {
           </Row>
         </Card>
 
-        <Card title="能力评估" style={{ marginTop: 16 }}>
+        {/* Ability */}
+        <Card
+          title={
+            <Space>
+              <TrophyOutlined style={{ color: "#D97706" }} />
+              <span>能力评估</span>
+            </Space>
+          }
+          style={{ borderRadius: 12, border: "1px solid var(--zy-border)", marginTop: 16 }}
+        >
           <Form.Item name="strong_subjects" label="擅长科目">
             <Select
               mode="tags"
@@ -290,13 +335,13 @@ export default function ProfilePage() {
               style={{ width: "100%" }}
             />
           </Form.Item>
-          <Row gutter={16}>
-            <Col span={12}>
+          <Row gutter={24}>
+            <Col xs={24} sm={12}>
               <Form.Item name="social_ability" label="社交能力（1=内向，5=外向）">
                 <Slider min={1} max={5} marks={{ 1: "内向", 2: "", 3: "适中", 4: "", 5: "外向" }} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="english_level" label="英语水平（1=基础，6=精通）">
                 <Slider min={1} max={6} marks={{ 1: "基础", 2: "", 3: "中等", 4: "", 5: "良好", 6: "精通" }} />
               </Form.Item>
@@ -304,12 +349,21 @@ export default function ProfilePage() {
           </Row>
         </Card>
 
-        <Card title="价值观与规划" style={{ marginTop: 16 }}>
+        {/* Values */}
+        <Card
+          title={
+            <Space>
+              <AimOutlined style={{ color: "var(--zy-secondary)" }} />
+              <span>价值观与规划</span>
+            </Space>
+          }
+          style={{ borderRadius: 12, border: "1px solid var(--zy-border)", marginTop: 16 }}
+        >
           <Form.Item name="career_values" label="职业价值观">
             <Checkbox.Group options={["高薪", "稳定", "社会价值", "自由", "创造力"]} />
           </Form.Item>
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="distance_preference" label="是否接受外地求学">
                 <Select options={[
                   { value: "接受外地", label: "接受外地" },
@@ -318,7 +372,7 @@ export default function ProfilePage() {
                 ]} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="plan" label="未来规划">
                 <Select options={[
                   { value: "直接就业", label: "直接就业" },
@@ -330,17 +384,26 @@ export default function ProfilePage() {
               </Form.Item>
             </Col>
           </Row>
-          <Divider />
-          <Form.Item>
-            <Button type="primary" htmlType="submit" loading={saving} size="large">保存</Button>
-          </Form.Item>
+          <div style={{ paddingTop: 16, borderTop: "1px solid var(--zy-border)" }}>
+            <Button type="primary" htmlType="submit" loading={saving} size="large" style={{ borderRadius: 8, fontWeight: 500 }}>
+              保存画像
+            </Button>
+          </div>
         </Card>
       </Form>
     </Space>
   );
 
   const securityTab = (
-    <Card title="修改密码" style={{ maxWidth: 480 }}>
+    <Card
+      title={
+        <Space>
+          <LockOutlined style={{ color: "var(--zy-primary)" }} />
+          <span>修改密码</span>
+        </Space>
+      }
+      style={{ maxWidth: 480, borderRadius: 12, border: "1px solid var(--zy-border)" }}
+    >
       <Form form={pwdForm} layout="vertical" onFinish={onChangePassword}>
         <Form.Item
           name="old_password"
@@ -379,7 +442,7 @@ export default function ProfilePage() {
           <Password prefix={<LockOutlined />} placeholder="再次输入新密码" />
         </Form.Item>
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={changingPwd} size="large">
+          <Button type="primary" htmlType="submit" loading={changingPwd} size="large" style={{ borderRadius: 8, fontWeight: 500 }}>
             修改密码
           </Button>
         </Form.Item>
@@ -389,14 +452,20 @@ export default function ProfilePage() {
 
   return (
     <AppLayout>
-      <Tabs
-        defaultActiveKey="profile"
-        size="large"
-        items={[
-          { key: "profile", label: "个人详情", children: profileTab },
-          { key: "security", label: "账号安全", children: securityTab, forceRender: true },
-        ]}
-      />
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <div>
+          <Title level={3} style={{ margin: "0 0 4px" }}>个人中心</Title>
+          <Text type="secondary">管理你的个人信息和账号安全</Text>
+        </div>
+        <Tabs
+          defaultActiveKey="profile"
+          size="large"
+          items={[
+            { key: "profile", label: "个人详情", children: profileTab },
+            { key: "security", label: "账号安全", children: securityTab, forceRender: true },
+          ]}
+        />
+      </Space>
     </AppLayout>
   );
 }

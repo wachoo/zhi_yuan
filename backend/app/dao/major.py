@@ -13,3 +13,9 @@ class MajorDAO:
                 select(Major).where(Major.name.contains(name)).limit(limit)
             )
             return list(result.scalars().all())
+
+    async def get_all_names(self) -> list[str]:
+        """获取所有专业名称"""
+        async with async_session() as db:
+            result = await db.execute(select(Major.name))
+            return [row[0] for row in result.all()]

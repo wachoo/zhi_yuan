@@ -1,18 +1,20 @@
 class AdapterScorer:
-    """五维适配度评分器"""
+    """六维适配度评分器"""
 
     DEFAULT_WEIGHTS = {
-        "basic": 0.35,
-        "family": 0.15,
+        "basic": 0.30,
+        "family": 0.10,
+        "city": 0.15,
         "personality": 0.25,
         "ability": 0.10,
-        "values": 0.15,
+        "values": 0.10,
     }
 
     def score(self, profile: dict, record: dict) -> dict:
         dimensions = {}
         dimensions["basic"] = self._score_basic(profile, record)
         dimensions["family"] = self._score_family(profile, record)
+        dimensions["city"] = self._score_city(profile, record)
         dimensions["personality"] = self._score_personality(profile, record)
         dimensions["ability"] = self._score_ability(profile, record)
         dimensions["values"] = self._score_values(profile, record)
@@ -55,14 +57,22 @@ class AdapterScorer:
                 score += 25.0
             else:
                 score -= 25.0
-        prefer_cities = family.get("prefer_city", [])
-        record_city = record.get("city", "")
-        if prefer_cities and record_city:
-            if record_city in prefer_cities:
-                score += 25.0
-            else:
-                score -= 10.0
         return min(100, max(0, score))
+
+    def _score_city(self, profile: dict, record: dict) -> float:
+        family = profile.get("family_info")
+        if not family:
+            return 0.0
+        prefer_cities = family.get("prefer_city", [])
+        if not prefer_cities:
+            return 50.0
+        record_city = record.get("city", "")
+        uni_province = record.get("university_province", "")
+        if not record_city and not uni_province:
+            return 50.0
+        if record_city in prefer_cities or uni_province in prefer_cities:
+            return 100.0
+        return 20.0
 
     def _score_personality(self, profile: dict, record: dict) -> float:
         personality = profile.get("personality")
@@ -118,6 +128,9 @@ class AdapterScorer:
             filled.append("basic")
         if profile.get("family_info"):
             filled.append("family")
+            family = profile["family_info"]
+            if family.get("prefer_city"):
+                filled.append("city")
         if profile.get("personality"):
             filled.append("personality")
         if profile.get("ability"):
@@ -126,7 +139,7 @@ class AdapterScorer:
             filled.append("values")
 
         if len(filled) <= 1:
-            return {"basic": 1.0, "family": 0.0, "personality": 0.0, "ability": 0.0, "values": 0.0}
+            return {"basic": 1.0, "family": 0.0, "city": 0.0, "personality": 0.0, "ability": 0.0, "values": 0.0}
 
         raw = {k: self.DEFAULT_WEIGHTS[k] if k in filled else 0.0 for k in self.DEFAULT_WEIGHTS}
         total = sum(raw.values())

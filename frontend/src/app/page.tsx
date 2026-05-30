@@ -39,8 +39,8 @@ export default function Home() {
         rank: String(values.rank),
         province: values.province,
         subject_type: values.subject_type,
+        exam_type: values.exam_type || "普通类",
       });
-      if (values.exam_type) params.set("exam_type", values.exam_type);
       router.push(`/recommend?${params}`);
     } catch (err) {
       console.error(err);
@@ -70,7 +70,14 @@ export default function Home() {
                   <InputNumber min={1} style={{ width: "100%" }} placeholder="如：5000" />
                 </Form.Item>
                 <Form.Item name="province" label="所在省份" rules={[{ required: true, message: "请选择省份" }]}>
-                  <Select placeholder="选择省份" options={provinces.map((p) => ({ value: p, label: p }))} />
+                  <Select
+                    placeholder="选择省份"
+                    showSearch
+                    filterOption={(input, option) =>
+                      (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+                    }
+                    options={provinces.map((p) => ({ value: p, label: p }))}
+                  />
                 </Form.Item>
                 <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
                   <Select placeholder="选择科类" options={SUBJECT_TYPE_OPTIONS} />

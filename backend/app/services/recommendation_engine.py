@@ -1,6 +1,38 @@
 from app.models.enums import MembershipTier
 
 
+# 厌恶领域 → 相关专业关键词映射（语义扩展）
+_DISLIKE_KEYWORDS: dict[str, list[str]] = {
+    "绘画": ["美术", "艺术", "绘画", "油画", "国画", "版画", "壁画", "雕塑", "书法"],
+    "美术": ["美术", "艺术", "绘画", "油画", "国画", "版画", "壁画", "雕塑", "书法"],
+    "体育": ["体育", "运动", "健身"],
+    "音乐": ["音乐", "声乐", "器乐", "作曲", "钢琴", "小提琴"],
+    "舞蹈": ["舞蹈", "芭蕾"],
+    "化学": ["化学", "化工", "材料", "制药"],
+    "生物": ["生物", "生态", "环境"],
+    "物理": ["物理", "力学"],
+    "数学": ["数学", "统计"],
+    "编程": ["计算机", "软件", "人工智能", "数据"],
+    "医学": ["医学", "临床", "护理", "药学", "中医", "针灸"],
+    "法学": ["法学", "法律"],
+    "会计": ["会计", "审计", "财务"],
+    "教育": ["教育", "师范", "学前"],
+    "建筑": ["建筑", "土木", "规划"],
+    "农学": ["农学", "农业", "园艺", "植物", "动物"],
+}
+
+
+def _expand_dislikes(dislikes: list[str]) -> list[str]:
+    """将用户厌恶项扩展为完整的关键词列表"""
+    expanded = set()
+    for d in dislikes:
+        expanded.add(d)
+        for keyword, related in _DISLIKE_KEYWORDS.items():
+            if keyword in d or d in keyword:
+                expanded.update(related)
+    return list(expanded)
+
+
 class RecommendationEngine:
     """推荐引擎核心：冲/稳/保分类 + 硬性条件过滤"""
 
@@ -16,8 +48,12 @@ class RecommendationEngine:
         tuition_max: int | None = None,
         levels: list[str] | None = None,
         provinces_exclude: list[str] | None = None,
+        dislikes: list[str] | None = None,
+        expanded_dislikes: list[str] | None = None,
     ) -> list[dict]:
         filtered = []
+        # 使用预扩展的关键词，或动态扩展
+        effective_dislikes = expanded_dislikes or (_expand_dislikes(dislikes) if dislikes else None)
         for r in records:
             if r["province"] != province:
                 continue
@@ -29,6 +65,10 @@ class RecommendationEngine:
                 continue
             if provinces_exclude and r.get("university_province") in provinces_exclude:
                 continue
+            if effective_dislikes:
+                major_name = r.get("major_name", "")
+                if any(kw in major_name or major_name in kw for kw in effective_dislikes):
+                    continue
             filtered.append(r)
         return filtered
 

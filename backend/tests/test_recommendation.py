@@ -74,3 +74,38 @@ class TestRecommendationEngine:
         free_result = self.engine.limit_for_tier(result, tier="free", max_per_group=1)
         total = len(free_result["rush"]) + len(free_result["stable"]) + len(free_result["safe"])
         assert total == 3
+
+    def test_filter_by_dislikes_expands_keywords(self):
+        """厌恶'绘画'应过滤掉美术、艺术、雕塑等相关专业"""
+        records = [
+            self._make_record("A大学", "美术学", 5000),
+            self._make_record("B大学", "艺术设计", 5000),
+            self._make_record("C大学", "雕塑", 5000),
+            self._make_record("D大学", "油画", 5000),
+            self._make_record("E大学", "计算机科学与技术", 5000),
+            self._make_record("F大学", "绘画", 5000),
+        ]
+        filtered = self.engine.filter_records(
+            records=records, province="浙江", subject_type="综合改革",
+            dislikes=["绘画"],
+        )
+        assert len(filtered) == 1
+        assert filtered[0]["major_name"] == "计算机科学与技术"
+
+    def test_filter_by_expanded_dislikes_with_major_names(self):
+        """使用 LLM 扩展后的专业名称列表进行过滤"""
+        records = [
+            self._make_record("A大学", "动画", 5000),
+            self._make_record("B大学", "美术学", 5000),
+            self._make_record("C大学", "艺术设计", 5000),
+            self._make_record("D大学", "计算机科学与技术", 5000),
+            self._make_record("E大学", "软件工程", 5000),
+        ]
+        # LLM 返回的完整专业名称列表
+        expanded_dislikes = ["美术", "动画", "美术学", "艺术设计", "视觉传达设计"]
+        filtered = self.engine.filter_records(
+            records=records, province="浙江", subject_type="综合改革",
+            expanded_dislikes=expanded_dislikes,
+        )
+        assert len(filtered) == 2
+        assert all(r["major_name"] in ["计算机科学与技术", "软件工程"] for r in filtered)

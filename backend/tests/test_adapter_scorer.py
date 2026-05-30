@@ -18,7 +18,7 @@ class TestAdapterScorer:
         assert score["dimensions"]["personality"] == 0
 
     def test_full_profile_all_dimensions(self):
-        """完整五维画像，所有维度都有分数"""
+        """完整六维画像，所有维度都有分数"""
         profile = {
             "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
             "family_info": {"income_range": "20-50万", "tuition_max": 10000, "prefer_city": ["上海", "杭州"]},
@@ -38,11 +38,12 @@ class TestAdapterScorer:
         assert score["total"] > 0
         assert score["dimensions"]["basic"] > 0
         assert score["dimensions"]["family"] > 0
+        assert score["dimensions"]["city"] > 0
         assert score["dimensions"]["personality"] > 0
         assert score["dimensions"]["ability"] > 0
         assert score["dimensions"]["values"] > 0
 
-    def test_city_match_boosts_family_score(self):
+    def test_city_match_boosts_city_score(self):
         profile = {
             "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
             "family_info": {"prefer_city": ["上海"]},
@@ -51,7 +52,8 @@ class TestAdapterScorer:
         record_miss = {"university_name": "B", "major_name": "CS", "min_rank": 5000, "city": "哈尔滨"}
         score_match = self.scorer.score(profile=profile, record=record_match)
         score_miss = self.scorer.score(profile=profile, record=record_miss)
-        assert score_match["dimensions"]["family"] > score_miss["dimensions"]["family"]
+        assert score_match["dimensions"]["city"] > score_miss["dimensions"]["city"]
+        assert score_match["total"] > score_miss["total"]
 
     def test_interest_match_boosts_personality(self):
         profile = {

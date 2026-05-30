@@ -1,4 +1,5 @@
 import uuid
+import logging
 
 from fastapi import HTTPException
 
@@ -7,9 +8,11 @@ from app.dao.admission import AdmissionDAO
 from app.dao.recommend import RecommendDAO
 from app.models.enums import MembershipTier
 from app.models.recommendation import Recommendation
-from app.services.recommendation_engine import RecommendationEngine
+from app.services.recommendation_engine import RecommendationEngine, _expand_dislikes
 from app.services.adapter_scorer import AdapterScorer
 from app.schemas.recommendation import RecommendRequest, RecommendResult, RecommendItem
+
+logger = logging.getLogger(__name__)
 
 
 class RecommendService:
@@ -47,10 +50,10 @@ class RecommendService:
             }
 
         basic = profile_dict.get("basic_info", {})
-        rank = request.rank or basic.get("rank", 0)
-        province = request.province or basic.get("province", "")
-        subject_type = request.subject_type or basic.get("subject_type", "")
-        exam_type = request.exam_type or basic.get("exam_type", "普通类")
+        rank = request.rank if request.rank is not None else basic.get("rank", 0)
+        province = request.province if request.province is not None else basic.get("province", "")
+        subject_type = request.subject_type if request.subject_type is not None else basic.get("subject_type", "")
+        exam_type = request.exam_type if request.exam_type is not None else basic.get("exam_type", "普通类")
 
         if not rank or not province or not subject_type:
             raise HTTPException(status_code=400, detail="请至少提供位次、省份和科类")
@@ -80,8 +83,39 @@ class RecommendService:
         family = profile_dict.get("family_info")
         if family:
             tuition_max = family.get("tuition_max")
+        personality = profile_dict.get("personality")
+        dislikes = personality.get("dislikes") if personality else None
+        interests = personality.get("interests") if personality else None
+
+        # LLM 语义扩展厌恶/兴趣关键词，失败时降级到硬编码
+        expanded_dislikes = None
+        if dislikes:
+            try:
+                from app.services.llm_service import LLMService
+                from app.dao.major import MajorDAO
+                # 获取所有专业名称，传给 LLM 做筛选
+                major_names = await MajorDAO().get_all_names()
+                llm_result = await LLMService().semantic_expand(
+                    dislikes=dislikes, interests=interests, major_names=major_names
+                )
+                llm_dislikes = llm_result.get("dislikes", [])
+                expanded_set = set(dislikes)
+                # 新格式：LLM 直接返回专业名称列表
+                if isinstance(llm_dislikes, list):
+                    expanded_set.update(llm_dislikes)
+                # 兼容旧格式：字典格式
+                elif isinstance(llm_dislikes, dict):
+                    for keywords in llm_dislikes.values():
+                        expanded_set.update(keywords)
+                expanded_dislikes = list(expanded_set)
+                logger.info(f"LLM expanded dislikes: {expanded_dislikes}")
+            except Exception as e:
+                logger.warning(f"LLM semantic expansion failed, using fallback: {e}")
+                expanded_dislikes = _expand_dislikes(dislikes)
+
         filtered = engine.filter_records(
             records=records, province=province, subject_type=subject_type, tuition_max=tuition_max,
+            dislikes=dislikes, expanded_dislikes=expanded_dislikes,
         )
 
         # 4. 分类
@@ -104,6 +138,7 @@ class RecommendService:
             user_id=user.id,
             input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type},
             result={k: [{"university_name": i["university_name"], "major_name": i["major_name"],
+                          "min_rank": i.get("min_rank"), "rank_ratio": i.get("rank_ratio"),
                           "adapter_score": i.get("adapter_score")} for i in v]
                     for k, v in categorized.items()},
             tier=tier,

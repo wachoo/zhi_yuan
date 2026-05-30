@@ -1,5 +1,7 @@
 import json
 import uuid
+import time
+import hashlib
 
 from openai import AsyncOpenAI
 
@@ -11,6 +13,9 @@ from app.services.user_service import UserService
 from app.services.recommend_service import RecommendService
 
 settings = get_settings()
+
+# 语义扩展缓存（内存，10分钟 TTL）
+_SEMANTIC_CACHE: dict[str, dict] = {}
 
 LLM_CONFIGS = {
     "deepseek": {
@@ -211,6 +216,98 @@ class LLMService:
 
         result = await handler(**args)
         return json.dumps(result, ensure_ascii=False)
+
+    # ── Semantic Expansion ─────────────────────────────────────
+
+    async def semantic_expand(self, dislikes: list[str] | None = None,
+                               interests: list[str] | None = None,
+                               major_names: list[str] | None = None) -> dict:
+        """使用 LLM 对厌恶/兴趣领域进行语义扩展，返回扩展后的关键词映射"""
+        if not dislikes and not interests:
+            return {}
+
+        # 生成缓存 key
+        cache_key = hashlib.md5(
+            json.dumps({"dislikes": dislikes or [], "interests": interests or []},
+                       sort_keys=True, ensure_ascii=False).encode()
+        ).hexdigest()
+
+        # 检查缓存（10 分钟 TTL）
+        cached = _SEMANTIC_CACHE.get(cache_key)
+        if cached and time.time() - cached["ts"] < 600:
+            return cached["data"]
+
+        # 如果有专业列表，让 LLM 从中筛选，而不是自由生成
+        if major_names:
+            prompt_parts = []
+            if dislikes:
+                prompt_parts.append(f"厌恶领域：{', '.join(dislikes)}")
+            if interests:
+                prompt_parts.append(f"兴趣领域：{', '.join(interests)}")
+
+            prompt = f"""你是一个大学专业推荐助手。用户有以下偏好：
+{chr(10).join(prompt_parts)}
+
+以下是数据库中所有可用的专业名称：
+{', '.join(major_names)}
+
+请从上述专业列表中，选出与用户厌恶领域相关的专业名称。
+
+要求：
+1. 只从给定的专业列表中选择，不要编造新专业
+2. 选出所有与厌恶领域相关的专业（包括直接相关和间接相关）
+3. 返回 JSON 格式：{{"dislikes": ["专业1", "专业2", ...], "interests": []}}
+4. 如果某类为空，返回空数组 []
+
+示例：
+厌恶"美术"，专业列表包含["动画", "美术学", "计算机科学与技术", "艺术设计"]
+输出：{{"dislikes": ["动画", "美术学", "艺术设计"], "interests": []}}
+
+请只返回 JSON，不要有其他内容。"""
+
+        else:
+            # 没有专业列表时，让 LLM 自由生成关键词（兜底）
+            prompt_parts = []
+            if dislikes:
+                prompt_parts.append(f"厌恶领域：{', '.join(dislikes)}")
+            if interests:
+                prompt_parts.append(f"兴趣领域：{', '.join(interests)}")
+
+            prompt = f"""你是一个大学专业推荐助手。请根据用户的{('和'.join(prompt_parts))}，对每个领域进行语义扩展。
+
+要求：
+1. 对每个厌恶/兴趣词，扩展出相关的大学专业名称关键词（5-15个）
+2. 关键词应该能匹配大学专业名称中的核心词
+3. 返回 JSON 格式，结构为：{{"dislikes": {{"原词": ["扩展词1", "扩展词2", ...]}}, "interests": {{"原词": ["扩展词1", "扩展词2", ...]}}}}
+4. 如果某类为空，返回空对象 {{}}
+
+示例：
+输入：厌恶"绘画"
+输出：{{"dislikes": {{"绘画": ["美术", "艺术", "绘画", "油画", "国画", "版画", "壁画", "雕塑", "书法", "设计"]}}, "interests": {{}}}}
+
+请只返回 JSON，不要有其他内容。"""
+
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "你是一个专业的语义扩展助手，只返回 JSON 格式的结果。"},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=1500,
+            )
+            content = response.choices[0].message.content or "{}"
+            # 尝试解析 JSON
+            result = json.loads(content)
+
+            # 缓存结果
+            _SEMANTIC_CACHE[cache_key] = {"data": result, "ts": time.time()}
+            return result
+
+        except Exception as e:
+            # LLM 不可用时返回空，让调用方使用兜底策略
+            return {}
 
     # ── Chat ───────────────────────────────────────────────────
 

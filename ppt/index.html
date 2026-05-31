@@ -1458,50 +1458,93 @@
   </div>
 </section>
 
-<!-- ====== 07 · S17 System Diagram · 技术架构 ====== -->
+<!-- ====== 07 · S17 System Diagram · 六层技术架构(含记忆层+匹配推荐层) ====== -->
 <section class="slide light" data-layout="S17" data-animate="system-diagram">
   <div class="canvas-card">
     <div class="chrome-min">
       <div class="l">06 · ARCHITECTURE</div>
-      <div class="r">TECH STACK</div>
+      <div class="r">6-LAYER SYSTEM</div>
     </div>
     <div data-anim="head" style="display:grid;grid-template-columns:7.8fr 4.2fr;gap:2vw;margin-top:2vh">
-      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">四层技术架构</h1>
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">六层技术架构</h1>
+      <p class="lead" style="align-self:end;color:var(--text-secondary);font-weight:400;max-width:42ch">RAG知识记忆，匹配推荐层双引擎驱动。</p>
     </div>
-    <div data-anim="diagram" style="margin-top:5vh;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);align-items:start">
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 01</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">数据层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">PostgreSQL 15<br/>Redis 7 缓存</p>
+
+    <!-- 6 层架构卡片: 展示 → 推理 → 记忆 → 匹配推荐 → 检索 → 数据 -->
+    <div data-anim="diagram" style="display:grid;grid-template-columns:repeat(6,1fr);gap:var(--sp-3);margin-top:4vh;align-items:start">
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="monitor" style="width:20px;height:20px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">01</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(14px,1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">展示层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js<br/>React<br/>SSE 流式</p>
       </div>
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 02</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">检索层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">位次换算引擎<br/>六维适配评分</p>
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="brain" style="width:20px;height:20px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">02</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(14px,1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">推理层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">DeepSeek等LLM<br/>Tools<br/>流式输出</p>
       </div>
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 03</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">推理层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">LLM 模型 / RAG/ 记忆<br/>越聊越懂你</p>
+      <div style="padding:var(--sp-5) var(--sp-4);background:var(--accent)">
+        <i data-lucide="database" style="width:20px;height:20px;color:#fff;stroke-width:1.5"></i>
+        <div class="t-meta" style="color:rgba(255,255,255,.7);margin-top:var(--sp-3)">03</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(14px,1vw);line-height:1.2;color:#fff;margin-top:var(--sp-3)">记忆层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:rgba(255,255,255,.86);font-weight:400;margin-top:var(--sp-3)">会话上下文<br/>画像记忆<br/>历史摘要</p>
       </div>
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 04</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">展示层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16 + React 19<br/>SSE 流式对话</p>
+      <div style="padding:var(--sp-5) var(--sp-4);background:var(--accent)">
+        <i data-lucide="target" style="width:20px;height:20px;color:#fff;stroke-width:1.5"></i>
+        <div class="t-meta" style="color:rgba(255,255,255,.7);margin-top:var(--sp-3)">04 · NEW</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(14px,1vw);line-height:1.2;color:#fff;margin-top:var(--sp-3)">匹配推荐层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:rgba(255,255,255,.86);font-weight:400;margin-top:var(--sp-3)">冲/稳/保引擎<br/>六维适配评分<br/>厌恶词过滤</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="search" style="width:20px;height:20px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">05</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(14px,1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">检索层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">位次换算<br/>语义扩展<br/>分页排序</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="hard-drive" style="width:20px;height:20px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">06</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(14px,1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">数据层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">院校、用户画像RAG库<br/>长短期会话记忆<br/>379K 条</p>
       </div>
     </div>
-    <div data-anim="foot" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);margin-top:4vh;border-top:1px solid var(--border-subtle);padding-top:var(--sp-6)">
-      <div>
-        <div class="t-meta" style="color:var(--accent)">BACKEND</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">FastAPI 0.111 + SQLAlchemy 2.0 + Alembic 迁移</p>
+
+    <!-- 双引擎详解: 记忆层 + 匹配推荐层 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-7);margin-top:4vh;border-top:1px solid var(--border-subtle);padding-top:var(--sp-6)">
+      <div data-anim="memory-detail">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:var(--sp-4)">03 · 记忆层 MEMORY</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3)">
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:14px;color:var(--text-primary)">会话上下文</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.4;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Redis 多轮对话状态保持</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:14px;color:var(--text-primary)">画像记忆</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.4;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">六维画像 JSONB 自动注入</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:14px;color:var(--text-primary)">历史摘要</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.4;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">LLM 提取长对话关键信息</p>
+          </div>
+        </div>
       </div>
-      <div>
-        <div class="t-meta" style="color:var(--accent)">FRONTEND</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16 + React 19 + Ant Design 6 + Tailwind</p>
-      </div>
-      <div>
-        <div class="t-meta" style="color:var(--accent)">DEPLOY</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Docker Compose 一键编排,Nginx 反向代理</p>
+      <div data-anim="recommend-detail">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:var(--sp-4)">04 · 匹配推荐层 RECOMMEND</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3)">
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:14px;color:var(--text-primary)">冲/稳/保引擎</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.4;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">RecommendationEngine 三档分类</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:14px;color:var(--text-primary)">六维适配评分</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.4;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">AdapterScorer 向量化、特征聚类、偏好权重</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:14px;color:var(--text-primary)">厌恶词过滤</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.4;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">语义扩展增强字面匹配遗漏</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1618,8 +1661,8 @@
       </div>
       <div style="background:rgba(255,255,255,.08);padding:var(--sp-7)">
         <div class="t-meta" style="color:rgba(255,255,255,.65)">02 · MOAT</div>
-        <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:#fff;margin-top:var(--sp-5)">数据壁垒</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;margin-top:var(--sp-5)">379K 录取记录 + 31 省改革规则,数据资产难以复制。</p>
+        <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:#fff;margin-top:var(--sp-5)">数据驱动</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;margin-top:var(--sp-5)">379K 录取记录 + 31 省改革规则, 推荐效果, 数据资产闭环沉淀</p>
       </div>
       <div style="background:rgba(255,255,255,.08);padding:var(--sp-7)">
         <div class="t-meta" style="color:rgba(255,255,255,.65)">03 · LEVERAGE</div>
@@ -1643,8 +1686,8 @@
         </div>
         <div data-anim="manifesto" style="display:flex;flex-direction:column;gap:2vh;position:relative;z-index:1">
           <div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">MANIFESTO</div>
-          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(7.2vw,12.8vh);line-height:.94;letter-spacing:-.025em;font-weight:200;color:#fff">让数据说话,<br/>让 AI <span style="font-style:italic;font-weight:300">辅助</span>,<br/>让人做决定。</h2>
-          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(14px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">高考是人生大事,志愿填报不该靠感觉。智愿用数据和 AI 让每一个选择都有据可依。</div>
+          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(7.2vw,12.8vh);line-height:.94;letter-spacing:-.025em;font-weight:200;color:#fff">让数据说话<br/>让 AI <span style="font-style:italic;font-weight:300">辅助</span><br/>让人做决定</h2>
+          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(14px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">高考是人生大事,志愿填报不该靠感觉<br/>智愿用数据和 AI 让每一个选择都有据可依</div>
         </div>
         <div data-anim="signature" style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh;position:relative;z-index:1">
           <div class="t-meta" style="color:rgba(255,255,255,.62)">智愿团队</div>
@@ -1667,7 +1710,7 @@
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">数据壁垒</h3>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">精准数据</h3>
               <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">379K 录取记录 + 31 省规则,时间积累的数据资产无法速成。</p>
             </div>
           </div>

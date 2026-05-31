@@ -1458,50 +1458,70 @@
   </div>
 </section>
 
-<!-- ====== 07 · S17 System Diagram · 技术架构 ====== -->
+<!-- ====== 07 · S17 System Diagram · 五层技术架构(含记忆层) ====== -->
 <section class="slide light" data-layout="S17" data-animate="system-diagram">
   <div class="canvas-card">
     <div class="chrome-min">
       <div class="l">06 · ARCHITECTURE</div>
-      <div class="r">TECH STACK</div>
+      <div class="r">5-LAYER SYSTEM</div>
     </div>
     <div data-anim="head" style="display:grid;grid-template-columns:7.8fr 4.2fr;gap:2vw;margin-top:2vh">
-      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">四层技术架构</h1>
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">五层技术架构</h1>
+      <p class="lead" style="align-self:end;color:var(--text-secondary);font-weight:400;max-width:42ch">API → Service → DAO → Model,新增记忆层实现"越聊越懂你"。</p>
     </div>
-    <div data-anim="diagram" style="margin-top:5vh;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);align-items:start">
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 01</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">数据层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">PostgreSQL 15<br/>Redis 7 缓存</p>
+
+    <!-- 5 层架构卡片: 展示 → 推理 → 记忆 → 检索 → 数据 -->
+    <div data-anim="diagram" style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--sp-3);margin-top:4vh;align-items:start">
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="monitor" style="width:22px;height:22px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">LAYER 01</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">展示层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16<br/>React 19<br/>SSE 流式对话</p>
       </div>
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 02</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">检索层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">位次换算引擎<br/>六维适配评分</p>
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="brain" style="width:22px;height:22px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">LAYER 02</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">推理层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">DeepSeek等自定义LLM<br/>Tool Calling × 6<br/>流式输出</p>
       </div>
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 03</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">推理层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">LLM 模型 / RAG/ 记忆<br/>越聊越懂你</p>
+      <div style="padding:var(--sp-5) var(--sp-4);background:var(--accent);position:relative">
+        <i data-lucide="database" style="width:22px;height:22px;color:#fff;stroke-width:1.5"></i>
+        <div class="t-meta" style="color:rgba(255,255,255,.7);margin-top:var(--sp-3)">LAYER 03 · NEW</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.1vw);line-height:1.2;color:#fff;margin-top:var(--sp-3)">记忆层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:rgba(255,255,255,.86);font-weight:400;margin-top:var(--sp-3)">会话上下文<br/>用户画像记忆<br/>对话历史摘要</p>
       </div>
-      <div class="card-fill" style="padding:var(--sp-6)">
-        <div class="t-meta" style="color:var(--accent)">LAYER 04</div>
-        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">展示层</h3>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16 + React 19<br/>SSE 流式对话</p>
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="search" style="width:22px;height:22px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">LAYER 04</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">检索层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">位次换算引擎<br/>六维适配评分<br/>语义扩展</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-5) var(--sp-4)">
+        <i data-lucide="hard-drive" style="width:22px;height:22px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-3)">LAYER 05</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.1vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">数据层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">PostgreSQL 15<br/>Redis 7 缓存<br/>379K 录取记录</p>
       </div>
     </div>
-    <div data-anim="foot" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);margin-top:4vh;border-top:1px solid var(--border-subtle);padding-top:var(--sp-6)">
-      <div>
-        <div class="t-meta" style="color:var(--accent)">BACKEND</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">FastAPI 0.111 + SQLAlchemy 2.0 + Alembic 迁移</p>
-      </div>
-      <div>
-        <div class="t-meta" style="color:var(--accent)">FRONTEND</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16 + React 19 + Ant Design 6 + Tailwind</p>
-      </div>
-      <div>
-        <div class="t-meta" style="color:var(--accent)">DEPLOY</div>
-        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Docker Compose 一键编排,Nginx 反向代理</p>
+
+    <!-- 记忆层详细说明 + 技术栈 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);margin-top:4vh;border-top:1px solid var(--border-subtle);padding-top:var(--sp-6)">
+      <div data-anim="memory-detail">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:var(--sp-4)">MEMORY LAYER · 记忆层详解</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-4)">
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1vw);color:var(--text-primary)">会话上下文</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Redis 存储多轮对话上下文,支持 Tool Calling 循环中的状态保持。</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1vw);color:var(--text-primary)">画像记忆</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">六维画像 JSONB 持久化,AI 对话自动注入画像上下文。</p>
+          </div>
+          <div>
+            <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1vw);color:var(--text-primary)">历史摘要</h4>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:14px;line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">LLM 自动提取对话摘要,长对话不丢失关键信息。</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

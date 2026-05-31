@@ -1,5 +1,5 @@
 import uuid
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import select
 
@@ -49,4 +49,15 @@ class UserDAO:
                 user.last_chat_date = today
             else:
                 user.daily_chat_count += 1
+            await db.commit()
+
+    async def update_membership(self, user_id: uuid.UUID, tier: str, expires_at: datetime):
+        """更新用户会员等级和到期时间"""
+        async with async_session() as db:
+            result = await db.execute(select(User).where(User.id == user_id))
+            user = result.scalar_one_or_none()
+            if not user:
+                return
+            user.membership_tier = tier
+            user.membership_expires_at = expires_at
             await db.commit()

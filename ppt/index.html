@@ -19,10 +19,10 @@
     --grey-1:#f0f0ee;         /* 浅灰底 */
     --grey-2:#d4d4d2;         /* 中灰(分割线) */
     --grey-3:#737373;         /* 暗灰(辅助文字) */
-    --accent:#002FA7;         /* 高亮色: 克莱因蓝 IKB */
-    --accent-rgb:0,47,167;
+    --accent:#1E3A5F;         /* 高亮色: 克莱因蓝 IKB */
+    --accent-rgb:30,58,95;
     --accent-on:#ffffff;      /* accent 上的反色文字 */
-    --accent-bright:#5B7BFF;  /* 暗底高亮: IKB 提亮版 */
+    --accent-bright:#3D6A9E;  /* 暗底高亮: IKB 提亮版 */
 
     /* ============ Carbon 文本角色 token (role-based,代替 opacity) ============
        亮底:  primary 主文 / secondary 次文 / helper 辅助 / placeholder 占位
@@ -1219,25 +1219,26 @@
 <div id="deck">
 
 <!-- ============================================================
-     智愿 ZhiYuan · 11 页 Swiss Deck · IKB 克莱因蓝
-     版式: S01/S18/S19/S22/S17/S08/S11/S13/S06/S02/S10 (10 unique)
+     智愿 ZhiYuan · 11 页 Swiss Deck · 深海蓝 #1E3A5F
+     版式: S01/S18/S19/S22/S11/S08/S17/S06/S02/S13/S10 (11 unique)
+     节奏: accent → light → light → dark → light → dark → light → light → light → accent → split
      ============================================================ -->
 
-<!-- ====== 01 · Cover · IKB 满屏 + ASCII 呼吸场 ====== -->
+<!-- ====== 01 · Cover · 深海蓝满屏 + ASCII 呼吸场 ====== -->
 <section class="slide accent" data-layout="S01" data-animate="hero">
   <div class="canvas-card">
     <canvas class="ascii-bg" aria-hidden="true"></canvas>
     <div class="chrome-min">
-      <div class="l">智愿 · ZhiYuan AI</div>
-      <div class="r">SS · 26.05 · 01 / 11</div>
+      <div class="l">智愿 ZhiYuan</div>
+      <div class="r">ZHIYUAN · 2026 · 01 / 11</div>
     </div>
     <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:2.6vh">
-      <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em">AI-POWERED · COLLEGE ADMISSION</div>
-      <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(11.6vw,19vh);line-height:.94;letter-spacing:-.025em;color:#fff">智愿<br><span style="font-style:italic;font-weight:300">AI</span> 志愿填报</h1>
+      <div data-anim="kicker" class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em">AI-POWERED COLLEGE ADMISSION</div>
+      <h1 data-anim="title" style="align-self:center;font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(10.8vw,18vh);line-height:.94;letter-spacing:-.025em;color:#fff">智愿<br/><span style="font-style:italic;font-weight:300">AI</span> 志愿填报</h1>
       <div data-anim="bottom" style="display:grid;grid-template-rows:auto auto;gap:1.6vh;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh">
-        <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86);font-weight:300">基于大语言模型的高考志愿智能推荐系统——结构化数据引擎 + LLM 智能解读,为考生和家长提供科学、个性化的志愿填报指导。</div>
+        <div data-anim="lead" class="lead" style="max-width:52ch;color:rgba(255,255,255,.86)">基于大语言模型的高考志愿智能推荐系统,用数据与 AI 让每一次选择都有据可依。</div>
         <div style="display:flex;justify-content:space-between;align-items:end">
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">ZhiYuan Team · 2026-05</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.6)">智愿团队 · 2026.05</div>
           <div class="t-meta" style="color:rgba(255,255,255,.6)">→ swipe / arrow keys</div>
         </div>
       </div>
@@ -1245,473 +1246,392 @@
   </div>
 </section>
 
-<!-- ====== 02 · Why Now · 市场时机 ====== -->
+<!-- ====== 02 · S18 Why Now · 市场时机 ====== -->
 <section class="slide light" data-layout="S18" data-animate="why-now">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">MARKET · 市场时机</div>
-      <div class="r">02 / 11</div>
+      <div class="l">01 · WHY NOW</div>
+      <div class="r">MARKET TIMING</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:4vh">
-      <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta">WHY NOW · 三个论点</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1;letter-spacing:-.03em">为什么是现在</h2>
+    <div data-anim="head" style="display:grid;grid-template-columns:7.8fr 4.2fr;gap:2vw;margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">为什么是<span style="color:var(--accent)">现在</span></h1>
+      <p class="lead" style="align-self:end;color:var(--text-secondary);font-weight:400;max-width:42ch">高考志愿填报正处在一个信息爆炸但决策工具缺失的窗口期。</p>
+    </div>
+    <div class="why-now-grid" data-anim="grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);margin-top:6vh">
+      <div class="card-fill" style="padding:var(--sp-7)">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:var(--sp-5)">01 · DEMAND</div>
+        <div data-anim="num" class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(6.4vw,11.2vh);line-height:.9;color:var(--text-primary)">1,342<span style="font-size:.35em;font-weight:400;color:var(--text-helper);margin-left:.5vw">万</span></div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-5)">2026 年全国高考报名人数,连续 8 年千万级,每一位考生都面临志愿填报决策。</p>
       </div>
-      <div data-anim="up" class="why-now-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3vw;align-items:start;flex:1">
-        <div class="why-col" style="display:flex;flex-direction:column;gap:2vh">
-          <div class="t-cat" style="color:var(--accent)">MARKET SIZE</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em">刚需市场,规模庞大</h3>
-          <p class="body" style="font-weight:400">每年超千万高考考生面临志愿填报决策,家长焦虑度高,付费意愿强。信息不对称创造巨大的服务缺口。</p>
-          <div style="margin-top:auto;padding-top:3vh;border-top:1px solid var(--border-subtle)">
-            <div class="why-num-bottom" style="font-family:var(--sans);font-weight:200;font-size:min(8.4vw,14vh);line-height:.9;letter-spacing:-.04em;font-feature-settings:'tnum'">1342<small style="font-size:.3em;font-weight:300;opacity:.6;margin-left:.1em">万</small></div>
-            <p class="body-sm" style="margin-top:1vh">2024 年全国高考报名人数</p>
-          </div>
-        </div>
-        <div class="why-col" style="display:flex;flex-direction:column;gap:2vh">
-          <div class="t-cat" style="color:var(--accent)">REFORM WAVE</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em">新高考改革,规则重构</h3>
-          <p class="body" style="font-weight:400">31 省份分批推进新高考改革,选科组合、录取规则全面刷新。旧经验失效,数据驱动的工具成为刚需。</p>
-          <div style="margin-top:auto;padding-top:3vh;border-top:1px solid var(--border-subtle)">
-            <div class="why-num-bottom" style="font-family:var(--sans);font-weight:200;font-size:min(8.4vw,14vh);line-height:.9;letter-spacing:-.04em;font-feature-settings:'tnum'">31<small style="font-size:.3em;font-weight:300;opacity:.6;margin-left:.1em">省</small></div>
-            <p class="body-sm" style="margin-top:1vh">全国省份全覆盖</p>
-          </div>
-        </div>
-        <div class="why-col" style="display:flex;flex-direction:column;gap:2vh;padding:3vh;background:var(--accent);color:var(--accent-on)">
-          <div class="t-cat" style="color:var(--accent-on)">AI MATURITY</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em">LLM 成熟,体验跃迁</h3>
-          <p style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.08vw);line-height:1.6;opacity:.86">国内外大模型发展日新月异,Tool Calling、MCP、Skills能力让 AI 可以查询真实数据并生成精准解读。</p>
-          <div style="margin-top:auto;padding-top:3vh;border-top:1px solid rgba(255,255,255,.22)">
-            <div class="why-num-bottom" style="font-family:var(--sans);font-weight:200;font-size:min(8.4vw,14vh);line-height:.9;letter-spacing:-.04em;font-feature-settings:'tnum';color:var(--accent-on)">38<small style="font-size:.3em;font-weight:300;opacity:.7;margin-left:.1em">万条</small></div>
-            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;opacity:.78;margin-top:1vh">录取数据 + 一分一段</p>
-          </div>
-        </div>
+      <div class="card-fill" style="padding:var(--sp-7)">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:var(--sp-5)">02 · GAP</div>
+        <div data-anim="num" class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(6.4vw,11.2vh);line-height:.9;color:var(--text-primary)">31<span style="font-size:.35em;font-weight:400;color:var(--text-helper);margin-left:.5vw">省</span></div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-5)">新高考改革已覆盖全国 31 省,科类规则碎片化,信息不对称前所未有。</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-7)">
+        <div class="t-meta" style="color:var(--accent);margin-bottom:var(--sp-5)">03 · DATA</div>
+        <div data-anim="num" class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(6.4vw,11.2vh);line-height:.9;color:var(--text-primary)">379K<span style="font-size:.3em;font-weight:400;color:var(--text-helper);margin-left:.5vw">条</span></div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-5)">31 省 × 6 年 × 多科类录取记录,构成推荐引擎的数据基石。</p>
       </div>
     </div>
+    <div data-anim="foot" class="t-meta" style="color:var(--text-helper);margin-top:4vh">数据来源: 教育部公开数据 · 各省考试院一分一段表</div>
   </div>
 </section>
 
-<!-- ====== 03 · Four Cards · 产品亮点 ====== -->
+<!-- ====== 03 · S19 Four Cards · 产品亮点 ====== -->
 <section class="slide light" data-layout="S19" data-animate="four-cards">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">PRODUCT · 产品亮点</div>
-      <div class="r">03 / 11</div>
+      <div class="l">02 · HIGHLIGHTS</div>
+      <div class="r">PRODUCT</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:5vh">
-      <div data-anim="line">
-        <div style="height:80px;background:var(--accent);margin-bottom:3vh"></div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1;letter-spacing:-.03em">四大核心能力</h2>
+    <div data-anim="head" style="margin-top:2vh;border-top:2px solid var(--accent);padding-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">四大核心能力</h1>
+    </div>
+    <div class="four-cards" data-anim="grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-6);margin-top:5vh">
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <i data-lucide="scan-eye" style="width:28px;height:28px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-5)">01</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">六维画像</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-4)">基础信息 · 家庭背景 · 城市偏好 · 性格特质 · 能力优势 · 价值观,渐进式完善。</p>
       </div>
-      <div class="four-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2.4vw;align-items:start">
-        <div class="fc-col" data-anim="up">
-          <div class="t-meta" style="margin-bottom:2vh">— 01 / PRECISION</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.15;letter-spacing:-.015em;margin-bottom:1.6vh">精准定位</h3>
-          <p class="body-sm" style="font-weight:400">位次换算算法跨年份对齐,精准推荐「冲 / 稳 / 保」三档院校组合,科学量化录取概率。</p>
-        </div>
-        <div class="fc-col" data-anim="up">
-          <div class="t-meta" style="margin-bottom:2vh">— 02 / 6D PROFILE</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.15;letter-spacing:-.015em;margin-bottom:1.6vh">六维画像</h3>
-          <p class="body-sm" style="font-weight:400">基础信息、家庭背景、城市偏好、性格特质、能力优势、价值观六个维度,渐进式收集。</p>
-        </div>
-        <div class="fc-col" data-anim="up">
-          <div class="t-meta" style="margin-bottom:2vh">— 03 / AI ADVISOR</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.15;letter-spacing:-.015em;margin-bottom:1.6vh">AI 顾问</h3>
-          <p class="body-sm" style="font-weight:400">LLM模型,实时多伦对话,支持 Tool Calling、MCP、Skills查询真实录取数据。</p>
-        </div>
-        <div class="fc-col" data-anim="up">
-          <div class="t-meta" style="margin-bottom:2vh">— 04 / EXPORT</div>
-          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:max(18px,1.8vw);line-height:1.15;letter-spacing:-.015em;margin-bottom:1.6vh">志愿导出</h3>
-          <p class="body-sm" style="font-weight:400">推荐方案一键导出为格式化 Excel 表格,支持普通类 / 艺术类 / 体育类三种科类筛选。</p>
-        </div>
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <i data-lucide="target" style="width:28px;height:28px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-5)">02</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">智能匹配</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-4)">位次换算 + 冲/稳/保三档推荐,六维适配评分精准排序。</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <i data-lucide="message-square" style="width:28px;height:28px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-5)">03</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">AI 顾问</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-4)">24h 流式对话,Tool Calling 实时查询真实录取数据。</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <i data-lucide="file-spreadsheet" style="width:28px;height:28px;color:var(--accent);stroke-width:1.5"></i>
+        <div class="t-meta" style="color:var(--accent);margin-top:var(--sp-5)">04</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">一键导出</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-4)">志愿表 Excel 格式化导出,冲/稳/保分色标注直接可用。</p>
       </div>
     </div>
+    <div data-anim="foot" class="t-meta" style="color:var(--text-helper);margin-top:4vh">覆盖普通类 / 艺术类 / 体育类三种考试科类</div>
   </div>
 </section>
 
-<!-- ====== 04 · Image Hero · 产品主视觉 ====== -->
+<!-- ====== 04 · S22 Image Hero · 产品界面 ====== -->
 <section class="slide dark" data-layout="S22" data-animate="image-hero">
-  <div class="canvas-card" style="padding:0;display:flex;flex-direction:column;overflow:hidden">
-    <div data-anim="img" style="position:relative;flex:0 0 58%;overflow:hidden;background:var(--ink)">
-      <img src="images/04-recommend-ui.png" alt="智愿 AI 推荐引擎界面" loading="eager" data-image-slot="s22-hero-21x9"
-           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 35%">
-      <div class="chrome-min" style="position:absolute;top:0;left:0;right:0;color:rgba(255,255,255,.9);padding:5.6vh 5vw 0">
-        <div class="l">PRODUCT · Visual Evidence</div>
-        <div class="r">04 / 11</div>
-      </div>
-      <div data-anim="title-block" style="position:absolute;left:5vw;top:11vh;background:var(--paper);padding:3.2vh 3.2vw;max-width:42vw">
-        <div style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9vh);line-height:1;letter-spacing:-.035em;color:var(--text-primary)">
-          智能推荐<br>引擎
-        </div>
-      </div>
-    </div>
-    <div data-anim="kpi" class="image-hero-body" style="flex:1;padding:3vh 5vw 4.4vh;display:grid;grid-template-columns:1fr auto;gap:4vw;align-items:start;background:var(--ink);color:var(--paper)">
-      <div style="max-width:48ch;font-family:var(--sans),var(--sans-zh);font-size:max(16px,1.1vw);line-height:1.55;font-weight:300;color:rgba(255,255,255,.86);letter-spacing:-.005em">
-        考生输入分数、位次、省份和科目,系统基于 38 万条录取数据与六维画像,自动生成冲 / 稳 / 保三档个性化推荐方案。
-      </div>
-      <div class="image-hero-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3vw">
-        <div style="display:flex;flex-direction:column;gap:.6vh">
-          <div style="height:1px;background:rgba(255,255,255,.3)"></div>
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">院校覆盖</div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,7.6vh);line-height:.95;letter-spacing:-.04em;color:var(--paper)">342</div>
-          <div style="height:1px;background:rgba(255,255,255,.15);margin-top:auto"></div>
-          <p class="body-sm" style="color:rgba(255,255,255,.6)">985 / 211 / 双一流 / 普通本科</p>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.6vh">
-          <div style="height:1px;background:rgba(255,255,255,.3)"></div>
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">专业库</div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,7.6vh);line-height:.95;letter-spacing:-.04em;color:var(--paper)">126</div>
-          <div style="height:1px;background:rgba(255,255,255,.15);margin-top:auto"></div>
-          <p class="body-sm" style="color:rgba(255,255,255,.6)">涵盖 12 大学科门类</p>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.6vh">
-          <div style="height:1px;background:rgba(255,255,255,.3)"></div>
-          <div class="t-meta" style="color:rgba(255,255,255,.6)">录取记录</div>
-          <div style="font-family:var(--sans);font-weight:200;font-size:min(4.6vw,7.6vh);line-height:.95;letter-spacing:-.04em;color:var(--accent-bright)">379K</div>
-          <div style="height:1px;background:rgba(255,255,255,.15);margin-top:auto"></div>
-          <p class="body-sm" style="color:rgba(255,255,255,.6)">31 省 × 6 年 × 多科类</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== 05 · System Diagram · 技术架构 ====== -->
-<section class="slide light" data-layout="S17" data-animate="system-diagram">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">ARCHITECTURE · 技术架构</div>
-      <div class="r">05 / 11</div>
+      <div class="l">03 · PRODUCT</div>
+      <div class="r">INTERFACE</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:3vh">
-      <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta">TECH STACK · FOUR LAYERS</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.03em">技术架构全景</h2>
-      </div>
-      <div data-anim="up" style="display:grid;grid-template-columns:5fr 7fr;gap:3vw;align-items:center;flex:1">
-        <div style="display:flex;flex-direction:column;gap:2.4vh">
-          <div>
-            <div class="t-cat" style="color:var(--accent);margin-bottom:1vh">FRONTEND</div>
-            <p class="body" style="font-weight:400">Next.js 16 + React 19 + TypeScript + Ant Design 6,5 个核心页面。</p>
-          </div>
-          <div>
-            <div class="t-cat" style="color:var(--accent);margin-bottom:1vh">API LAYER</div>
-            <p class="body" style="font-weight:400">FastAPI 0.111 异步架构,JWT 认证,REST + SSE 流式对话接口。</p>
-          </div>
-          <div>
-            <div class="t-cat" style="color:var(--accent);margin-bottom:1vh">SERVICE LAYER</div>
-            <p class="body" style="font-weight:400">推荐引擎 / 适配评分 / LLM 服务、知识库 / 导出服务 / DAO 数据访问。</p>
-          </div>
-          <div>
-            <div class="t-cat" style="color:var(--accent);margin-bottom:1vh">INFRASTRUCTURE</div>
-            <p class="body" style="font-weight:400">PostgreSQL 15 + Redis 7,Docker Compose 编排,DeepSeek / Qwen等LLM Provider。</p>
-          </div>
+    <div class="image-hero" style="display:grid;grid-template-rows:auto 1fr;gap:var(--sp-6);margin-top:2vh">
+      <div class="hero-img-wrap" data-anim="img" style="position:relative;width:100%;aspect-ratio:21/9;overflow:hidden;background:#111">
+        <img src="images/04-recommend-ui.png" alt="智愿推荐界面" style="width:100%;height:100%;object-fit:cover;object-position:center 35%" data-image-slot="s22-hero-21x9">
+        <div class="hero-overlay-block" style="position:absolute;left:var(--sp-6);bottom:var(--sp-6);background:rgba(var(--paper-rgb),.92);padding:var(--sp-5) var(--sp-6)">
+          <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:min(3.2vw,5.6vh);line-height:1;color:var(--text-primary);letter-spacing:-.015em">智能推荐结果页</h2>
+          <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-3)">RECOMMEND · REAL-TIME</div>
         </div>
-        <svg viewBox="0 0 520 480" style="width:100%;height:auto;max-height:56vh;overflow:visible" fill="none">
-          <!-- Frontend -->
-          <rect x="30" y="10" width="460" height="90" stroke="var(--accent)" stroke-width="2.5" fill="rgba(0,47,167,.06)"/>
-          <circle cx="80" cy="55" r="20" fill="var(--accent)" opacity=".12" stroke="var(--accent)" stroke-width="1"/>
-          <circle cx="145" cy="55" r="20" fill="var(--accent)" opacity=".12" stroke="var(--accent)" stroke-width="1"/>
-          <circle cx="210" cy="55" r="20" fill="var(--accent)" opacity=".12" stroke="var(--accent)" stroke-width="1"/>
-          <circle cx="275" cy="55" r="20" fill="var(--accent)" opacity=".12" stroke="var(--accent)" stroke-width="1"/>
-          <!-- API -->
-          <rect x="30" y="120" width="460" height="90" stroke="var(--ink)" stroke-width="1.5" fill="rgba(10,10,10,.03)"/>
-          <circle cx="80" cy="165" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <circle cx="135" cy="165" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <circle cx="190" cy="165" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <!-- Service -->
-          <rect x="30" y="230" width="460" height="110" stroke="var(--ink)" stroke-width="1.5" fill="rgba(10,10,10,.03)"/>
-          <circle cx="80" cy="285" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <circle cx="135" cy="285" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <circle cx="190" cy="285" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <circle cx="245" cy="285" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <circle cx="300" cy="285" r="16" fill="var(--ink)" opacity=".08" stroke="var(--ink)" stroke-width="1"/>
-          <!-- Infra -->
-          <rect x="30" y="360" width="460" height="90" stroke="var(--grey-3)" stroke-width="1" fill="rgba(115,115,115,.03)"/>
-          <circle cx="80" cy="405" r="14" fill="var(--grey-3)" opacity=".08" stroke="var(--grey-3)" stroke-width="1"/>
-          <circle cx="130" cy="405" r="14" fill="var(--grey-3)" opacity=".08" stroke="var(--grey-3)" stroke-width="1"/>
-          <circle cx="180" cy="405" r="14" fill="var(--grey-3)" opacity=".08" stroke="var(--grey-3)" stroke-width="1"/>
-          <!-- Connections -->
-          <line x1="260" y1="100" x2="260" y2="120" stroke="var(--grey-2)" stroke-width="1" stroke-dasharray="4 3"/>
-          <line x1="260" y1="210" x2="260" y2="230" stroke="var(--grey-2)" stroke-width="1" stroke-dasharray="4 3"/>
-          <line x1="260" y1="340" x2="260" y2="360" stroke="var(--grey-2)" stroke-width="1" stroke-dasharray="4 3"/>
-        </svg>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;border-top:1px solid var(--border-subtle);padding-top:2.4vh">
-        <div><div class="t-meta" style="margin-bottom:.8vh">LAYER 01</div><p class="body-sm" style="font-weight:400">Home / Recommend / Universities / Chat / Profile</p></div>
-        <div><div class="t-meta" style="margin-bottom:.8vh">LAYER 02</div><p class="body-sm" style="font-weight:400">Auth / Recommend / Chat / University / Profile</p></div>
-        <div><div class="t-meta" style="margin-bottom:.8vh">LAYER 03</div><p class="body-sm" style="font-weight:400">Engine / Scorer / LLM / Export / DAO</p></div>
-        <div><div class="t-meta" style="margin-bottom:.8vh">LAYER 04</div><p class="body-sm" style="font-weight:400">PostgreSQL / Redis / DeepSeek / Qwen</p></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== 06 · Duo Compare · 传统 vs 智愿 ====== -->
-<section class="slide dark" data-layout="S08" data-animate="duo-mirror">
-  <div class="canvas-card">
-    <div class="chrome-min">
-      <div class="l">COMPARISON · 两种填报方式</div>
-      <div class="r">06 / 11</div>
-    </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:4vh">
-      <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta">TRADITIONAL vs. AI-POWERED</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1;letter-spacing:-.03em">传统填报 vs 智愿 AI</h2>
-      </div>
-      <div class="duo-compare" style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch">
-        <div class="col" data-anim="left" style="display:flex;flex-direction:column;gap:2vh;padding:0 2vw">
-          <div class="col-tag" style="display:flex;align-items:center;gap:1vw;margin-bottom:1vh">
-            <span class="num" style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:rgba(255,255,255,.4)">01</span>
-          </div>
-          <div class="t-cat on-dark" style="color:rgba(255,255,255,.62)">TRADITIONAL</div>
-          <div class="col-ttl" style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:min(3.4vw,6vh);line-height:1.05;letter-spacing:-.02em;color:var(--paper)">传统志愿填报</div>
-          <p class="col-desc" style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(16px,1vw);line-height:1.6;color:rgba(255,255,255,.72)">依赖经验和感觉,信息不对称,难以量化风险。</p>
-          <ul class="col-list" style="list-style:none;display:flex;flex-direction:column;gap:1.2vh;margin-top:auto">
-            <li style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;color:rgba(255,255,255,.72)">凭经验估分,位次换算不精准</li>
-            <li style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;color:rgba(255,255,255,.72)">信息分散,缺乏系统化分析</li>
-            <li style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;color:rgba(255,255,255,.72)">无法个性化匹配兴趣与能力</li>
-          </ul>
+      <div class="hero-stats" data-anim="stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6)">
+        <div>
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:var(--accent-bright)">342</div>
+          <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-3)">院校 · 985/211/双一流/本科</div>
         </div>
-        <span class="vrule" style="width:1px;background:rgba(255,255,255,.18);align-self:stretch"></span>
-        <div class="col accent" data-anim="right" style="display:flex;flex-direction:column;gap:2vh;padding:0 2vw">
-          <div class="col-tag" style="display:flex;align-items:center;gap:1vw;margin-bottom:1vh">
-            <span class="num" style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">02</span>
-          </div>
-          <div class="t-cat" style="color:var(--accent)">AI-POWERED</div>
-          <div class="col-ttl" style="font-family:var(--sans),var(--sans-zh);font-weight:300;font-size:min(3.4vw,6vh);line-height:1.05;letter-spacing:-.02em;color:var(--accent)">智愿 AI 推荐</div>
-          <p class="col-desc" style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(16px,1vw);line-height:1.6;color:rgba(255,255,255,.72)">数据驱动 + AI 解读,科学决策,降低填报风险。</p>
-          <ul class="col-list" style="list-style:none;display:flex;flex-direction:column;gap:1.2vh;margin-top:auto">
-            <li style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;color:rgba(255,255,255,.72)">38 万条录取数据,位次精准换算</li>
-            <li style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;color:rgba(255,255,255,.72)">六维画像建模,个性化推荐方案</li>
-            <li style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.5;color:rgba(255,255,255,.72)">AI 顾问 24h 在线, 真、全数据即时查</li>
-          </ul>
+        <div>
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:var(--accent-bright)">126</div>
+          <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-3)">专业 · 12 大学科门类</div>
+        </div>
+        <div>
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:var(--accent-bright)">379K</div>
+          <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-3)">录取记录 · 31 省 × 6 年</div>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ====== 07 · Horizontal Timeline · 使用流程 ====== -->
+<!-- ====== 05 · S11 H-Timeline · 使用流程 ====== -->
 <section class="slide light" data-layout="S11" data-animate="timeline-walk">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">USER JOURNEY · 使用流程</div>
-      <div class="r">07 / 11</div>
+      <div class="l">04 · USER FLOW</div>
+      <div class="r">WORKFLOW</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:4vh">
-      <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta">WORKFLOW · 5 STEPS</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.8vw,10.2vh);line-height:1;letter-spacing:-.03em">使用流程</h2>
+    <div data-anim="head" style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:end;margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">使用流程</h1>
+      <p class="t-meta" style="color:var(--text-helper);padding-bottom:1vh">5 STEPS · FROM SIGNUP TO DECISION</p>
+    </div>
+    <div class="timeline-h" data-anim="line" style="display:grid;grid-template-columns:repeat(5,1fr);gap:var(--sp-4);margin-top:6vh;position:relative">
+      <div style="position:absolute;top:18px;left:5%;right:5%;height:1px;background:var(--border-subtle)"></div>
+      <div class="tl-h-node" data-anim="node" style="position:relative;text-align:left">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:relative;z-index:1;margin-bottom:var(--sp-5)"></div>
+        <div class="t-meta" style="color:var(--accent)">STEP 01</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">注册登录</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">手机号注册,30 秒完成账户创建。</p>
       </div>
-      <div class="timeline-h" style="position:relative;flex:1;display:flex;align-items:center">
-        <div class="tl-row" style="position:relative;width:100%;display:grid;grid-template-columns:repeat(5,1fr);align-items:center">
-          <div class="th-node up">
-            <span class="dot"></span>
-            <div class="label"><span class="yr">01</span><span class="name">注册登录</span><span class="desc">手机号快速注册</span></div>
-          </div>
-          <div class="th-node down">
-            <span class="dot"></span>
-            <div class="label"><span class="yr">02</span><span class="name">输入信息</span><span class="desc">分数 · 位次 · 省份 · 科类</span></div>
-          </div>
-          <div class="th-node up accent">
-            <span class="dot"></span>
-            <div class="label"><span class="yr">03</span><span class="name">获取推荐</span><span class="desc">冲 / 稳 / 保 三档方案</span></div>
-          </div>
-          <div class="th-node down">
-            <span class="dot"></span>
-            <div class="label"><span class="yr">04</span><span class="name">完善画像</span><span class="desc">六维信息提升精准度</span></div>
-          </div>
-          <div class="th-node up">
-            <span class="dot"></span>
-            <div class="label"><span class="yr">05</span><span class="name">AI 对话</span><span class="desc">深度咨询 · 导出志愿表</span></div>
-          </div>
-        </div>
+      <div class="tl-h-node" data-anim="node" style="position:relative;text-align:left">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:relative;z-index:1;margin-bottom:var(--sp-5)"></div>
+        <div class="t-meta" style="color:var(--accent)">STEP 02</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">填写画像</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">渐进式六维画像,越填越精准。</p>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid var(--border-subtle);padding-top:2vh">
-        <p class="body-sm" style="font-weight:400;max-width:48ch">渐进式画像收集,避免信息过载。AI 顾问支持 Tool Calling 查询真实及时录取数据,对话即可获取精准建议。</p>
-        <div class="t-meta">5 MIN TO START</div>
+      <div class="tl-h-node" data-anim="node" style="position:relative;text-align:left">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:relative;z-index:1;margin-bottom:var(--sp-5)"></div>
+        <div class="t-meta" style="color:var(--accent)">STEP 03</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">输入分数</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">高考成绩 + 省份位次一键录入。</p>
+      </div>
+      <div class="tl-h-node" data-anim="node" style="position:relative;text-align:left">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:relative;z-index:1;margin-bottom:var(--sp-5)"></div>
+        <div class="t-meta" style="color:var(--accent)">STEP 04</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">AI 推荐</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">冲/稳/保三档智能生成。</p>
+      </div>
+      <div class="tl-h-node" data-anim="node" style="position:relative;text-align:left">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:relative;z-index:1;margin-bottom:var(--sp-5)"></div>
+        <div class="t-meta" style="color:var(--accent)">STEP 05</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-3)">导出决策</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Excel 志愿表 + AI 解读报告。</p>
       </div>
     </div>
+    <div data-anim="foot" class="t-meta" style="color:var(--text-helper);margin-top:5vh">全程 AI 顾问在线,随时解答志愿填报疑问</div>
   </div>
 </section>
 
-<!-- ====== 08 · Three Forces · 商业价值 ====== -->
-<section class="slide accent" data-layout="S13" data-animate="three-forces">
+<!-- ====== 06 · S08 Duo Compare · 传统 vs 智愿 ====== -->
+<section class="slide dark" data-layout="S08" data-animate="duo-mirror">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">BUSINESS VALUE · 商业价值</div>
-      <div class="r">08 / 11</div>
+      <div class="l">05 · COMPARE</div>
+      <div class="r">BEFORE / AFTER</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:3vh">
-      <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta" style="color:rgba(255,255,255,.7)">THREE FORCES · 商业三力</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.03em;color:#fff">商业价值模型</h2>
+    <div data-anim="head" style="margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em;color:#fff">传统填报 <span style="color:var(--accent-bright)">vs</span> 智愿 AI</h1>
+    </div>
+    <div class="duo-compare" data-anim="duo" style="display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin-top:5vh;align-items:start">
+      <div style="padding:var(--sp-7)">
+        <div class="t-meta" style="color:var(--text-helper);margin-bottom:var(--sp-6)">BEFORE · 传统方式</div>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-6)">
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="x" style="width:20px;height:20px;color:var(--text-helper);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.78);font-weight:400">凭经验和感觉,信息严重不对称</p>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="x" style="width:20px;height:20px;color:var(--text-helper);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.78);font-weight:400">手动翻阅大厚本,耗时数天</p>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="x" style="width:20px;height:20px;color:var(--text-helper);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.78);font-weight:400">无法量化个人偏好与适配度</p>
+          </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="x" style="width:20px;height:20px;color:var(--text-helper);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.78);font-weight:400">新高考改革规则复杂,家长焦虑</p>
+          </div>
+        </div>
       </div>
-      <div data-anim="up" style="display:grid;grid-template-columns:5fr 7fr;gap:3vw;align-items:stretch;flex:1">
-        <!-- Left: Ink hero block -->
-        <div style="background:var(--ink);padding:4vh 3vw;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden">
-          <span class="dot-mat" style="position:absolute;right:0;bottom:0;width:18vw;height:18vw;opacity:.08;color:var(--paper)"></span>
-          <div>
-            <div class="t-cat" style="color:rgba(255,255,255,.62);margin-bottom:2vh">REVENUE MODEL</div>
-            <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:1;letter-spacing:-.02em;color:var(--paper)">Freemium<br>数据壁垒<br>AI 效率</h3>
+      <div class="vrule" style="width:1px;background:rgba(255,255,255,.15);align-self:stretch"></div>
+      <div style="padding:var(--sp-7)">
+        <div class="t-meta" style="color:var(--accent-bright);margin-bottom:var(--sp-6)">AFTER · 智愿 AI</div>
+        <div style="display:flex;flex-direction:column;gap:var(--sp-6)">
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="check" style="width:20px;height:20px;color:var(--accent-bright);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.92);font-weight:400">海量真实及时数据驱动推荐</p>
           </div>
-          <p style="font-family:var(--sans),var(--sans-zh);font-size:max(14px,.92vw);line-height:1.6;color:rgba(255,255,255,.72);font-weight:400;max-width:28ch">三大商业引擎协同,构建从免费获客到付费转化的完整闭环。</p>
-        </div>
-        <!-- Right: 3 force cards -->
-        <div style="display:flex;flex-direction:column;gap:1.4vh">
-          <div style="background:var(--paper);color:var(--ink);padding:2.4vh 2.4vw;flex:1;display:grid;grid-template-columns:auto 1fr;gap:2.4vw;align-items:start">
-            <div style="font-family:var(--sans);font-weight:200;font-size:min(9.2vw,15vh);line-height:.85;letter-spacing:-.04em;color:var(--accent);font-feature-settings:'tnum'">01</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2vw">
-              <div>
-                <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.6vw);line-height:1.2;letter-spacing:-.01em;margin-bottom:1vh">Freemium 转化</h4>
-                <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.55;color:var(--text-secondary)">基础推荐免费获客,深度报告 + AI 对话付费解锁。低门槛吸引海量用户,高价值服务实现变现。</p>
-              </div>
-              <div>
-                <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.6vw);line-height:1.2;letter-spacing:-.01em;margin-bottom:1vh">高考季集中爆发</h4>
-                <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.55;color:var(--text-secondary)">6-7 月填报高峰期,用户决策紧迫,付费转化率高。季节性运营降低全年获客成本。</p>
-              </div>
-            </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="check" style="width:20px;height:20px;color:var(--accent-bright);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.92);font-weight:400">位次换算 + 六维评分,秒级出结果</p>
           </div>
-          <div style="background:var(--paper);color:var(--ink);padding:2.4vh 2.4vw;flex:1;display:grid;grid-template-columns:auto 1fr;gap:2.4vw;align-items:start">
-            <div style="font-family:var(--sans);font-weight:200;font-size:min(9.2vw,15vh);line-height:.85;letter-spacing:-.04em;color:var(--accent);font-feature-settings:'tnum'">02</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2vw">
-              <div>
-                <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.6vw);line-height:1.2;letter-spacing:-.01em;margin-bottom:1vh">数据壁垒</h4>
-                <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.55;color:var(--text-secondary)">38 万条录取数据 + 15 万条一分一段,持续积累形成竞争护城河。数据越丰富,推荐越精准。</p>
-              </div>
-              <div>
-                <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.6vw);line-height:1.2;letter-spacing:-.01em;margin-bottom:1vh">画像飞轮</h4>
-                <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.55;color:var(--text-secondary)">六维用户画像越完整,推荐越精准,用户满意度越高,形成正向循环的数据飞轮。</p>
-              </div>
-            </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="check" style="width:20px;height:20px;color:var(--accent-bright);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.92);font-weight:400">个性化画像匹配,因人而异</p>
           </div>
-          <div style="background:var(--paper);color:var(--ink);padding:2.4vh 2.4vw;flex:1;display:grid;grid-template-columns:auto 1fr;gap:2.4vw;align-items:start">
-            <div style="font-family:var(--sans);font-weight:200;font-size:min(9.2vw,15vh);line-height:.85;letter-spacing:-.04em;color:var(--accent);font-feature-settings:'tnum'">03</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2vw">
-              <div>
-                <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.6vw);line-height:1.2;letter-spacing:-.01em;margin-bottom:1vh">AI 效率革命</h4>
-                <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.55;color:var(--text-secondary)">LLM 替代人工顾问,边际成本趋近于零。一个工程师团队即可服务百万级用户。</p>
-              </div>
-              <div>
-                <h4 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.6vw);line-height:1.2;letter-spacing:-.01em;margin-bottom:1vh">可扩展生态</h4>
-                <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.55;color:var(--text-secondary)">从高考志愿延伸至考研、留学、职业规划,平台化扩展,用户生命周期价值持续提升。</p>
-              </div>
-            </div>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-5);align-items:start">
+            <i data-lucide="check" style="width:20px;height:20px;color:var(--accent-bright);stroke-width:2;margin-top:2px"></i>
+            <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.92);font-weight:400">AI 顾问 24h 在线,随时答疑</p>
           </div>
         </div>
+      </div>
+    </div>
+    <div data-anim="foot" class="t-meta" style="color:var(--text-helper);margin-top:3vh;text-align:right">AI 辅助,人做决定</div>
+  </div>
+</section>
+
+<!-- ====== 07 · S17 System Diagram · 技术架构 ====== -->
+<section class="slide light" data-layout="S17" data-animate="system-diagram">
+  <div class="canvas-card">
+    <div class="chrome-min">
+      <div class="l">06 · ARCHITECTURE</div>
+      <div class="r">TECH STACK</div>
+    </div>
+    <div data-anim="head" style="display:grid;grid-template-columns:7.8fr 4.2fr;gap:2vw;margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">四层技术架构</h1>
+    </div>
+    <div data-anim="diagram" style="margin-top:5vh;display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);align-items:start">
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <div class="t-meta" style="color:var(--accent)">LAYER 01</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">数据层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">PostgreSQL 15<br/>Redis 7 缓存</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <div class="t-meta" style="color:var(--accent)">LAYER 02</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">检索层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">位次换算引擎<br/>六维适配评分</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <div class="t-meta" style="color:var(--accent)">LAYER 03</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">推理层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">LLM 模型 / RAG/ 记忆<br/>越聊越懂你</p>
+      </div>
+      <div class="card-fill" style="padding:var(--sp-6)">
+        <div class="t-meta" style="color:var(--accent)">LAYER 04</div>
+        <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(16px,1.2vw);line-height:1.2;color:var(--text-primary);margin-top:var(--sp-4)">展示层</h3>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16 + React 19<br/>SSE 流式对话</p>
+      </div>
+    </div>
+    <div data-anim="foot" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);margin-top:4vh;border-top:1px solid var(--border-subtle);padding-top:var(--sp-6)">
+      <div>
+        <div class="t-meta" style="color:var(--accent)">BACKEND</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">FastAPI 0.111 + SQLAlchemy 2.0 + Alembic 迁移</p>
+      </div>
+      <div>
+        <div class="t-meta" style="color:var(--accent)">FRONTEND</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Next.js 16 + React 19 + Ant Design 6 + Tailwind</p>
+      </div>
+      <div>
+        <div class="t-meta" style="color:var(--accent)">DEPLOY</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Docker Compose 一键编排,Nginx 反向代理</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ====== 09 · KPI Tower · 数据规模 ====== -->
+<!-- ====== 08 · S06 KPI Tower · 数据规模 ====== -->
 <section class="slide light" data-layout="S06" data-animate="measure-up">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">DATA SCALE · 数据规模</div>
-      <div class="r">09 / 11</div>
+      <div class="l">07 · DATA SCALE</div>
+      <div class="r">METRICS</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr;gap:4vh">
-      <div data-anim="line" style="display:grid;grid-template-columns:1fr auto;gap:3vw;align-items:end">
-        <div style="display:flex;flex-direction:column;gap:1.4vh">
-          <div class="t-meta">DATABASE · 真实录取数据</div>
-          <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.03em">数据规模</h2>
+    <div data-anim="head" style="display:grid;grid-template-columns:7.8fr 4.2fr;gap:2vw;margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">数据规模</h1>
+      <p class="lead" style="align-self:end;color:var(--text-secondary);font-weight:400;max-width:42ch">推荐引擎的准确性取决于数据质量——这是智愿的护城河。</p>
+    </div>
+    <div data-anim="tower" style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-5);margin-top:6vh;align-items:end">
+      <div class="kpi-tower-row" style="display:flex;flex-direction:column;align-items:flex-start">
+        <div class="bar-tower" style="width:100%;background:var(--grey-1);height:28vh;display:flex;align-items:end;padding:var(--sp-5)">
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7.2vh);line-height:.9;color:var(--accent)">342</div>
         </div>
-        <p class="body-sm" style="font-weight:400;max-width:32ch;text-align:right">覆盖 985 / 211 / 双一流 / 普通本科,31 省 × 6 年完整录取周期。</p>
+        <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-4)">院校 · 所</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">985 / 211 / 双一流 / 普通本科全覆盖</p>
       </div>
-      <div data-anim="up" class="bar-towers" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;align-items:end;flex:1">
-        <div class="bar-tower" style="display:flex;flex-direction:column;align-items:stretch">
-          <div class="cap" style="display:flex;align-items:center;gap:1vw;padding:1.4vh 1.6vw;background:var(--grey-1)">
-            <i data-lucide="building-2" style="width:1.6vw;height:1.6vw;stroke-width:1.4"></i>
-            <span class="lbl" style="font-family:var(--mono);font-size:max(14px,.82vw);letter-spacing:.16em;text-transform:uppercase;opacity:.65">UNIVERSITIES</span>
-          </div>
-          <div class="body-block" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:2.4vh 2vw;background:var(--paper);border:1px solid var(--grey-2);min-height:22vh">
-            <div class="nb" style="font-family:var(--sans);font-weight:200;font-size:max(20px,3.6vw);line-height:1;letter-spacing:-.03em;font-feature-settings:'tnum'">342</div>
-            <div class="sub" style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.92vw);opacity:.75;margin-top:1.2vh;line-height:1.5">所院校 · 985 / 211 / 双一流</div>
-          </div>
+      <div class="kpi-tower-row" style="display:flex;flex-direction:column;align-items:flex-start">
+        <div class="bar-tower" style="width:100%;background:var(--grey-1);height:20vh;display:flex;align-items:end;padding:var(--sp-5)">
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7.2vh);line-height:.9;color:var(--accent)">126</div>
         </div>
-        <div class="bar-tower" style="display:flex;flex-direction:column;align-items:stretch">
-          <div class="cap" style="display:flex;align-items:center;gap:1vw;padding:1.4vh 1.6vw;background:var(--grey-1)">
-            <i data-lucide="book-open" style="width:1.6vw;height:1.6vw;stroke-width:1.4"></i>
-            <span class="lbl" style="font-family:var(--mono);font-size:max(14px,.82vw);letter-spacing:.16em;text-transform:uppercase;opacity:.65">MAJORS</span>
-          </div>
-          <div class="body-block" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:2.4vh 2vw;background:var(--paper);border:1px solid var(--grey-2);min-height:28vh">
-            <div class="nb" style="font-family:var(--sans);font-weight:200;font-size:max(20px,3.6vw);line-height:1;letter-spacing:-.03em;font-feature-settings:'tnum'">126</div>
-            <div class="sub" style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.92vw);opacity:.75;margin-top:1.2vh;line-height:1.5">个专业 · 12 大学科门类</div>
-          </div>
+        <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-4)">专业 · 个</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">12 大学科门类完整覆盖</p>
+      </div>
+      <div class="kpi-tower-row" style="display:flex;flex-direction:column;align-items:flex-start">
+        <div class="bar-tower" style="width:100%;background:var(--accent);height:36vh;display:flex;align-items:end;padding:var(--sp-5)">
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7.2vh);line-height:.9;color:#fff">379K</div>
         </div>
-        <div class="bar-tower" style="display:flex;flex-direction:column;align-items:stretch">
-          <div class="cap" style="display:flex;align-items:center;gap:1vw;padding:1.4vh 1.6vw;background:var(--grey-1)">
-            <i data-lucide="database" style="width:1.6vw;height:1.6vw;stroke-width:1.4"></i>
-            <span class="lbl" style="font-family:var(--mono);font-size:max(14px,.82vw);letter-spacing:.16em;text-transform:uppercase;opacity:.65">ADMISSIONS</span>
-          </div>
-          <div class="body-block b-accent" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:2.4vh 2vw;background:var(--accent);color:var(--accent-on);min-height:42vh">
-            <div class="nb" style="font-family:var(--sans);font-weight:300;font-size:max(20px,3.6vw);line-height:1;letter-spacing:-.03em;font-feature-settings:'tnum'">379K</div>
-            <div class="sub" style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.92vw);opacity:.78;margin-top:1.2vh;line-height:1.5">条录取记录 · 31 省 × 6 年</div>
-          </div>
+        <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-4)">录取记录 · 条</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">31 省 × 6 年 × 多科类</p>
+      </div>
+      <div class="kpi-tower-row" style="display:flex;flex-direction:column;align-items:flex-start">
+        <div class="bar-tower" style="width:100%;background:var(--grey-1);height:24vh;display:flex;align-items:end;padding:var(--sp-5)">
+          <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.2vw,7.2vh);line-height:.9;color:var(--accent)">150K</div>
         </div>
-        <div class="bar-tower" style="display:flex;flex-direction:column;align-items:stretch">
-          <div class="cap" style="display:flex;align-items:center;gap:1vw;padding:1.4vh 1.6vw;background:var(--grey-1)">
-            <i data-lucide="bar-chart-3" style="width:1.6vw;height:1.6vw;stroke-width:1.4"></i>
-            <span class="lbl" style="font-family:var(--mono);font-size:max(14px,.82vw);letter-spacing:.16em;text-transform:uppercase;opacity:.65">SCORE TABLE</span>
-          </div>
-          <div class="body-block" style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:2.4vh 2vw;background:var(--paper);border:1px solid var(--grey-2);min-height:34vh">
-            <div class="nb" style="font-family:var(--sans);font-weight:200;font-size:max(20px,3.6vw);line-height:1;letter-spacing:-.03em;font-feature-settings:'tnum'">150K</div>
-            <div class="sub" style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.92vw);opacity:.75;margin-top:1.2vh;line-height:1.5">条一分一段 · 各省各年</div>
-          </div>
-        </div>
+        <div class="t-meta" style="color:var(--text-helper);margin-top:var(--sp-4)">一分一段 · 条</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.82vw);line-height:1.5;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">各省各年分数段分布</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ====== 10 · Vertical Timeline · 优化路线图 ====== -->
+<!-- ====== 09 · S02 V-Timeline · 发展路线图 ====== -->
 <section class="slide light" data-layout="S02" data-animate="timeline-vertical">
   <div class="canvas-card">
     <div class="chrome-min">
-      <div class="l">ROADMAP · 优化计划</div>
-      <div class="r">10 / 11</div>
+      <div class="l">08 · ROADMAP</div>
+      <div class="r">2026 → 2027</div>
     </div>
-    <div style="flex:1;padding:0;display:grid;grid-template-rows:auto 1fr auto;gap:3vh">
-      <div data-anim="line" style="display:flex;flex-direction:column;gap:1.4vh">
-        <div class="t-meta">EVOLUTION · 四阶段路线图</div>
-        <h2 style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:1;letter-spacing:-.03em">后续优化计划</h2>
-      </div>
-      <div data-anim="up" class="timeline-v" style="--tl-axis-w:24px;position:relative;display:flex;flex-direction:column;gap:0;flex:1;padding-left:24px">
-        <div class="tl-node" style="display:grid;grid-template-columns:var(--tl-axis-w) minmax(0,7em) minmax(0,7.6em) 1fr;gap:2vw;align-items:start;padding:2vh 0;position:relative">
-          <div class="tl-axis" style="position:relative;height:100%"><span class="dot" style="position:absolute;left:50%;transform:translateX(-50%);top:8px;width:8px;height:8px;background:var(--accent)"></span></div>
-          <span class="yr" style="font-family:var(--mono);font-size:max(14px,.84vw);letter-spacing:.05em;color:var(--accent);font-weight:500">2026 Q2</span>
-          <span class="multi" style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,10vh);line-height:.88;letter-spacing:-.04em;color:var(--accent)">1<small style="font-size:.32em;font-weight:300;opacity:.6;margin-left:.08em;vertical-align:.4em">×</small></span>
-          <div style="display:flex;flex-direction:column;gap:.8vh"><p class="desc" style="font-family:var(--sans),var(--sans-zh);font-size:max(18px,1.1vw);line-height:1.55;color:var(--text-secondary);font-weight:400"><strong style="font-weight:500;color:var(--text-primary)">MVP 上线</strong> — 核心推荐引擎 + AI 对话 + 六维画像,完成基础功能闭环。342 所院校数据入库。</p></div>
-        </div>
-        <div class="tl-node" style="display:grid;grid-template-columns:var(--tl-axis-w) minmax(0,7em) minmax(0,7.6em) 1fr;gap:2vw;align-items:start;padding:2vh 0;position:relative">
-          <div class="tl-axis" style="position:relative;height:100%"><span class="dot" style="position:absolute;left:50%;transform:translateX(-50%);top:8px;width:8px;height:8px;background:var(--ink)"></span></div>
-          <span class="yr" style="font-family:var(--mono);font-size:max(14px,.84vw);letter-spacing:.05em;color:var(--text-helper);font-weight:500">2026 Q3</span>
-          <span class="multi" style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,10vh);line-height:.88;letter-spacing:-.04em">10<small style="font-size:.32em;font-weight:300;opacity:.6;margin-left:.08em;vertical-align:.4em">×</small></span>
-          <div style="display:flex;flex-direction:column;gap:.8vh"><p class="desc" style="font-family:var(--sans),var(--sans-zh);font-size:max(18px,1.1vw);line-height:1.55;color:var(--text-secondary);font-weight:400"><strong style="font-weight:500;color:var(--text-primary)">数据扩展</strong> — 数据爬取模块上线(阳光高考网 + 各省考试院),院校数据扩展至 3000+ 所,覆盖全部本科专科。</p></div>
-        </div>
-        <div class="tl-node accent" style="display:grid;grid-template-columns:var(--tl-axis-w) minmax(0,7em) minmax(0,7.6em) 1fr;gap:2vw;align-items:start;padding:2vh 0;position:relative">
-          <div class="tl-axis" style="position:relative;height:100%"><span class="dot" style="position:absolute;left:50%;transform:translateX(-50%);top:8px;width:8px;height:8px;background:var(--accent)"></span></div>
-          <span class="yr" style="font-family:var(--mono);font-size:max(14px,.84vw);letter-spacing:.05em;color:var(--accent);font-weight:500">2026 Q4</span>
-          <span class="multi" style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,10vh);line-height:.88;letter-spacing:-.04em;color:var(--accent)">50<small style="font-size:.32em;font-weight:300;opacity:.7;margin-left:.08em;vertical-align:.4em">×</small></span>
-          <div style="display:flex;flex-direction:column;gap:.8vh"><p class="desc" style="font-family:var(--sans),var(--sans-zh);font-size:max(18px,1.1vw);line-height:1.55;color:var(--text-secondary);font-weight:400"><strong style="font-weight:500;color:var(--accent)">商业变现</strong> — 会员系统 + 支付集成上线,深度报告 PDF 导出,性能优化(CDN + 缓存策略)。</p></div>
-        </div>
-        <div class="tl-node" style="display:grid;grid-template-columns:var(--tl-axis-w) minmax(0,7em) minmax(0,7.6em) 1fr;gap:2vw;align-items:start;padding:2vh 0;position:relative">
-          <div class="tl-axis" style="position:relative;height:100%"><span class="dot" style="position:absolute;left:50%;transform:translateX(-50%);top:8px;width:8px;height:8px;background:var(--ink)"></span></div>
-          <span class="yr" style="font-family:var(--mono);font-size:max(14px,.84vw);letter-spacing:.05em;color:var(--text-helper);font-weight:500">2027 Q1</span>
-          <span class="multi" style="font-family:var(--sans);font-weight:200;font-size:min(5.6vw,10vh);line-height:.88;letter-spacing:-.04em">100<small style="font-size:.32em;font-weight:300;opacity:.6;margin-left:.08em;vertical-align:.4em">×</small></span>
-          <div style="display:flex;flex-direction:column;gap:.8vh"><p class="desc" style="font-family:var(--sans),var(--sans-zh);font-size:max(18px,1.1vw);line-height:1.55;color:var(--text-secondary);font-weight:400"><strong style="font-weight:500;color:var(--text-primary)">生态扩展</strong> — 移动端适配(PWA + 小程序),SEO 优化,延伸至考研 / 留学 / 职业规划领域。</p></div>
+    <div data-anim="head" style="margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em">发展路线图</h1>
+    </div>
+    <div class="timeline-v" data-anim="line" style="display:flex;flex-direction:column;gap:0;margin-top:5vh;position:relative;padding-left:var(--sp-8)">
+      <div style="position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--border-subtle)"></div>
+      <div class="tl-node" data-anim="node" style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-6);align-items:start;padding:var(--sp-5) 0;position:relative">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:absolute;left:calc(-1 * var(--sp-8) + 0px);top:calc(var(--sp-5) + 4px)"></div>
+        <div class="t-meta" style="color:var(--accent);min-width:8vw">Q2 2026</div>
+        <div>
+          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary)">MVP + 数据基建</h3>
+          <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">核心推荐引擎 + AI 对话 + 379K 数据导入,已完成。</p>
         </div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid var(--border-subtle);padding-top:2vh">
-        <p class="body-sm" style="font-weight:400;max-width:48ch">从 MVP 到平台化,四阶段递进。每阶段有明确的数据增长目标和商业化里程碑。</p>
-        <div class="t-meta">4 PHASES · 12 MONTHS</div>
+      <div class="tl-node" data-anim="node" style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-6);align-items:start;padding:var(--sp-5) 0;position:relative">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:absolute;left:calc(-1 * var(--sp-8) + 0px);top:calc(var(--sp-5) + 4px)"></div>
+        <div class="t-meta" style="color:var(--accent);min-width:8vw">Q3 2026</div>
+        <div>
+          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary)">新高考全覆盖 + 移动端</h3>
+          <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">31 省改革规则适配 + PWA / 小程序 + 深度报告 PDF。</p>
+        </div>
+      </div>
+      <div class="tl-node" data-anim="node" style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-6);align-items:start;padding:var(--sp-5) 0;position:relative">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:absolute;left:calc(-1 * var(--sp-8) + 0px);top:calc(var(--sp-5) + 4px)"></div>
+        <div class="t-meta" style="color:var(--accent);min-width:8vw">Q4 2026</div>
+        <div>
+          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary)">商业化 + 数据爬取</h3>
+          <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">会员体系 + 支付集成 + 阳光高考网数据自动更新。</p>
+        </div>
+      </div>
+      <div class="tl-node" data-anim="node" style="display:grid;grid-template-columns:auto 1fr;gap:var(--sp-6);align-items:start;padding:var(--sp-5) 0;position:relative">
+        <div class="dot" style="width:12px;height:12px;background:var(--accent);position:absolute;left:calc(-1 * var(--sp-8) + 0px);top:calc(var(--sp-5) + 4px)"></div>
+        <div class="t-meta" style="color:var(--accent);min-width:8vw">Q1 2027</div>
+        <div>
+          <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:500;font-size:max(18px,1.4vw);line-height:1.2;color:var(--text-primary)">性能优化 + 规模化</h3>
+          <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.88vw);line-height:1.6;color:var(--text-secondary);font-weight:400;margin-top:var(--sp-3)">Redis 缓存 + CDN + SEO 优化,支撑百万级用户。</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ====== 11 · Closing Manifesto · 收束 ====== -->
+<!-- ====== 10 · S13 Three Forces · 商业价值 ====== -->
+<section class="slide accent" data-layout="S13" data-animate="three-forces">
+  <div class="canvas-card">
+    <div class="chrome-min">
+      <div class="l">09 · BUSINESS</div>
+      <div class="r">VALUE</div>
+    </div>
+    <div data-anim="head" style="display:grid;grid-template-columns:4.2fr 7.8fr;gap:2vw;margin-top:2vh">
+      <h1 class="h-xl" style="font-family:var(--sans),var(--sans-zh);font-weight:200;font-size:min(5.2vw,9.2vh);line-height:.94;letter-spacing:-.02em;color:#fff">商业价值</h1>
+      <p class="lead" style="align-self:end;color:rgba(255,255,255,.86);font-weight:400;max-width:42ch">三重护城河,构建高考志愿填报领域的 AI 基础设施。</p>
+    </div>
+    <div class="three-forces" data-anim="grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);margin-top:6vh">
+      <div style="background:rgba(255,255,255,.08);padding:var(--sp-7)">
+        <div class="t-meta" style="color:rgba(255,255,255,.65)">01 · MODEL</div>
+        <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:#fff;margin-top:var(--sp-5)">Freemium</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;margin-top:var(--sp-5)">基础推荐免费获客,深度报告 + AI 对话高级功能付费转化。</p>
+      </div>
+      <div style="background:rgba(255,255,255,.08);padding:var(--sp-7)">
+        <div class="t-meta" style="color:rgba(255,255,255,.65)">02 · MOAT</div>
+        <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:#fff;margin-top:var(--sp-5)">数据壁垒</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;margin-top:var(--sp-5)">379K 录取记录 + 31 省改革规则,数据资产难以复制。</p>
+      </div>
+      <div style="background:rgba(255,255,255,.08);padding:var(--sp-7)">
+        <div class="t-meta" style="color:rgba(255,255,255,.65)">03 · LEVERAGE</div>
+        <div class="num-mega" style="font-family:var(--sans);font-weight:200;font-size:min(4.8vw,8.4vh);line-height:.9;color:#fff;margin-top:var(--sp-5)">AI 效率</div>
+        <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;margin-top:var(--sp-5)">LLM + Tool Calling/Skills/MCP 替代传统咨询团队,边际成本趋近于零。</p>
+      </div>
+    </div>
+    <div data-anim="foot" class="t-meta" style="color:rgba(255,255,255,.5);margin-top:3vh;text-align:right">目标: 2027 年覆盖 100 万考生</div>
+  </div>
+</section>
+
+<!-- ====== 11 · S10 Closing · 宣言 + Takeaway ====== -->
 <section class="slide split" data-layout="S10" data-animate="split-statement">
   <div class="canvas-card">
     <div class="split-half">
@@ -1723,39 +1643,39 @@
         </div>
         <div data-anim="manifesto" style="display:flex;flex-direction:column;gap:2vh;position:relative;z-index:1">
           <div class="t-meta" style="color:rgba(255,255,255,.78);letter-spacing:.22em;margin-bottom:1.6vh">MANIFESTO</div>
-          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(6vw,12vh);line-height:.94;letter-spacing:-.025em;font-weight:150;color:#fff">数据驱动决策<br>AI 助力<span style="font-style:italic;font-weight:260">未来</span></h2>
-          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(14px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">让每一位考生都能获得科学、个性化的志愿填报指导,降低信息不对称带来的决策风险。</div>
+          <h2 style="font-family:var(--sans),var(--sans-zh);font-size:min(7.2vw,12.8vh);line-height:.94;letter-spacing:-.025em;font-weight:200;color:#fff">让数据说话,<br/>让 AI <span style="font-style:italic;font-weight:300">辅助</span>,<br/>让人做决定。</h2>
+          <div style="font-family:var(--sans),var(--sans-zh);font-size:max(14px,1vw);line-height:1.6;color:rgba(255,255,255,.82);font-weight:400;max-width:36ch;margin-top:1.4vh">高考是人生大事,志愿填报不该靠感觉。智愿用数据和 AI 让每一个选择都有据可依。</div>
         </div>
         <div data-anim="signature" style="display:flex;justify-content:space-between;align-items:end;border-top:1px solid rgba(255,255,255,.22);padding-top:2vh;position:relative;z-index:1">
-          <div class="t-meta" style="color:rgba(255,255,255,.62)">ZhiYuan Team</div>
-          <div class="t-meta" style="color:rgba(255,255,255,.62)">26.05.31</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.62)">智愿团队</div>
+          <div class="t-meta" style="color:rgba(255,255,255,.62)">2026.05</div>
         </div>
       </div>
       <div class="half" style="padding:5.6vh 3.6vw 4.4vh;justify-content:space-between">
         <div class="chrome-min">
           <div class="l">TAKEAWAYS</div>
-          <div class="r">03 RULES</div>
+          <div class="r">03 POINTS</div>
         </div>
         <div data-anim="rules" style="display:flex;flex-direction:column;gap:0">
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">01</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">数据为基</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">38 万条真实录取数据驱动,AI 仅负责解读,不编造结论。</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">AI 让志愿填报更公平</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">不论家庭背景,每位考生都能获得数据驱动的专业建议。</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--text-primary)">02</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">六维精准</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">画像越完整,推荐越精准。渐进式收集,体验与精度兼顾。</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--text-primary);margin-bottom:1vh">数据壁垒</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">379K 录取记录 + 31 省规则,时间积累的数据资产无法速成。</p>
             </div>
           </div>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:2vw;align-items:start;padding:2.6vh 0;border-top:1px solid var(--border-subtle);border-bottom:2px solid var(--accent)">
             <div style="font-family:var(--sans);font-weight:200;font-size:min(4.4vw,7.8vh);line-height:.9;color:var(--accent)">03</div>
             <div>
-              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">AI 辅助,人做决定</h3>
-              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">AI 提供数据解读和建议,最终决策权始终在考生和家长手中。</p>
+              <h3 style="font-family:var(--sans),var(--sans-zh);font-weight:400;font-size:max(18px,1.8vw);line-height:1.2;letter-spacing:-.015em;color:var(--accent);margin-bottom:1vh">1342 万考生的巨大市场</h3>
+              <p style="font-family:var(--sans),var(--sans-zh);font-size:max(16px,.94vw);line-height:1.6;color:var(--text-secondary);font-weight:400">2026 年高考报名人数再创新高,AI 志愿是确定性赛道。</p>
             </div>
           </div>
         </div>
@@ -1763,6 +1683,9 @@
       </div>
     </div>
   </div>
+</section>
+
+</div>
 </section>
 
 

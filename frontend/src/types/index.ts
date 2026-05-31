@@ -103,3 +103,74 @@ export interface ChatMessage {
   content: string;
   created_at: string;
 }
+
+/** 会员等级 */
+export enum MembershipTier {
+  FREE = "free",
+  STANDARD = "standard",
+  DEEP = "deep",
+  VIP = "vip",
+}
+
+/** 支付方式 */
+export enum PaymentMethod {
+  ALIPAY = "alipay",
+  WECHAT = "wechat",
+}
+
+/** 订单状态 */
+export enum OrderStatus {
+  PENDING = "pending",
+  PAID = "paid",
+  ACTIVATED = "activated",
+  EXPIRED = "expired",
+  CANCELLED = "cancelled",
+}
+
+/** 会员等级信息 */
+export interface TierInfo {
+  tier: string;
+  name: string;
+  price: number;
+  period?: string;
+  features: string[];
+  recommended?: boolean;
+  current?: boolean;
+}
+
+/** 会员定价列表 */
+export interface TierListResponse {
+  tiers: TierInfo[];
+  current_tier: string | null;
+  expires_at: string | null;
+}
+
+/** 创建订单响应 */
+export interface CreateOrderResponse {
+  order_id: string;
+  order_no: string;
+  amount: number;
+  payment_method: string;
+  qr_content: string;
+  expires_in: number;
+}
+
+/** 订单信息 */
+export interface OrderInfo {
+  order_id: string;
+  order_no: string;
+  tier: string;
+  amount: number;
+  payment_method: string | null;
+  status: string;
+  paid_at: string | null;
+  created_at: string;
+}
+
+/** 会员状态 */
+export interface MembershipInfo {
+  tier: string;
+  name: string;
+  expires_at: string | null;
+  days_remaining: number | null;
+}

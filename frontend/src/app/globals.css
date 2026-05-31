@@ -435,6 +435,26 @@ body {
 }
 
 /* ============================================
+   Pricing Cards (Membership)
+   ============================================ */
+.zy-pricing-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.zy-pricing-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--zy-shadow-md);
+}
+
+.zy-pricing-card-highlighted {
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.15);
+}
+
+.zy-pricing-card-highlighted:hover {
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.25);
+}
+
+/* ============================================
    Utility Classes
    ============================================ */
 

@@ -38,12 +38,14 @@ from app.api.profile import router as profile_router
 from app.api.universities import router as universities_router
 from app.api.recommend import router as recommend_router
 from app.api.chat import router as chat_router
+from app.api.payment import router as payment_router
 
 app.include_router(auth_router)
 app.include_router(profile_router)
 app.include_router(universities_router)
 app.include_router(recommend_router)
 app.include_router(chat_router)
+app.include_router(payment_router)
 
 
 if __name__ == "__main__":

@@ -6,3 +6,16 @@ class MembershipTier(str, Enum):
     standard = "standard"
     deep = "deep"
     vip = "vip"
+
+
+class OrderStatus(str, Enum):
+    pending = "pending"
+    paid = "paid"
+    activated = "activated"
+    expired = "expired"
+    cancelled = "cancelled"
+
+
+class PaymentMethod(str, Enum):
+    alipay = "alipay"
+    wechat = "wechat"

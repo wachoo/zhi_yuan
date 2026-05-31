@@ -10,6 +10,7 @@ from app.models.user import User
 
 settings = get_settings()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="/api/auth/login", auto_error=False)
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
@@ -30,3 +31,17 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     if user is None:
         raise credentials_exception
     return user
+
+
+async def get_optional_user(token: str | None = Depends(oauth2_scheme_optional)) -> User | None:
+    """可选登录：无 token 时返回 None 而非报错"""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            return None
+        return await UserDAO().get_by_id(uuid.UUID(user_id))
+    except JWTError:
+        return None

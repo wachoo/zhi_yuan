@@ -22,8 +22,17 @@ class UserService:
             f"分数: {b.get('score', '未知')}, "
             f"位次: {b.get('rank', '未知')}, "
             f"省份: {b.get('province', '未知')}, "
-            f"科类: {b.get('subject_type', '未知')}"
+            f"首选科目: {b.get('subject_type', '未知')}"
         )
+
+        # 报考科类
+        exam_type = b.get('exam_type', '普通类')
+        summary += f", 报考科类: {exam_type}"
+
+        # 艺术/体育类专业分
+        professional_score = b.get('professional_score')
+        if exam_type in ('艺术类', '体育类') and professional_score is not None:
+            summary += f", 专业分: {professional_score}"
         
         # 添加兴趣和厌恶信息
         if profile.personality:
@@ -49,6 +58,18 @@ class UserService:
             "values_info": profile.values_info,
             "completeness": profile.completeness,
         }
+
+    async def check_daily_chat_limit(self, user, free_daily_limit: int = FREE_DAILY_LIMIT):
+        """仅检查每日对话限流（不持久化），超限抛出 429"""
+        today = date.today().isoformat()
+        if user.membership_tier == MembershipTier.free:
+            current = getattr(user, "daily_chat_count", 0)
+            last_date = getattr(user, "last_chat_date", None)
+            if last_date == today and current >= free_daily_limit:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"今日免费对话次数已用完（{free_daily_limit}次/天），升级会员可解锁无限对话",
+                )
 
     async def update_daily_chat(self, user, session_id: str, free_daily_limit: int = FREE_DAILY_LIMIT):
         """限流检查 + 持久化每日对话计数"""

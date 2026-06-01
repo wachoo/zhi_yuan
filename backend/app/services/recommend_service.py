@@ -54,9 +54,13 @@ class RecommendService:
         province = request.province if request.province is not None else basic.get("province", "")
         subject_type = request.subject_type if request.subject_type is not None else basic.get("subject_type", "")
         exam_type = request.exam_type if request.exam_type is not None else basic.get("exam_type", "普通类")
+        professional_score = request.professional_score if request.professional_score is not None else basic.get("professional_score")
 
-        if not rank or not province or not subject_type:
-            raise HTTPException(status_code=400, detail="请至少提供位次、省份和科类")
+        if not rank or not province or not subject_type or not exam_type:
+            raise HTTPException(status_code=400, detail="请至少提供位次、省份、首选科目和报考科类")
+
+        if exam_type in ("艺术类", "体育类") and professional_score is None:
+            raise HTTPException(status_code=400, detail=f"{exam_type}考生请提供专业分")
 
         # 2. 查询录取数据
         raw_records = await AdmissionDAO().query_records_with_details(province, subject_type, exam_type)
@@ -99,16 +103,21 @@ class RecommendService:
                     dislikes=dislikes, interests=interests, major_names=major_names
                 )
                 llm_dislikes = llm_result.get("dislikes", [])
-                expanded_set = set(dislikes)
-                # 新格式：LLM 直接返回专业名称列表
-                if isinstance(llm_dislikes, list):
-                    expanded_set.update(llm_dislikes)
-                # 兼容旧格式：字典格式
-                elif isinstance(llm_dislikes, dict):
-                    for keywords in llm_dislikes.values():
-                        expanded_set.update(keywords)
-                expanded_dislikes = list(expanded_set)
-                logger.info(f"LLM expanded dislikes: {expanded_dislikes}")
+                # LLM 返回空结果（静默失败），降级到硬编码扩展
+                if not llm_dislikes:
+                    logger.warning("LLM returned empty dislikes, falling back to hardcoded expansion")
+                    expanded_dislikes = _expand_dislikes(dislikes)
+                else:
+                    expanded_set = set(dislikes)
+                    # 新格式：LLM 直接返回专业名称列表
+                    if isinstance(llm_dislikes, list):
+                        expanded_set.update(llm_dislikes)
+                    # 兼容旧格式：字典格式
+                    elif isinstance(llm_dislikes, dict):
+                        for keywords in llm_dislikes.values():
+                            expanded_set.update(keywords)
+                    expanded_dislikes = list(expanded_set)
+                    logger.info(f"LLM expanded dislikes: {expanded_dislikes}")
             except Exception as e:
                 logger.warning(f"LLM semantic expansion failed, using fallback: {e}")
                 expanded_dislikes = _expand_dislikes(dislikes)
@@ -134,12 +143,13 @@ class RecommendService:
                 item["reason"] = scorer.generate_reason(
                     profile=profile_dict, record=item, score_result=score_result
                 )
+            categorized[group].sort(key=lambda x: x.get("adapter_score", 0), reverse=True)
 
         # 7. 持久化
         rec = Recommendation(
             id=uuid.uuid4(),
             user_id=user.id,
-            input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type},
+            input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type, "professional_score": professional_score},
             result={k: [{"university_name": i["university_name"], "major_name": i["major_name"],
                           "min_rank": i.get("min_rank"), "rank_ratio": i.get("rank_ratio"),
                           "adapter_score": i.get("adapter_score"), "reason": i.get("reason")} for i in v]

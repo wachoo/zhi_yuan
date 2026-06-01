@@ -21,8 +21,17 @@ class PasswordChange(BaseModel):
 
 class TokenResponse(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
     user_id: uuid.UUID
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class LogoutRequest(BaseModel):
+    refresh_token: str | None = None
 
 
 class UserInfo(BaseModel):
@@ -42,6 +51,7 @@ class ProfileBasicInfo(BaseModel):
     province: str
     subject_type: str
     exam_type: str | None = None
+    professional_score: int | None = Field(None, ge=0, description="艺术/体育类专业分")
 
 
 class ProfileFamilyInfo(BaseModel):
@@ -49,6 +59,13 @@ class ProfileFamilyInfo(BaseModel):
     tuition_max: int | None = None
     prefer_city: list[str] | None = None
     parent_industry: str | None = None
+    parent_education: str | None = None
+    hukou_type: str | None = None
+    has_siblings: bool | None = None
+    has_elderly_care: bool | None = None
+    home_province: str | None = None
+    home_city: str | None = None
+    home_district: str | None = None
 
 
 class ProfilePersonality(BaseModel):

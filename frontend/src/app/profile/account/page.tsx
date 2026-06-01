@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Form, Button, message, Space, Typography, Input } from "antd";
+import { Card, Form, Button, App, Space, Typography, Input } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import api, { logout } from "@/lib/api";
 
@@ -9,6 +9,7 @@ const { Text, Title } = Typography;
 const { Password } = Input;
 
 export default function AccountPage() {
+  const { message } = App.useApp();
   const [pwdForm] = Form.useForm();
   const [changingPwd, setChangingPwd] = useState(false);
 
@@ -31,9 +32,11 @@ export default function AccountPage() {
   };
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       <div>
-        <Title level={3} style={{ margin: "0 0 4px" }}>账号安全</Title>
+        <Title level={3} style={{ margin: "0 0 4px" }}>
+          账号安全
+        </Title>
         <Text type="secondary">管理你的账号安全设置</Text>
       </div>
 
@@ -44,7 +47,11 @@ export default function AccountPage() {
             <span>修改密码</span>
           </Space>
         }
-        style={{ maxWidth: 480, borderRadius: 12, border: "1px solid var(--zy-border)" }}
+        style={{
+          maxWidth: 480,
+          borderRadius: 12,
+          border: "1px solid var(--zy-border)",
+        }}
       >
         <Form form={pwdForm} layout="vertical" onFinish={onChangePassword}>
           <Form.Item
@@ -84,7 +91,13 @@ export default function AccountPage() {
             <Password prefix={<LockOutlined />} placeholder="再次输入新密码" />
           </Form.Item>
           <Form.Item>
-            <Button type="primary" htmlType="submit" loading={changingPwd} size="large" style={{ borderRadius: 8, fontWeight: 500 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={changingPwd}
+              size="large"
+              style={{ borderRadius: 8, fontWeight: 500 }}
+            >
               修改密码
             </Button>
           </Form.Item>

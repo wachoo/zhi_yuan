@@ -1,6 +1,6 @@
 "use client";
 
-import { Layout, Menu, Button, Dropdown, Avatar, Typography } from "antd";
+import { Layout, Menu, Button, Dropdown, Avatar } from "antd";
 import {
   HomeOutlined,
   SearchOutlined,
@@ -11,13 +11,11 @@ import {
   UserOutlined,
   LockOutlined,
   CrownOutlined,
-  SettingOutlined,
 } from "@ant-design/icons";
 import { useRouter, usePathname } from "next/navigation";
 import { logout } from "@/lib/api";
 
 const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
 
 const menuItems = [
   { key: "/", icon: <HomeOutlined />, label: "首页" },
@@ -93,15 +91,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               size={28}
               icon={<UserOutlined />}
               style={{
-                background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                background:
+                  "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
               }}
             />
           </Button>
         </Dropdown>
       </Header>
-      <Content className="zy-content">
-        {children}
-      </Content>
+      <Content className="zy-content">{children}</Content>
       <Footer className="zy-footer">
         智愿 &copy; 2026 — 所有推荐结果仅供参考，请结合多方信息综合决策
       </Footer>

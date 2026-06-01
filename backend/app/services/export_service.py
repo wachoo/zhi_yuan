@@ -55,10 +55,15 @@ class ExportService:
         province = input_snapshot.get("province", "")
         subject_type = input_snapshot.get("subject_type", "")
         exam_type = input_snapshot.get("exam_type", "普通类")
+        professional_score = input_snapshot.get("professional_score")
         created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         ws.merge_cells("A2:G2")
-        ws["A2"] = f"位次: {rank}  |  省份: {province}  |  科类: {subject_type}  |  考试类型: {exam_type}  |  生成时间: {created_at}"
+        subtitle = f"位次: {rank}  |  省份: {province}  |  首选科目: {subject_type}  |  报考科类: {exam_type}"
+        if professional_score:
+            subtitle += f"  |  专业分: {professional_score}"
+        subtitle += f"  |  生成时间: {created_at}"
+        ws["A2"] = subtitle
         ws["A2"].font = subtitle_font
         ws["A2"].alignment = center_align
         ws.row_dimensions[2].height = 20

@@ -1,11 +1,24 @@
-"""默认顾问 Skill - 专业、客观、数据驱动"""
+"""默认顾问 - 专业、客观、数据驱动"""
 
+from app.advisors.base import Advisor
 from app.skills.base import Skill
 
-DEFAULT_SKILL = Skill(
+# 默认顾问的基础能力
+DEFAULT_SKILLS = [
+    Skill(
+        id="base",
+        name="基础对话",
+        description="提供高考志愿相关的基础咨询和数据分析",
+        data_access=["profile", "recommendation", "university", "major", "admission"],
+        tools=["query_university", "query_major", "query_admission_score", "query_score_segment", "get_user_profile", "get_user_recommendation"],
+    ),
+]
+
+DEFAULT_ADVISOR = Advisor(
     id="default",
     name="智愿顾问",
     description="专业、客观的高考志愿顾问，基于数据给出理性建议",
+    skills=DEFAULT_SKILLS,
     system_prompt_template="""你是"智愿"的AI高考志愿顾问。你的职责是帮助考生和家长理解高考志愿填报的相关知识，并基于考生的个人情况给出个性化建议。
 
 你可以使用以下工具查询真实数据：

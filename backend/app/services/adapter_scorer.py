@@ -1,3 +1,59 @@
+# 省份邻接关系（简化版，用于就近评估）
+_NEIGHBORING_PROVINCES: dict[str, set[str]] = {
+    "北京": {"天津", "河北"},
+    "天津": {"北京", "河北"},
+    "河北": {"北京", "天津", "山西", "内蒙古", "辽宁", "山东", "河南"},
+    "山西": {"河北", "内蒙古", "陕西", "河南"},
+    "内蒙古": {"黑龙江", "吉林", "辽宁", "河北", "山西", "陕西", "宁夏", "甘肃"},
+    "辽宁": {"吉林", "内蒙古", "河北"},
+    "吉林": {"黑龙江", "辽宁", "内蒙古"},
+    "黑龙江": {"吉林", "内蒙古"},
+    "上海": {"江苏", "浙江"},
+    "江苏": {"上海", "浙江", "安徽", "山东"},
+    "浙江": {"上海", "江苏", "安徽", "江西", "福建"},
+    "安徽": {"江苏", "浙江", "江西", "湖北", "河南", "山东"},
+    "福建": {"浙江", "江西", "广东"},
+    "江西": {"浙江", "安徽", "湖北", "湖南", "广东", "福建"},
+    "山东": {"河北", "河南", "安徽", "江苏"},
+    "河南": {"河北", "山西", "陕西", "湖北", "安徽", "山东"},
+    "湖北": {"河南", "安徽", "江西", "湖南", "重庆", "陕西"},
+    "湖南": {"湖北", "江西", "广东", "广西", "贵州", "重庆"},
+    "广东": {"福建", "江西", "湖南", "广西"},
+    "广西": {"湖南", "广东", "贵州", "云南"},
+    "海南": {"广东"},
+    "重庆": {"四川", "贵州", "湖北", "湖南", "陕西"},
+    "四川": {"重庆", "云南", "贵州", "西藏", "青海", "甘肃", "陕西"},
+    "贵州": {"四川", "重庆", "湖南", "广西", "云南"},
+    "云南": {"四川", "贵州", "广西", "西藏"},
+    "西藏": {"四川", "云南", "青海", "新疆"},
+    "陕西": {"山西", "内蒙古", "宁夏", "甘肃", "四川", "重庆", "湖北", "河南"},
+    "甘肃": {"内蒙古", "宁夏", "陕西", "四川", "青海", "新疆"},
+    "青海": {"甘肃", "四川", "西藏", "新疆"},
+    "宁夏": {"内蒙古", "陕西", "甘肃"},
+    "新疆": {"甘肃", "青海", "西藏"},
+    "台湾": set(),
+    "香港": {"广东"},
+    "澳门": {"广东"},
+}
+
+
+def _is_neighboring_province(province_a: str, province_b: str) -> bool:
+    """判断两个省份是否相邻"""
+    return province_b in _NEIGHBORING_PROVINCES.get(province_a, set())
+
+
+# 父母职业方向 → 相关专业关键词
+_PARENT_INDUSTRY_KEYWORDS: dict[str, list[str]] = {
+    "医疗/卫生": ["医学", "临床", "护理", "药学", "中医", "口腔", "公共卫生"],
+    "教育/科研": ["教育", "师范", "数学", "物理", "化学", "生物", "中文", "历史"],
+    "工程技术": ["工程", "机械", "电子", "自动化", "土木", "建筑", "材料"],
+    "金融/财务": ["金融", "经济", "会计", "财务", "审计", "税务", "保险"],
+    "法律": ["法学", "法律", "知识产权"],
+    "企业管理": ["工商管理", "市场营销", "人力资源", "物流", "电子商务"],
+    "公务员/事业单位": ["法学", "公共管理", "行政管理", "政治学"],
+}
+
+
 class AdapterScorer:
     """六维适配度评分器"""
 
@@ -50,13 +106,49 @@ class AdapterScorer:
         if not family:
             return 0.0
         score = 50.0
+
+        # 学费承受
         tuition_max = family.get("tuition_max")
         record_tuition = record.get("tuition_max", 0)
         if tuition_max and record_tuition:
             if record_tuition <= tuition_max:
-                score += 25.0
+                score += 20.0
             else:
                 score -= 25.0
+
+        # 收入与学费匹配
+        income_range = family.get("income_range")
+        if income_range and record_tuition:
+            income_map = {
+                "5万以下": 50000, "5-10万": 100000, "10-20万": 200000,
+                "20-50万": 500000, "50-100万": 1000000, "100万以上": 2000000,
+            }
+            income_val = income_map.get(income_range, 0)
+            if income_val > 0:
+                ratio = record_tuition / income_val
+                if ratio < 0.1:
+                    score += 10.0
+                elif ratio > 0.3:
+                    score -= 15.0
+
+        # 赡养负担：有老人需就近照顾，远距离院校减分
+        uni_province = record.get("university_province", "")
+        home_province = family.get("home_province", "")
+        has_elderly_care = family.get("has_elderly_care")
+        if has_elderly_care and home_province and uni_province:
+            if uni_province == home_province:
+                score += 10.0
+            elif _is_neighboring_province(home_province, uni_province):
+                pass  # 邻省不加减
+            else:
+                score -= 10.0
+
+        # 独生子女：无兄弟姐妹，倾向就近
+        has_siblings = family.get("has_siblings")
+        if has_siblings is False and home_province and uni_province:
+            if uni_province == home_province:
+                score += 5.0
+
         return min(100, max(0, score))
 
     def _score_city(self, profile: dict, record: dict) -> float:
@@ -64,15 +156,29 @@ class AdapterScorer:
         if not family:
             return 0.0
         prefer_cities = family.get("prefer_city", [])
-        if not prefer_cities:
-            return 50.0
         record_city = record.get("city", "")
         uni_province = record.get("university_province", "")
-        if not record_city and not uni_province:
+
+        if prefer_cities:
+            if not record_city and not uni_province:
+                return 50.0
+            if record_city in prefer_cities or uni_province in prefer_cities:
+                return 100.0
+            return 20.0
+
+        # 无明确偏好城市时，根据家庭所在地评估就近程度
+        home_province = family.get("home_province", "")
+        if home_province and uni_province:
+            if uni_province == home_province:
+                return 90.0
+            if _is_neighboring_province(home_province, uni_province):
+                return 70.0
+            # 有赡养负担或独生子女，远距离扣分
+            if family.get("has_elderly_care") or family.get("has_siblings") is False:
+                return 30.0
             return 50.0
-        if record_city in prefer_cities or uni_province in prefer_cities:
-            return 100.0
-        return 20.0
+
+        return 50.0
 
     def _score_personality(self, profile: dict, record: dict) -> float:
         personality = profile.get("personality")
@@ -125,7 +231,7 @@ class AdapterScorer:
     # 维度中文名映射
     DIMENSION_LABELS = {
         "basic": "分数匹配",
-        "family": "学费承受",
+        "family": "家庭适配",
         "city": "城市偏好",
         "personality": "兴趣契合",
         "ability": "学科优势",
@@ -174,6 +280,11 @@ class AdapterScorer:
             matched = [c for c in prefer_cities if c == record_city or c == uni_province]
             if matched:
                 return f"位于偏好城市{'/'.join(matched)}"
+            home_province = family.get("home_province", "")
+            if home_province and uni_province == home_province:
+                return "位于家乡省份"
+            if home_province and _is_neighboring_province(home_province, uni_province):
+                return "位于家乡邻省"
 
         if dim == "personality":
             personality = profile.get("personality") or {}
@@ -196,8 +307,26 @@ class AdapterScorer:
                 return f"符合{'/'.join(career_values)}的职业追求"
 
         if dim == "family":
-            if score >= 75:
-                return "学费在承受范围内"
+            family = profile.get("family_info") or {}
+            home = family.get("home_province", "")
+            uni_province = record.get("university_province", "")
+            parts = []
+            tuition_max = family.get("tuition_max")
+            record_tuition = record.get("tuition_max", 0)
+            if tuition_max and record_tuition and record_tuition <= tuition_max:
+                parts.append("学费在承受范围内")
+            if home and uni_province and uni_province == home:
+                parts.append("院校在家乡省份")
+            elif home and uni_province and _is_neighboring_province(home, uni_province):
+                parts.append("院校在邻近省份")
+            parent_ind = family.get("parent_industry")
+            if parent_ind and score > 60:
+                major_name = record.get("major_name", "")
+                keywords = _PARENT_INDUSTRY_KEYWORDS.get(parent_ind, [])
+                if any(kw in major_name for kw in keywords):
+                    parts.append(f"与家庭职业方向({parent_ind})相关")
+            if parts:
+                return "；".join(parts)
 
         return None
 

@@ -22,17 +22,20 @@ export const EXAM_TYPE_OPTIONS = [
   {
     value: ExamType.NORMAL,
     label: "普通类",
-    description: "普通高考文化课考试，可选工学、理学、医学、经济学、管理学、法学、文学、历史学、哲学、农学等专业",
+    description:
+      "普通高考文化课考试，可选工学、理学、医学、经济学、管理学、法学、文学、历史学、哲学、农学等专业",
   },
   {
     value: ExamType.ART,
     label: "艺术类",
-    description: "需参加艺术类专业考试（省统考/校考），可选视觉传达设计、音乐学、表演、播音主持、动画、舞蹈等专业",
+    description:
+      "需参加艺术类专业考试（省统考/校考），可选视觉传达设计、音乐学、表演、播音主持、动画、舞蹈等专业",
   },
   {
     value: ExamType.SPORTS,
     label: "体育类",
-    description: "需参加体育类专业测试，可选体育教育、运动训练、武术与民族传统体育等专业",
+    description:
+      "需参加体育类专业测试，可选体育教育、运动训练、武术与民族传统体育等专业",
   },
 ];
 
@@ -82,6 +85,7 @@ export interface UserProfile {
     province: string;
     subject_type: string;
     exam_type: string | null;
+    professional_score: number | null;
   } | null;
   family_info: Record<string, unknown> | null;
   personality: Record<string, unknown> | null;
@@ -94,6 +98,7 @@ export interface ChatSession {
   session_id: string;
   title: string;
   message_count: number;
+  advisor_id: string | null;
   last_message_at: string | null;
 }
 
@@ -102,6 +107,8 @@ export interface ChatMessage {
   session_id: string;
   role: "user" | "assistant" | "system" | "tool";
   content: string;
+  advisor_id: string | null;
+  advisor_name: string | null;
   created_at: string;
 }
 

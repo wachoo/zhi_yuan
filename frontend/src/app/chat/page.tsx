@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Input, Button, List, Typography, Space, Avatar, Empty, Spin, Select } from "antd";
+import {
+  Input,
+  Button,
+  Typography,
+  Space,
+  Avatar,
+  Empty,
+  Spin,
+  Tag,
+  App,
+} from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -68,17 +78,20 @@ function StreamingMarkdown({ content }: { content: string }) {
 }
 
 interface DisplayMessage {
+  id?: string;
   role: "user" | "assistant";
   content: string;
+  advisor_name?: string;
 }
 
-interface Skill {
+interface Advisor {
   id: string;
   name: string;
   description: string;
 }
 
 export default function ChatPage() {
+  const { modal, message } = App.useApp();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -87,18 +100,30 @@ export default function ChatPage() {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [currentSkillId, setCurrentSkillId] = useState("default");
+  const [advisors, setAdvisors] = useState<Advisor[]>([]);
+  const [currentAdvisorId, setCurrentAdvisorId] = useState("default");
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [sessionAdvisors, setSessionAdvisors] = useState<
+    Record<string, string>
+  >({});
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const streamAdvisorNameRef = useRef<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
     try {
-      const res = await api.get("/api/chat/sessions");
+      const res = await api.get<ChatSession[]>("/api/chat/sessions");
       setSessions(res.data);
+      // Populate sessionAdvisors from server-side persisted advisor_id
+      const advisorsMap: Record<string, string> = {};
+      for (const s of res.data) {
+        if (s.advisor_id) {
+          advisorsMap[s.session_id] = s.advisor_id;
+        }
+      }
+      setSessionAdvisors((prev) => ({ ...advisorsMap, ...prev }));
     } catch {
       // 静默处理
     } finally {
@@ -106,38 +131,68 @@ export default function ChatPage() {
     }
   }, []);
 
-  const loadSessionMessages = useCallback(async (sessionId: string) => {
-    setHistoryLoading(true);
-    try {
-      const res = await api.get<ChatMessage[]>(
-        `/api/chat/sessions/${sessionId}/messages`
-      );
-      const displayMsgs: DisplayMessage[] = res.data
-        .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
-      setMessages(displayMsgs);
-      setCurrentSessionId(sessionId);
-    } catch {
-      setMessages([]);
-    } finally {
-      setHistoryLoading(false);
-    }
+  const loadSessionMessages = useCallback(
+    async (sessionId: string) => {
+      setHistoryLoading(true);
+      try {
+        const res = await api.get<ChatMessage[]>(
+          `/api/chat/sessions/${sessionId}/messages`,
+        );
+        const displayMsgs: DisplayMessage[] = res.data
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({
+            id: m.id,
+            role: m.role as "user" | "assistant",
+            content: m.content,
+            advisor_name: m.advisor_name ?? undefined,
+          }));
+        setMessages(displayMsgs);
+        setCurrentSessionId(sessionId);
+        // Restore advisor from session's persisted advisor_id
+        const session = sessions.find((s) => s.session_id === sessionId);
+        if (session?.advisor_id) {
+          setCurrentAdvisorId(session.advisor_id);
+        }
+      } catch {
+        setMessages([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    },
+    [sessions],
+  );
+
+  useEffect(() => {
+    (async () => {
+      setSessionsLoading(true);
+      try {
+        const res = await api.get<ChatSession[]>("/api/chat/sessions");
+        setSessions(res.data);
+        const advisorsMap: Record<string, string> = {};
+        for (const s of res.data) {
+          if (s.advisor_id) {
+            advisorsMap[s.session_id] = s.advisor_id;
+          }
+        }
+        setSessionAdvisors((prev) => ({ ...advisorsMap, ...prev }));
+      } catch {
+        // 静默处理
+      } finally {
+        setSessionsLoading(false);
+      }
+    })();
   }, []);
 
   useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
-
-  useEffect(() => {
-    const loadSkills = async () => {
+    const loadAdvisors = async () => {
       try {
-        const res = await api.get<Skill[]>("/api/chat/skills");
-        setSkills(res.data);
+        const res = await api.get<Advisor[]>("/api/chat/advisors");
+        setAdvisors(res.data);
       } catch {
-        setSkills([{ id: "default", name: "智愿顾问", description: "" }]);
+        setAdvisors([{ id: "default", name: "智愿顾问", description: "" }]);
       }
     };
-    loadSkills();
+    loadAdvisors();
   }, []);
 
   useEffect(() => {
@@ -157,13 +212,70 @@ export default function ChatPage() {
     loadSessionMessages(sessionId);
   };
 
-  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+  const handleDeleteSession = async (
+    e: React.MouseEvent,
+    sessionId: string,
+  ) => {
     e.stopPropagation();
-    setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
-    if (currentSessionId === sessionId) {
-      setCurrentSessionId(null);
-      setMessages([]);
-    }
+    modal.confirm({
+      title: "确认删除",
+      content: "删除该会话及其所有对话记录？此操作不可恢复。",
+      okText: "删除",
+      okButtonProps: { danger: true },
+      cancelText: "取消",
+      onOk: async () => {
+        try {
+          await api.delete(`/api/chat/sessions/${sessionId}`);
+          setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
+          if (currentSessionId === sessionId) {
+            setCurrentSessionId(null);
+            setMessages([]);
+          }
+        } catch {
+          message.error("删除会话失败");
+        }
+      },
+    });
+  };
+
+  const handleDeleteMessage = async (msgIndex: number) => {
+    const msg = messages[msgIndex];
+    if (!msg.id || !currentSessionId) return;
+
+    modal.confirm({
+      title: "确认删除",
+      content: "删除该问答对？此操作不可恢复。",
+      okText: "删除",
+      okButtonProps: { danger: true },
+      cancelText: "取消",
+      onOk: async () => {
+        try {
+          await api.delete(
+            `/api/chat/sessions/${currentSessionId}/messages/${msg.id}`,
+          );
+          // 从本地状态移除该 user 消息和紧随的 assistant 消息
+          setMessages((prev) => {
+            const next = [...prev];
+            const nextMsg = next[msgIndex + 1];
+            // 如果下一条是 assistant，也一并移除
+            if (nextMsg && nextMsg.role === "assistant") {
+              next.splice(msgIndex, 2);
+            } else {
+              next.splice(msgIndex, 1);
+            }
+            // 如果会话变空，清除当前会话
+            if (next.length === 0) {
+              setCurrentSessionId(null);
+            }
+            return next;
+          });
+          // 刷新会话列表（会话可能已被后端删除）
+          loadSessions();
+        } catch {
+          message.error("删除失败");
+        }
+      },
+    });
   };
 
   const handleRenameStart = (e: React.MouseEvent, session: ChatSession) => {
@@ -182,8 +294,8 @@ export default function ChatPage() {
       await api.put(`/api/chat/sessions/${targetId}`, { title: newTitle });
       setSessions((prev) =>
         prev.map((s) =>
-          s.session_id === targetId ? { ...s, title: newTitle } : s
-        )
+          s.session_id === targetId ? { ...s, title: newTitle } : s,
+        ),
       );
     } catch {
       // 失败时静默处理
@@ -206,14 +318,22 @@ export default function ChatPage() {
 
     const controller = new AbortController();
     abortRef.current = controller;
+    streamAdvisorNameRef.current = null;
 
     try {
       const params = new URLSearchParams({ message: userMsg });
       if (currentSessionId) params.set("session_id", currentSessionId);
-      params.set("skill_id", currentSkillId);
+      // Use session's saved advisor, or current selection for new sessions
+      const advisorId =
+        currentSessionId && sessionAdvisors[currentSessionId]
+          ? sessionAdvisors[currentSessionId]
+          : currentAdvisorId;
+      params.set("advisor_id", advisorId);
 
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const response = await fetch(`${baseUrl}/api/chat/stream?${params}`, {
         method: "POST",
@@ -230,7 +350,17 @@ export default function ChatPage() {
       }
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        let errMsg = `HTTP ${response.status}`;
+        try {
+          const errBody = await response.json();
+          if (errBody.detail) errMsg = errBody.detail;
+        } catch {
+          /* ignore json parse failure */
+        }
+        if (response.status === 429) {
+          errMsg += "\n\n[前往会员中心升级 >>](/profile/membership)";
+        }
+        throw new Error(errMsg);
       }
 
       const reader = response.body?.getReader();
@@ -254,17 +384,30 @@ export default function ChatPage() {
 
           if (data === "[DONE]") continue;
 
-          if (data.startsWith("{")) {
-            try {
-              const parsed = JSON.parse(data);
+          // 统一尝试 JSON 解析，区分元数据和文本内容
+          try {
+            const parsed = JSON.parse(data);
+            if (typeof parsed === "object" && parsed !== null) {
               if (parsed.session_id) {
                 setCurrentSessionId(parsed.session_id);
+                // Save server-resolved advisor_id for this session
+                if (parsed.advisor_id) {
+                  setSessionAdvisors((prev) => ({
+                    ...prev,
+                    [parsed.session_id]: parsed.advisor_id,
+                  }));
+                  setCurrentAdvisorId(parsed.advisor_id);
+                }
                 loadSessions();
               }
-            } catch {
-              // 忽略
+              if (parsed.advisor_name) {
+                streamAdvisorNameRef.current = parsed.advisor_name;
+              }
             }
+            // 合法 JSON → 元数据，跳过
             continue;
+          } catch {
+            // 非 JSON → 当作普通文本内容累积
           }
 
           accumulated += data;
@@ -272,7 +415,10 @@ export default function ChatPage() {
           setMessages((prev) => {
             const next = [...prev];
             if (next.length > 0 && next[next.length - 1].role === "assistant") {
-              next[next.length - 1] = { ...next[next.length - 1], content: snapshot };
+              next[next.length - 1] = {
+                ...next[next.length - 1],
+                content: snapshot,
+              };
             }
             return next;
           });
@@ -282,13 +428,15 @@ export default function ChatPage() {
       if (err instanceof Error && err.name === "AbortError") {
         // 用户主动取消
       } else {
+        const errMsg =
+          err instanceof Error ? err.message : "抱歉，发生了错误，请重试。";
         setMessages((prev) => {
           const next = [...prev];
           if (next.length > 0 && next[next.length - 1].role === "assistant") {
             if (!next[next.length - 1].content) {
               next[next.length - 1] = {
                 ...next[next.length - 1],
-                content: "抱歉，发生了错误，请重试。",
+                content: errMsg,
               };
             }
           }
@@ -299,6 +447,20 @@ export default function ChatPage() {
       setLoading(false);
       setStreaming(false);
       abortRef.current = null;
+      // 将流式期间捕获的 advisor_name 写入最后一条 assistant 消息
+      if (streamAdvisorNameRef.current) {
+        const name = streamAdvisorNameRef.current;
+        setMessages((prev) => {
+          const next = [...prev];
+          if (next.length > 0 && next[next.length - 1].role === "assistant") {
+            next[next.length - 1] = {
+              ...next[next.length - 1],
+              advisor_name: name,
+            };
+          }
+          return next;
+        });
+      }
     }
   };
 
@@ -312,7 +474,9 @@ export default function ChatPage() {
       <div style={{ display: "flex", height: "calc(100vh - 200px)", gap: 16 }}>
         {/* Sidebar */}
         <div className="zy-chat-sidebar" style={{ width: 280, flexShrink: 0 }}>
-          <div style={{ padding: 16, borderBottom: "1px solid var(--zy-border)" }}>
+          <div
+            style={{ padding: 16, borderBottom: "1px solid var(--zy-border)" }}
+          >
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -335,10 +499,10 @@ export default function ChatPage() {
                 style={{ padding: 24 }}
               />
             ) : (
-              <List
-                dataSource={sessions}
-                renderItem={(session) => (
-                  <List.Item
+              <div>
+                {sessions.map((session) => (
+                  <div
+                    key={session.session_id}
                     onClick={() => handleSelectSession(session.session_id)}
                     className="session-item"
                     style={{
@@ -352,12 +516,19 @@ export default function ChatPage() {
                         session.session_id === currentSessionId
                           ? "3px solid var(--zy-primary)"
                           : "3px solid transparent",
-                      marginBottom: 0,
-                      borderBottom: "none",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 10 }}>
-                      <MessageOutlined style={{ color: "var(--zy-text-muted)", flexShrink: 0 }} />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        gap: 10,
+                      }}
+                    >
+                      <MessageOutlined
+                        style={{ color: "var(--zy-text-muted)", flexShrink: 0 }}
+                      />
                       {editingSessionId === session.session_id ? (
                         <>
                           <Input
@@ -381,7 +552,11 @@ export default function ChatPage() {
                             style={{ flex: 1 }}
                           />
                           <CheckOutlined
-                            style={{ color: "var(--zy-primary)", flexShrink: 0, cursor: "pointer" }}
+                            style={{
+                              color: "var(--zy-primary)",
+                              flexShrink: 0,
+                              cursor: "pointer",
+                            }}
                             onMouseDown={(e) => {
                               e.preventDefault();
                               handleRenameCommit();
@@ -395,7 +570,10 @@ export default function ChatPage() {
                               ellipsis
                               style={{
                                 display: "block",
-                                fontWeight: session.session_id === currentSessionId ? 600 : 400,
+                                fontWeight:
+                                  session.session_id === currentSessionId
+                                    ? 600
+                                    : 400,
                                 fontSize: 14,
                               }}
                             >
@@ -407,20 +585,32 @@ export default function ChatPage() {
                           </div>
                           <EditOutlined
                             className="anticon-edit"
-                            style={{ color: "var(--zy-text-muted)", flexShrink: 0, cursor: "pointer", fontSize: 13 }}
+                            style={{
+                              color: "var(--zy-text-muted)",
+                              flexShrink: 0,
+                              cursor: "pointer",
+                              fontSize: 13,
+                            }}
                             onClick={(e) => handleRenameStart(e, session)}
                           />
                           <DeleteOutlined
                             className="anticon-delete"
-                            style={{ color: "var(--zy-text-muted)", flexShrink: 0, cursor: "pointer", fontSize: 13 }}
-                            onClick={(e) => handleDeleteSession(e, session.session_id)}
+                            style={{
+                              color: "var(--zy-text-muted)",
+                              flexShrink: 0,
+                              cursor: "pointer",
+                              fontSize: 13,
+                            }}
+                            onClick={(e) =>
+                              handleDeleteSession(e, session.session_id)
+                            }
                           />
                         </>
                       )}
                     </div>
-                  </List.Item>
-                )}
-              />
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -439,37 +629,38 @@ export default function ChatPage() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 36,
-                height: 36,
-                background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
-                borderRadius: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-              }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  background:
+                    "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                  borderRadius: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                }}
+              >
                 <RobotOutlined />
               </div>
               <div>
-                <Text strong style={{ fontSize: 15 }}>AI志愿顾问</Text>
+                <Text strong style={{ fontSize: 15 }}>
+                  AI志愿顾问
+                </Text>
                 {currentSessionId && (
-                  <Text type="secondary" style={{ fontSize: 12, display: "block" }}>
-                    {sessions.find((s) => s.session_id === currentSessionId)?.title}
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: 12, display: "block" }}
+                  >
+                    {
+                      sessions.find((s) => s.session_id === currentSessionId)
+                        ?.title
+                    }
                   </Text>
                 )}
               </div>
             </div>
-            <Select
-              value={currentSkillId}
-              onChange={setCurrentSkillId}
-              style={{ width: 140 }}
-              size="small"
-              options={skills.map((s) => ({
-                value: s.id,
-                label: s.name,
-              }))}
-            />
           </div>
 
           {/* Messages */}
@@ -489,52 +680,152 @@ export default function ChatPage() {
                 <Spin />
               </div>
             ) : messages.length === 0 ? (
-              <div style={{ textAlign: "center", padding: 48 }}>
-                <div style={{
-                  width: 72,
-                  height: 72,
-                  background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
-                  borderRadius: 20,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 20px",
-                  color: "white",
-                  fontSize: 32,
-                }}>
+              <div style={{ textAlign: "center", padding: "48px 24px" }}>
+                <div
+                  style={{
+                    width: 72,
+                    height: 72,
+                    background:
+                      "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                    borderRadius: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 20px",
+                    color: "white",
+                    fontSize: 32,
+                  }}
+                >
                   <RobotOutlined />
                 </div>
-                <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                <Text
+                  strong
+                  style={{ fontSize: 16, display: "block", marginBottom: 8 }}
+                >
                   你好！我是智愿AI顾问
                 </Text>
-                <Text type="secondary">
-                  可以帮你查询院校、专业、录取分数等信息，试试问我吧
+                <Text
+                  type="secondary"
+                  style={{ display: "block", marginBottom: 32 }}
+                >
+                  可以帮我查询院校、专业、录取分数等信息，试试问我吧
                 </Text>
-              </div>
-            ) : (
-              <List
-                dataSource={messages}
-                renderItem={(msg) => (
-                  <List.Item style={{ borderBottom: "none", padding: "10px 0" }}>
-                    <List.Item.Meta
-                      avatar={
+
+                {advisors.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      gap: 16,
+                    }}
+                  >
+                    {advisors.map((advisor) => (
+                      <div
+                        key={advisor.id}
+                        onClick={() => setCurrentAdvisorId(advisor.id)}
+                        style={{
+                          cursor: "pointer",
+                          padding: "16px 20px",
+                          borderRadius: 12,
+                          border:
+                            currentAdvisorId === advisor.id
+                              ? "2px solid var(--zy-primary)"
+                              : "1px solid var(--zy-border)",
+                          background:
+                            currentAdvisorId === advisor.id
+                              ? "rgba(37, 99, 235, 0.04)"
+                              : "var(--zy-surface)",
+                          transition: "all 0.2s",
+                          width: 140,
+                          textAlign: "center",
+                        }}
+                      >
                         <Avatar
                           style={{
-                            background: msg.role === "user"
-                              ? "var(--zy-primary)"
-                              : "linear-gradient(135deg, #1E3A5F, #2563EB)",
+                            background:
+                              currentAdvisorId === advisor.id
+                                ? "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))"
+                                : "var(--zy-text-muted)",
+                            marginBottom: 8,
                           }}
-                          icon={msg.role === "user" ? <UserOutlined /> : <RobotOutlined />}
+                          size={48}
+                          icon={<RobotOutlined />}
                         />
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            fontSize: 14,
+                            marginBottom: 4,
+                          }}
+                        >
+                          {advisor.name}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "var(--zy-text-secondary)",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {advisor.description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                {messages.map((msg, msgIndex) => (
+                  <div
+                    key={msg.id ?? msgIndex}
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      padding: "10px 0",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <Avatar
+                      style={{
+                        background:
+                          msg.role === "user"
+                            ? "var(--zy-primary)"
+                            : "linear-gradient(135deg, #1E3A5F, #2563EB)",
+                        flexShrink: 0,
+                      }}
+                      icon={
+                        msg.role === "user" ? (
+                          <UserOutlined />
+                        ) : (
+                          <RobotOutlined />
+                        )
                       }
-                      title={
-                        <Text strong style={{ fontSize: 13 }}>
-                          {msg.role === "user" ? "我" : "智愿AI"}
-                        </Text>
-                      }
-                      description={
-                        msg.role === "assistant" ? (
-                          streaming && messages.indexOf(msg) === messages.length - 1 ? (
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ marginBottom: 4 }}>
+                        <Space size={6}>
+                          <Text strong style={{ fontSize: 13 }}>
+                            {msg.role === "user" ? "我" : "智愿AI"}
+                          </Text>
+                          {msg.role === "assistant" && msg.advisor_name && (
+                            <Tag
+                              style={{
+                                borderRadius: 4,
+                                fontSize: 11,
+                                lineHeight: "18px",
+                                margin: 0,
+                              }}
+                            >
+                              {msg.advisor_name}
+                            </Tag>
+                          )}
+                        </Space>
+                      </div>
+                      <div>
+                        {msg.role === "assistant" ? (
+                          streaming && msgIndex === messages.length - 1 ? (
                             <StreamingMarkdown content={msg.content} />
                           ) : (
                             <div className="markdown-body">
@@ -544,31 +835,51 @@ export default function ChatPage() {
                             </div>
                           )
                         ) : (
-                          <div style={{
-                            background: "var(--zy-surface)",
-                            padding: "12px 16px",
-                            borderRadius: "4px 12px 12px 12px",
-                            border: "1px solid var(--zy-border)",
-                            display: "inline-block",
-                            maxWidth: "80%",
-                          }}>
+                          <div
+                            style={{
+                              background: "var(--zy-surface)",
+                              padding: "12px 16px",
+                              borderRadius: "4px 12px 12px 12px",
+                              border: "1px solid var(--zy-border)",
+                              display: "inline-block",
+                              maxWidth: "80%",
+                            }}
+                          >
                             <Text>{msg.content}</Text>
                           </div>
-                        )
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
+                        )}
+                      </div>
+                    </div>
+                    {msg.role === "user" && msg.id && !streaming && (
+                      <DeleteOutlined
+                        className="anticon-delete"
+                        style={{
+                          color: "var(--zy-text-muted)",
+                          cursor: "pointer",
+                          fontSize: 13,
+                          flexShrink: 0,
+                          marginTop: 4,
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMessage(msgIndex);
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
           {/* Input area */}
-          <div style={{
-            padding: "16px 24px",
-            borderTop: "1px solid var(--zy-border)",
-            background: "var(--zy-surface)",
-          }}>
+          <div
+            style={{
+              padding: "16px 24px",
+              borderTop: "1px solid var(--zy-border)",
+              background: "var(--zy-surface)",
+            }}
+          >
             <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
               <TextArea
                 value={input}

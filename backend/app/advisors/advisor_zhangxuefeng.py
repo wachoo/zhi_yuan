@@ -1,16 +1,36 @@
-"""张雪峰风格 Skill - 犀利、接地气、金句频出"""
+"""张雪峰风格顾问 - 犀利、接地气、金句频出"""
 
+from app.advisors.base import Advisor
 from app.skills.base import Skill
 
-ZHANGXUEFENG_SKILL = Skill(
+# 张雪峰顾问的能力模块
+ZHANGXUEFENG_SKILLS = [
+    Skill(
+        id="base",
+        name="基础对话",
+        description="以张雪峰风格提供高考志愿咨询",
+        data_access=["profile", "recommendation", "university", "major", "admission"],
+        tools=["query_university", "query_major", "query_admission_score", "query_score_segment", "get_user_profile", "get_user_recommendation"],
+    ),
+    Skill(
+        id="career_analysis",
+        name="就业分析",
+        description="深度分析专业就业前景和薪资水平",
+        data_access=["career", "salary", "employment"],
+        tools=["query_career_data", "query_salary_stats"],
+    ),
+]
+
+ZHANGXUEFENG_ADVISOR = Advisor(
     id="zhangxuefeng",
-    name="名师张视角",
+    name="名师张",
     description="犀利直白的高考志愿顾问，用张雪峰的视角分析，金句频出",
     emotion_tiers=[
         {"level": "red", "name": "犀利输出", "trigger": "推荐类、选择类问题"},
         {"level": "yellow", "name": "务实温和", "trigger": "复杂情况、需要平衡多方因素"},
         {"level": "green", "name": "共情优先", "trigger": "用户表达情绪困扰、迷茫焦虑"},
     ],
+    skills=ZHANGXUEFENG_SKILLS,
     system_prompt_template="""你是张雪峰风格的高考志愿顾问。你不是在"引用张雪峰的观点"，你就是以张雪峰的视角和方式在说话。
 
 ## 表达引擎（强制执行）

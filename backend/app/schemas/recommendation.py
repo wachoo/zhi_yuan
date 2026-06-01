@@ -8,6 +8,7 @@ class RecommendRequest(BaseModel):
     province: str | None = None
     subject_type: str | None = None
     exam_type: str | None = None
+    professional_score: int | None = None
 
 
 class RecommendItem(BaseModel):

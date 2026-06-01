@@ -2,7 +2,15 @@
 
 import { useState, useEffect } from "react";
 import {
-  Modal, Steps, Button, Radio, QRCode, Typography, Space, Result, message,
+  Modal,
+  Steps,
+  Button,
+  Radio,
+  QRCode,
+  Typography,
+  Space,
+  Result,
+  App,
 } from "antd";
 import {
   AlipayCircleOutlined,
@@ -25,8 +33,14 @@ interface PaymentModalProps {
 }
 
 export default function PaymentModal({
-  open, tier, tierName, amount, onClose, onSuccess,
+  open,
+  tier,
+  tierName,
+  amount,
+  onClose,
+  onSuccess,
 }: PaymentModalProps) {
+  const { message } = App.useApp();
   const [step, setStep] = useState(0);
   const [method, setMethod] = useState<PaymentMethod>(PaymentMethod.ALIPAY);
   const [order, setOrder] = useState<CreateOrderResponse | null>(null);
@@ -107,7 +121,7 @@ export default function PaymentModal({
       title={null}
       width={480}
       centered
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ padding: "16px 0" }}>
         <Steps
@@ -123,12 +137,17 @@ export default function PaymentModal({
 
         {/* Step 0: 选择支付方式 */}
         {step === 0 && (
-          <Space direction="vertical" size={24} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={24} style={{ width: "100%" }}>
             <div>
               <Text type="secondary">购买会员</Text>
               <Title level={4} style={{ margin: "4px 0" }}>
-                {tierName} <span style={{ color: "var(--zy-rush)", fontSize: 24 }}>¥{amount}</span>
-                <Text type="secondary" style={{ fontSize: 14 }}>/月</Text>
+                {tierName}{" "}
+                <span style={{ color: "var(--zy-rush)", fontSize: 24 }}>
+                  ¥{amount}
+                </span>
+                <Text type="secondary" style={{ fontSize: 14 }}>
+                  /月
+                </Text>
               </Title>
             </div>
 
@@ -137,20 +156,30 @@ export default function PaymentModal({
               onChange={(e) => setMethod(e.target.value)}
               style={{ width: "100%" }}
             >
-              <Space direction="vertical" style={{ width: "100%" }} size={12}>
+              <Space orientation="vertical" style={{ width: "100%" }} size={12}>
                 <Radio.Button
                   value={PaymentMethod.ALIPAY}
                   style={{
-                    height: 56, borderRadius: 10, display: "flex", alignItems: "center",
-                    padding: "0 16px", border: method === PaymentMethod.ALIPAY
-                      ? "2px solid #1677FF" : "1px solid var(--zy-border)",
+                    height: 56,
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 16px",
+                    border:
+                      method === PaymentMethod.ALIPAY
+                        ? "2px solid #1677FF"
+                        : "1px solid var(--zy-border)",
                   }}
                 >
                   <Space size={12}>
-                    <AlipayCircleOutlined style={{ fontSize: 28, color: "#1677FF" }} />
+                    <AlipayCircleOutlined
+                      style={{ fontSize: 28, color: "#1677FF" }}
+                    />
                     <div>
                       <div style={{ fontWeight: 500 }}>支付宝</div>
-                      <Text type="secondary" style={{ fontSize: 12 }}>推荐 · 即时到账</Text>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        推荐 · 即时到账
+                      </Text>
                     </div>
                   </Space>
                 </Radio.Button>
@@ -158,16 +187,26 @@ export default function PaymentModal({
                 <Radio.Button
                   value={PaymentMethod.WECHAT}
                   style={{
-                    height: 56, borderRadius: 10, display: "flex", alignItems: "center",
-                    padding: "0 16px", border: method === PaymentMethod.WECHAT
-                      ? "2px solid #07C160" : "1px solid var(--zy-border)",
+                    height: 56,
+                    borderRadius: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 16px",
+                    border:
+                      method === PaymentMethod.WECHAT
+                        ? "2px solid #07C160"
+                        : "1px solid var(--zy-border)",
                   }}
                 >
                   <Space size={12}>
-                    <WechatOutlined style={{ fontSize: 28, color: "#07C160" }} />
+                    <WechatOutlined
+                      style={{ fontSize: 28, color: "#07C160" }}
+                    />
                     <div>
                       <div style={{ fontWeight: 500 }}>微信支付</div>
-                      <Text type="secondary" style={{ fontSize: 12 }}>扫码支付</Text>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        扫码支付
+                      </Text>
                     </div>
                   </Space>
                 </Radio.Button>
@@ -189,20 +228,33 @@ export default function PaymentModal({
 
         {/* Step 1: 扫码支付 */}
         {step === 1 && order && (
-          <Space direction="vertical" size={20} style={{ width: "100%" }} align="center">
+          <Space
+            orientation="vertical"
+            size={20}
+            style={{ width: "100%" }}
+            align="center"
+          >
             <div style={{ textAlign: "center" }}>
-              <Text type="secondary">请使用{method === PaymentMethod.ALIPAY ? "支付宝" : "微信"}扫码支付</Text>
-              <Title level={3} style={{ margin: "4px 0", color: "var(--zy-rush)" }}>
+              <Text type="secondary">
+                请使用{method === PaymentMethod.ALIPAY ? "支付宝" : "微信"}
+                扫码支付
+              </Text>
+              <Title
+                level={3}
+                style={{ margin: "4px 0", color: "var(--zy-rush)" }}
+              >
                 ¥{Number(order.amount).toFixed(2)}
               </Title>
             </div>
 
-            <div style={{
-              padding: 20,
-              background: "var(--zy-muted)",
-              borderRadius: 12,
-              textAlign: "center",
-            }}>
+            <div
+              style={{
+                padding: 20,
+                background: "var(--zy-muted)",
+                borderRadius: 12,
+                textAlign: "center",
+              }}
+            >
               <QRCode
                 value={order.qr_content}
                 size={200}
@@ -213,12 +265,16 @@ export default function PaymentModal({
               <div style={{ marginTop: 12 }}>
                 {method === PaymentMethod.ALIPAY ? (
                   <Space>
-                    <AlipayCircleOutlined style={{ color: "#1677FF", fontSize: 18 }} />
+                    <AlipayCircleOutlined
+                      style={{ color: "#1677FF", fontSize: 18 }}
+                    />
                     <Text style={{ color: "#1677FF" }}>支付宝扫一扫</Text>
                   </Space>
                 ) : (
                   <Space>
-                    <WechatOutlined style={{ color: "#07C160", fontSize: 18 }} />
+                    <WechatOutlined
+                      style={{ color: "#07C160", fontSize: 18 }}
+                    />
                     <Text style={{ color: "#07C160" }}>微信扫一扫</Text>
                   </Space>
                 )}
@@ -226,7 +282,9 @@ export default function PaymentModal({
             </div>
 
             <Space>
-              <ClockCircleOutlined style={{ color: "var(--zy-text-secondary)" }} />
+              <ClockCircleOutlined
+                style={{ color: "var(--zy-text-secondary)" }}
+              />
               <Text type="secondary">
                 支付剩余时间：{formatCountdown(countdown)}
               </Text>
@@ -244,7 +302,9 @@ export default function PaymentModal({
               模拟支付成功（演示用）
             </Button>
 
-            <Button type="link" onClick={handleClose}>取消支付</Button>
+            <Button type="link" onClick={handleClose}>
+              取消支付
+            </Button>
           </Space>
         )}
 
@@ -256,7 +316,12 @@ export default function PaymentModal({
             title="支付成功！"
             subTitle={`${tierName}已激活，有效期 30 天`}
             extra={[
-              <Button type="primary" key="done" onClick={handleSuccessClose} style={{ borderRadius: 8 }}>
+              <Button
+                type="primary"
+                key="done"
+                onClick={handleSuccessClose}
+                style={{ borderRadius: 8 }}
+              >
                 开始使用
               </Button>,
             ]}

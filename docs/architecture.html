@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智愿 - 系统架构图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: #f0f2f5;
+    padding: 40px 20px;
+    color: #1a1a2e;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { text-align: center; font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+  .subtitle { text-align: center; font-size: 14px; color: #6b7280; margin-bottom: 40px; }
+  .layer { margin-bottom: 24px; }
+  .layer-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: #9ca3af; margin-bottom: 10px; padding-left: 4px; }
+  .layer-content { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); border: 1px solid #e5e7eb; }
+  .node { display: inline-flex; flex-direction: column; align-items: center; padding: 12px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: center; min-width: 100px; }
+  .node .icon { font-size: 22px; margin-bottom: 6px; }
+  .node .label { font-size: 12px; font-weight: 600; }
+  .node .sub { font-size: 10px; color: #6b7280; margin-top: 2px; }
+  .node-infra { background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; }
+  .node-api { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+  .node-ai { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+  .node-external { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+  .grid-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  .backend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+  .module-group { background: #fafafa; border-radius: 8px; padding: 14px; border: 1px solid #f3f4f6; }
+  .module-group h4 { font-size: 11px; font-weight: 600; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .module-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .module-tag { font-size: 11px; padding: 4px 8px; border-radius: 4px; font-weight: 500; background: #fff; border: 1px solid #e5e7eb; color: #374151; }
+  .fe-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .fe-page { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 6px; padding: 10px 12px; text-align: center; }
+  .fe-page .page-name { font-size: 12px; font-weight: 600; color: #1e40af; }
+  .fe-page .page-path { font-size: 10px; color: #6b7280; margin-top: 2px; font-family: monospace; }
+  .arrow-row { display: flex; justify-content: center; padding: 8px 0; }
+  .arrow-row svg { opacity: 0.4; }
+  .flow-label { text-align: center; font-size: 10px; color: #9ca3af; padding: 4px 0; letter-spacing: 0.5px; }
+  @media (max-width: 768px) { .backend-grid { grid-template-columns: 1fr 1fr; } .fe-grid { grid-template-columns: repeat(3, 1fr); } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>智愿 ZhiYuan</h1>
+  <p class="subtitle">LLM 高考志愿填报助手 · 系统架构图</p>
+
+  <div class="layer">
+    <div class="layer-label">Frontend · Next.js 16 + React 19 + Ant Design 6 + Tailwind CSS</div>
+    <div class="layer-content">
+      <div class="fe-grid">
+        <div class="fe-page"><div class="page-name">首页</div><div class="page-path">/</div></div>
+        <div class="fe-page"><div class="page-name">登录</div><div class="page-path">/login</div></div>
+        <div class="fe-page"><div class="page-name">AI 对话</div><div class="page-path">/chat</div></div>
+        <div class="fe-page"><div class="page-name">智能推荐</div><div class="page-path">/recommend</div></div>
+        <div class="fe-page"><div class="page-name">院校库</div><div class="page-path">/universities</div></div>
+        <div class="fe-page"><div class="page-name">个人中心</div><div class="page-path">/profile</div></div>
+        <div class="fe-page"><div class="page-name">会员管理</div><div class="page-path">/profile/membership</div></div>
+        <div class="fe-page"><div class="page-name">账户设置</div><div class="page-path">/profile/account</div></div>
+      </div>
+      <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;">
+        <span class="module-tag">axios</span>
+        <span class="module-tag">ThemeProvider</span>
+        <span class="module-tag">PaymentModal</span>
+        <span class="module-tag">react-markdown</span>
+        <span class="module-tag">Tailwind CSS 4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-label">REST API · JSON · Port 3000 → 8000</div>
+  <div class="arrow-row"><svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 22 M6 16 L12 22 L18 16" stroke="#9ca3af" stroke-width="1.5" fill="none"/></svg></div>
+
+  <div class="layer">
+    <div class="layer-label">API Gateway · FastAPI + Uvicorn (Port 8000)</div>
+    <div class="layer-content">
+      <div class="grid-row">
+        <div class="node node-api"><span class="icon">🔐</span><span class="label">Auth</span><span class="sub">JWT + bcrypt</span></div>
+        <div class="node node-api"><span class="icon">👤</span><span class="label">Profile</span><span class="sub">用户画像</span></div>
+        <div class="node node-api"><span class="icon">🏫</span><span class="label">Universities</span><span class="sub">院校查询</span></div>
+        <div class="node node-api"><span class="icon">🎯</span><span class="label">Recommend</span><span class="sub">冲/稳/保</span></div>
+        <div class="node node-api"><span class="icon">💬</span><span class="label">Chat</span><span class="sub">AI 对话</span></div>
+        <div class="node node-api"><span class="icon">💳</span><span class="label">Payment</span><span class="sub">会员支付</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row"><svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 22 M6 16 L12 22 L18 16" stroke="#9ca3af" stroke-width="1.5" fill="none"/></svg></div>
+
+  <div class="layer">
+    <div class="layer-label">Business Services</div>
+    <div class="layer-content">
+      <div class="backend-grid">
+        <div class="module-group"><h4>核心业务</h4><div class="module-list"><span class="module-tag">auth_service</span><span class="module-tag">user_service</span><span class="module-tag">profile_service</span><span class="module-tag">export_service</span></div></div>
+        <div class="module-group"><h4>志愿推荐</h4><div class="module-list"><span class="module-tag">recommendation_engine</span><span class="module-tag">recommend_service</span><span class="module-tag">adapter_scorer</span><span class="module-tag">rank_converter</span></div></div>
+        <div class="module-group"><h4>数据服务</h4><div class="module-list"><span class="module-tag">university_service</span><span class="module-tag">major_service</span><span class="module-tag">admission_service</span></div></div>
+        <div class="module-group"><h4>AI &amp; 支付</h4><div class="module-list"><span class="module-tag">llm_service</span><span class="module-tag">chat_service</span><span class="module-tag">payment_service</span><span class="module-tag">payment_providers</span></div></div>
+      </div>
+      <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="module-group"><h4>Advisor 顾问体系</h4><div class="module-list"><span class="module-tag">Advisor (base)</span><span class="module-tag">advisor_default</span><span class="module-tag">advisor_zhangxuefeng</span><span class="module-tag">AdvisorRegistry</span></div></div>
+        <div class="module-group"><h4>Skill 能力模块</h4><div class="module-list"><span class="module-tag">Skill (base)</span><span class="module-tag">query_university</span><span class="module-tag">query_admission_score</span><span class="module-tag">query_major</span><span class="module-tag">get_user_profile</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row"><svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 22 M6 16 L12 22 L18 16" stroke="#9ca3af" stroke-width="1.5" fill="none"/></svg></div>
+
+  <div class="layer">
+    <div class="layer-label">Data Access · Domain Models</div>
+    <div class="layer-content">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="module-group"><h4>DAO Layer</h4><div class="module-list"><span class="module-tag">user_dao</span><span class="module-tag">profile_dao</span><span class="module-tag">university_dao</span><span class="module-tag">major_dao</span><span class="module-tag">admission_dao</span><span class="module-tag">recommend_dao</span><span class="module-tag">message_dao</span><span class="module-tag">order_dao</span></div></div>
+        <div class="module-group"><h4>SQLAlchemy Models</h4><div class="module-list"><span class="module-tag">User</span><span class="module-tag">University</span><span class="module-tag">Major</span><span class="module-tag">AdmissionRecord</span><span class="module-tag">ChatSession</span><span class="module-tag">Recommendation</span><span class="module-tag">Order</span><span class="module-tag">Enums</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row"><svg width="24" height="28" viewBox="0 0 24 28"><path d="M12 0 L12 22 M6 16 L12 22 L18 16" stroke="#9ca3af" stroke-width="1.5" fill="none"/></svg></div>
+
+  <div class="layer">
+    <div class="layer-label">Infrastructure &amp; External Services</div>
+    <div class="layer-content">
+      <div class="grid-row">
+        <div class="node node-infra"><span class="icon">🐘</span><span class="label">PostgreSQL 15</span><span class="sub">asyncpg + SQLAlchemy</span></div>
+        <div class="node node-infra"><span class="icon">⚡</span><span class="label">Redis 7</span><span class="sub">缓存 / 会话</span></div>
+        <div class="node node-infra"><span class="icon">🗄️</span><span class="label">Alembic</span><span class="sub">数据库迁移</span></div>
+        <div class="node node-ai"><span class="icon">🤖</span><span class="label">DeepSeek API</span><span class="sub">语义扩展</span></div>
+        <div class="node node-ai"><span class="icon">🧠</span><span class="label">通义千问 API</span><span class="sub">AI 对话</span></div>
+        <div class="node node-external"><span class="icon">📊</span><span class="label">PPT 静态文件</span><span class="sub">报告导出</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;text-align:center;">
+    <span class="module-tag" style="font-size:12px;padding:6px 14px;background:#f8fafc;border:1px dashed #cbd5e1;">Docker Compose · postgres + redis + backend (uvicorn)</span>
+  </div>
+
+  <div style="margin-top:32px;background:#fff;border-radius:12px;padding:20px 24px;border:1px solid #e5e7eb;">
+    <div class="layer-label" style="margin-bottom:12px;">核心数据流</div>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;font-size:12px;color:#4b5563;">
+      <span style="background:#eff6ff;padding:6px 10px;border-radius:6px;border:1px solid #dbeafe;">用户画像</span>
+      <span style="color:#9ca3af;">→</span>
+      <span style="background:#fefce8;padding:6px 10px;border-radius:6px;border:1px solid #fef08a;">推荐引擎 (冲/稳/保)</span>
+      <span style="color:#9ca3af;">→</span>
+      <span style="background:#f0fdf4;padding:6px 10px;border-radius:6px;border:1px solid #bbf7d0;">AI 对话 (LLM)</span>
+      <span style="color:#9ca3af;">→</span>
+      <span style="background:#fdf4ff;padding:6px 10px;border-radius:6px;border:1px solid #f0abfc;">志愿报告导出</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

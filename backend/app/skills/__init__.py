@@ -1,15 +1,14 @@
 """
-Skill 系统 - 可插拔的对话风格模块
+Skill 系统 - 顾问的能力模块定义
 
-每个 Skill 定义一套独立的：
-- System Prompt（人格、表达风格、决策框架）
-- 工具描述（可选扩展）
-- 情绪档位（可选）
+每个 Skill 定义：
+- 提示词风格（prompt_style，可选覆盖/增强）
+- 可访问的数据范围（data_access）
+- 可用工具列表（tools）
 
-通过 SkillRegistry 注册和获取，ChatService 根据用户选择动态加载。
+Skill 是 Advisor 的子模块，一个 Advisor 可以拥有多个 Skill。
 """
 
 from app.skills.base import Skill
-from app.skills.registry import SkillRegistry
 
-__all__ = ["Skill", "SkillRegistry"]
+__all__ = ["Skill"]

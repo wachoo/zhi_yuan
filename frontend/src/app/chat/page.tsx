@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Input, Button, List, Typography, Space, Avatar, Empty, Spin, Select, Tag } from "antd";
+import { Input, Button, Typography, Space, Avatar, Empty, Spin, Select, Tag, Modal, message } from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -68,6 +68,7 @@ function StreamingMarkdown({ content }: { content: string }) {
 }
 
 interface DisplayMessage {
+  id?: string;
   role: "user" | "assistant";
   content: string;
   skill_name?: string;
@@ -117,6 +118,7 @@ export default function ChatPage() {
       const displayMsgs: DisplayMessage[] = res.data
         .filter((m) => m.role === "user" || m.role === "assistant")
         .map((m) => ({
+          id: m.id,
           role: m.role as "user" | "assistant",
           content: m.content,
           skill_name: m.skill_name ?? undefined,
@@ -165,11 +167,63 @@ export default function ChatPage() {
 
   const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
-    setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
-    if (currentSessionId === sessionId) {
-      setCurrentSessionId(null);
-      setMessages([]);
-    }
+    Modal.confirm({
+      title: "确认删除",
+      content: "删除该会话及其所有对话记录？此操作不可恢复。",
+      okText: "删除",
+      okButtonProps: { danger: true },
+      cancelText: "取消",
+      onOk: async () => {
+        try {
+          await api.delete(`/api/chat/sessions/${sessionId}`);
+          setSessions((prev) => prev.filter((s) => s.session_id !== sessionId));
+          if (currentSessionId === sessionId) {
+            setCurrentSessionId(null);
+            setMessages([]);
+          }
+        } catch {
+          message.error("删除会话失败");
+        }
+      },
+    });
+  };
+
+  const handleDeleteMessage = async (msgIndex: number) => {
+    const msg = messages[msgIndex];
+    if (!msg.id || !currentSessionId) return;
+
+    Modal.confirm({
+      title: "确认删除",
+      content: "删除该问答对？此操作不可恢复。",
+      okText: "删除",
+      okButtonProps: { danger: true },
+      cancelText: "取消",
+      onOk: async () => {
+        try {
+          await api.delete(`/api/chat/sessions/${currentSessionId}/messages/${msg.id}`);
+          // 从本地状态移除该 user 消息和紧随的 assistant 消息
+          setMessages((prev) => {
+            const next = [...prev];
+            const nextMsg = next[msgIndex + 1];
+            // 如果下一条是 assistant，也一并移除
+            if (nextMsg && nextMsg.role === "assistant") {
+              next.splice(msgIndex, 2);
+            } else {
+              next.splice(msgIndex, 1);
+            }
+            // 如果会话变空，清除当前会话
+            if (next.length === 0) {
+              setCurrentSessionId(null);
+            }
+            return next;
+          });
+          // 刷新会话列表（会话可能已被后端删除）
+          loadSessions();
+        } catch {
+          message.error("删除失败");
+        }
+      },
+    });
   };
 
   const handleRenameStart = (e: React.MouseEvent, session: ChatSession) => {
@@ -358,10 +412,10 @@ export default function ChatPage() {
                 style={{ padding: 24 }}
               />
             ) : (
-              <List
-                dataSource={sessions}
-                renderItem={(session) => (
-                  <List.Item
+              <div>
+                {sessions.map((session) => (
+                  <div
+                    key={session.session_id}
                     onClick={() => handleSelectSession(session.session_id)}
                     className="session-item"
                     style={{
@@ -375,8 +429,6 @@ export default function ChatPage() {
                         session.session_id === currentSessionId
                           ? "3px solid var(--zy-primary)"
                           : "3px solid transparent",
-                      marginBottom: 0,
-                      borderBottom: "none",
                     }}
                   >
                     <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 10 }}>
@@ -441,9 +493,9 @@ export default function ChatPage() {
                         </>
                       )}
                     </div>
-                  </List.Item>
-                )}
-              />
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
@@ -525,22 +577,20 @@ export default function ChatPage() {
                 </Text>
               </div>
             ) : (
-              <List
-                dataSource={messages}
-                renderItem={(msg) => (
-                  <List.Item style={{ borderBottom: "none", padding: "10px 0" }}>
-                    <List.Item.Meta
-                      avatar={
-                        <Avatar
-                          style={{
-                            background: msg.role === "user"
-                              ? "var(--zy-primary)"
-                              : "linear-gradient(135deg, #1E3A5F, #2563EB)",
-                          }}
-                          icon={msg.role === "user" ? <UserOutlined /> : <RobotOutlined />}
-                        />
-                      }
-                      title={
+              <div>
+                {messages.map((msg, msgIndex) => (
+                  <div key={msg.id ?? msgIndex} style={{ display: "flex", gap: 12, padding: "10px 0", alignItems: "flex-start" }}>
+                    <Avatar
+                      style={{
+                        background: msg.role === "user"
+                          ? "var(--zy-primary)"
+                          : "linear-gradient(135deg, #1E3A5F, #2563EB)",
+                        flexShrink: 0,
+                      }}
+                      icon={msg.role === "user" ? <UserOutlined /> : <RobotOutlined />}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ marginBottom: 4 }}>
                         <Space size={6}>
                           <Text strong style={{ fontSize: 13 }}>
                             {msg.role === "user" ? "我" : "智愿AI"}
@@ -551,10 +601,10 @@ export default function ChatPage() {
                             </Tag>
                           )}
                         </Space>
-                      }
-                      description={
-                        msg.role === "assistant" ? (
-                          streaming && messages.indexOf(msg) === messages.length - 1 ? (
+                      </div>
+                      <div>
+                        {msg.role === "assistant" ? (
+                          streaming && msgIndex === messages.length - 1 ? (
                             <StreamingMarkdown content={msg.content} />
                           ) : (
                             <div className="markdown-body">
@@ -574,12 +624,22 @@ export default function ChatPage() {
                           }}>
                             <Text>{msg.content}</Text>
                           </div>
-                        )
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
+                        )}
+                      </div>
+                    </div>
+                    {msg.role === "user" && msg.id && !streaming && (
+                      <DeleteOutlined
+                        className="anticon-delete"
+                        style={{ color: "var(--zy-text-muted)", cursor: "pointer", fontSize: 13, flexShrink: 0, marginTop: 4 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteMessage(msgIndex);
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 

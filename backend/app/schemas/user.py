@@ -49,6 +49,13 @@ class ProfileFamilyInfo(BaseModel):
     tuition_max: int | None = None
     prefer_city: list[str] | None = None
     parent_industry: str | None = None
+    parent_education: str | None = None
+    hukou_type: str | None = None
+    has_siblings: bool | None = None
+    has_elderly_care: bool | None = None
+    home_province: str | None = None
+    home_city: str | None = None
+    home_district: str | None = None
 
 
 class ProfilePersonality(BaseModel):

@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import {
   Card, Form, Select, Button, Progress, message, Space, Row, Col,
-  InputNumber, Checkbox, Slider, Radio, Typography, Modal,
+  InputNumber, Input, Checkbox, Slider, Radio, Typography, Modal,
 } from "antd";
 import {
   UserOutlined,
   HeartOutlined,
   TrophyOutlined,
   AimOutlined,
+  HomeOutlined,
 } from "@ant-design/icons";
 import api from "@/lib/api";
 import { UserProfile, SUBJECT_TYPE_OPTIONS, EXAM_TYPE_OPTIONS } from "@/types";
@@ -74,6 +75,15 @@ export default function ProfilePage() {
         if (data.family_info) {
           initialValues.tuition_max = (data.family_info as Record<string, unknown>).tuition_max;
           initialValues.prefer_city = (data.family_info as Record<string, unknown>).prefer_city;
+          initialValues.income_range = (data.family_info as Record<string, unknown>).income_range;
+          initialValues.parent_industry = (data.family_info as Record<string, unknown>).parent_industry;
+          initialValues.parent_education = (data.family_info as Record<string, unknown>).parent_education;
+          initialValues.hukou_type = (data.family_info as Record<string, unknown>).hukou_type;
+          initialValues.has_siblings = (data.family_info as Record<string, unknown>).has_siblings;
+          initialValues.has_elderly_care = (data.family_info as Record<string, unknown>).has_elderly_care;
+          initialValues.home_province = (data.family_info as Record<string, unknown>).home_province;
+          initialValues.home_city = (data.family_info as Record<string, unknown>).home_city;
+          initialValues.home_district = (data.family_info as Record<string, unknown>).home_district;
         }
         if (data.ability) {
           initialValues.strong_subjects = (data.ability as Record<string, unknown>).strong_subjects;
@@ -114,6 +124,15 @@ export default function ProfilePage() {
       updateData.family_info = {
         tuition_max: values.tuition_max,
         prefer_city: values.prefer_city,
+        income_range: values.income_range,
+        parent_industry: values.parent_industry,
+        parent_education: values.parent_education,
+        hukou_type: values.hukou_type,
+        has_siblings: values.has_siblings,
+        has_elderly_care: values.has_elderly_care,
+        home_province: values.home_province,
+        home_city: values.home_city,
+        home_district: values.home_district,
       };
       updateData.personality = {
         interests: values.interests,
@@ -155,7 +174,7 @@ export default function ProfilePage() {
   if (loading) return <Card loading style={{ borderRadius: 12 }} />;
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       <div>
         <Title level={3} style={{ margin: "0 0 4px" }}>个人详情</Title>
         <Text type="secondary">完善五维画像，获得更精准的院校推荐</Text>
@@ -261,6 +280,126 @@ export default function ProfilePage() {
           )}
         </Card>
 
+        {/* Family Info */}
+        <Card
+          title={
+            <Space>
+              <HomeOutlined style={{ color: "var(--zy-accent)" }} />
+              <span>家庭情况</span>
+            </Space>
+          }
+          style={{ borderRadius: 12, border: "1px solid var(--zy-border)", marginTop: 16 }}
+        >
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="income_range" label="家庭年收入">
+                <Select
+                  placeholder="选择收入区间"
+                  options={[
+                    { value: "5万以下", label: "5万以下" },
+                    { value: "5-10万", label: "5-10万" },
+                    { value: "10-20万", label: "10-20万" },
+                    { value: "20-50万", label: "20-50万" },
+                    { value: "50-100万", label: "50-100万" },
+                    { value: "100万以上", label: "100万以上" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="tuition_max" label="可接受最高学费（元/年）">
+                <InputNumber min={0} max={200000} style={{ width: "100%" }} placeholder="如：10000" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="parent_industry" label="父母职业方向">
+                <Select
+                  placeholder="选择主要职业领域"
+                  options={[
+                    { value: "公务员/事业单位", label: "公务员/事业单位" },
+                    { value: "企业管理", label: "企业管理" },
+                    { value: "个体经营", label: "个体经营" },
+                    { value: "教育/科研", label: "教育/科研" },
+                    { value: "医疗/卫生", label: "医疗/卫生" },
+                    { value: "工程技术", label: "工程技术" },
+                    { value: "金融/财务", label: "金融/财务" },
+                    { value: "法律", label: "法律" },
+                    { value: "自由职业", label: "自由职业" },
+                    { value: "务农", label: "务农" },
+                    { value: "务工", label: "务工" },
+                    { value: "其他", label: "其他" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="parent_education" label="父母最高学历">
+                <Select
+                  placeholder="选择学历"
+                  options={[
+                    { value: "初中及以下", label: "初中及以下" },
+                    { value: "高中/中专", label: "高中/中专" },
+                    { value: "大专", label: "大专" },
+                    { value: "本科", label: "本科" },
+                    { value: "硕士及以上", label: "硕士及以上" },
+                  ]}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Form.Item name="hukou_type" label="户口类型">
+            <Radio.Group options={[
+              { value: "城市", label: "城市" },
+              { value: "城镇", label: "城镇" },
+              { value: "农村", label: "农村" },
+            ]} />
+          </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item name="has_siblings" label="是否独生子女">
+                <Radio.Group options={[
+                  { value: false, label: "独生子女" },
+                  { value: true, label: "有兄弟姐妹" },
+                ]} />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item name="has_elderly_care" label="是否有老人赡养负担">
+                <Radio.Group options={[
+                  { value: false, label: "无" },
+                  { value: true, label: "有" },
+                ]} />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col xs={24} sm={8}>
+              <Form.Item name="home_province" label="家庭所在省">
+                <Select
+                  showSearch
+                  placeholder="选择省份"
+                  options={provinces.map((p) => ({ value: p, label: p }))}
+                  filterOption={(input, option) =>
+                    (option?.label as string)?.includes(input) ?? false
+                  }
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Form.Item name="home_city" label="所在城市">
+                <Input placeholder="如：杭州市" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={8}>
+              <Form.Item name="home_district" label="所在区/县">
+                <Input placeholder="如：西湖区" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Card>
+
         {/* Interests & Preferences */}
         <Card
           title={
@@ -287,22 +426,13 @@ export default function ProfilePage() {
               options={dislikesOptions.map((d) => ({ value: d, label: d }))}
             />
           </Form.Item>
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item name="prefer_city" label="偏好城市">
-                <Select
-                  mode="multiple"
-                  placeholder="选择你偏好的城市（可多选）"
-                  options={cities.map((c) => ({ value: c, label: c }))}
-                />
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={12}>
-              <Form.Item name="tuition_max" label="可接受最高学费（元/年）">
-                <InputNumber min={0} max={200000} style={{ width: "100%" }} placeholder="如：10000" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item name="prefer_city" label="偏好城市">
+            <Select
+              mode="multiple"
+              placeholder="选择你偏好的城市（可多选）"
+              options={cities.map((c) => ({ value: c, label: c }))}
+            />
+          </Form.Item>
         </Card>
 
         {/* Ability */}

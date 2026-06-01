@@ -47,6 +47,19 @@ async def rename_session(
     return {"ok": True}
 
 
+@router.delete("/sessions/{session_id}")
+async def delete_session(
+    session_id: str,
+    user: User = Depends(get_current_user),
+):
+    """删除整个会话及其所有消息"""
+    from app.dao.message import MessageDAO
+    success = await MessageDAO().delete_session(user.id, session_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="会话不存在")
+    return {"ok": True}
+
+
 @router.get("/sessions/{session_id}/messages", response_model=list[ChatMessageOut])
 async def get_session_messages(
     session_id: str,
@@ -61,6 +74,26 @@ async def get_session_messages(
             if skill:
                 msg.skill_name = skill.name
     return messages
+
+
+@router.delete("/sessions/{session_id}/messages/{message_id}")
+async def delete_message(
+    session_id: str,
+    message_id: str,
+    user: User = Depends(get_current_user),
+):
+    """删除一条消息及其对应的 AI 回复（QA 对）"""
+    from app.dao.message import MessageDAO
+    import uuid as uuid_mod
+    try:
+        msg_uuid = uuid_mod.UUID(message_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="无效的消息 ID")
+
+    success = await MessageDAO().delete_qa_pair(user.id, session_id, msg_uuid)
+    if not success:
+        raise HTTPException(status_code=404, detail="消息不存在或无权删除")
+    return {"ok": True}
 
 
 @router.post("")

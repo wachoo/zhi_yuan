@@ -140,7 +140,7 @@ export default function UniversitiesPage() {
 
   return (
     <AppLayout>
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Space orientation="vertical" size="large" style={{ width: "100%" }}>
         <div>
           <Title level={3} style={{ margin: "0 0 4px" }}>院校查询</Title>
           <Text type="secondary">浏览全国 {total} 所院校信息</Text>

@@ -51,7 +51,7 @@ export default function Home() {
 
   return (
     <AppLayout>
-      <Space direction="vertical" size={32} style={{ width: "100%" }}>
+      <Space orientation="vertical" size={32} style={{ width: "100%" }}>
         {/* Hero + Form */}
         <Row gutter={32} align="middle">
           <Col xs={24} lg={12}>
@@ -126,7 +126,7 @@ export default function Home() {
                     block
                     loading={loading}
                     icon={<ArrowRightOutlined />}
-                    iconPosition="end"
+                    iconPlacement="end"
                     style={{ height: 48, fontSize: 16, fontWeight: 600, borderRadius: 10 }}
                   >
                     获取推荐方案

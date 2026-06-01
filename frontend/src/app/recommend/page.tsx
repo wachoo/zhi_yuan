@@ -170,7 +170,7 @@ function RecommendContent() {
 
   return (
     <AppLayout>
-      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+      <Space orientation="vertical" size="large" style={{ width: "100%" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -224,7 +224,7 @@ function RecommendContent() {
             showIcon
             message="获取推荐失败"
             description={
-              <Space direction="vertical">
+              <Space orientation="vertical">
                 <span>{error}</span>
                 <Button type="link" onClick={() => router.push("/")} style={{ padding: 0 }}>
                   返回首页重新提交

@@ -31,7 +31,7 @@ export default function AccountPage() {
   };
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       <div>
         <Title level={3} style={{ margin: "0 0 4px" }}>账号安全</Title>
         <Text type="secondary">管理你的账号安全设置</Text>

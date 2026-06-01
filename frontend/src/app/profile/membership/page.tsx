@@ -130,7 +130,7 @@ export default function MembershipPage() {
   }, [fetchMembership]);
 
   return (
-    <Space direction="vertical" size={24} style={{ width: "100%" }}>
+    <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       <div>
         <Title level={3} style={{ margin: "0 0 4px" }}>会员中心</Title>
         <Text type="secondary">管理你的会员订阅，解锁更多功能</Text>
@@ -234,7 +234,7 @@ export default function MembershipPage() {
               </div>
 
               <div style={{ borderTop: "1px solid var(--zy-border-light)", paddingTop: 12, marginBottom: 16 }}>
-                <Space direction="vertical" size={6} style={{ width: "100%" }}>
+                <Space orientation="vertical" size={6} style={{ width: "100%" }}>
                   {tier.features.map((f, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                       <CheckOutlined style={{ color: TIER_COLORS[tier.tier], marginTop: 3, flexShrink: 0 }} />

@@ -123,7 +123,7 @@ export default function PaymentModal({
 
         {/* Step 0: 选择支付方式 */}
         {step === 0 && (
-          <Space direction="vertical" size={24} style={{ width: "100%" }}>
+          <Space orientation="vertical" size={24} style={{ width: "100%" }}>
             <div>
               <Text type="secondary">购买会员</Text>
               <Title level={4} style={{ margin: "4px 0" }}>
@@ -137,7 +137,7 @@ export default function PaymentModal({
               onChange={(e) => setMethod(e.target.value)}
               style={{ width: "100%" }}
             >
-              <Space direction="vertical" style={{ width: "100%" }} size={12}>
+              <Space orientation="vertical" style={{ width: "100%" }} size={12}>
                 <Radio.Button
                   value={PaymentMethod.ALIPAY}
                   style={{
@@ -189,7 +189,7 @@ export default function PaymentModal({
 
         {/* Step 1: 扫码支付 */}
         {step === 1 && order && (
-          <Space direction="vertical" size={20} style={{ width: "100%" }} align="center">
+          <Space orientation="vertical" size={20} style={{ width: "100%" }} align="center">
             <div style={{ textAlign: "center" }}>
               <Text type="secondary">请使用{method === PaymentMethod.ALIPAY ? "支付宝" : "微信"}扫码支付</Text>
               <Title level={3} style={{ margin: "4px 0", color: "var(--zy-rush)" }}>

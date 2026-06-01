@@ -159,3 +159,51 @@ class TestGenerateReason:
         score_result = self.scorer.score(profile=profile, record=record)
         reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
         assert "数学" in reason or "物理" in reason
+
+    def test_family_tuition_affordability(self):
+        """学费在承受范围内时 family 分数提升"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "family_info": {"tuition_max": 10000},
+        }
+        record_cheap = {"university_name": "A", "major_name": "CS", "min_rank": 5000, "tuition_max": 6000}
+        record_expensive = {"university_name": "B", "major_name": "CS", "min_rank": 5000, "tuition_max": 20000}
+        score_cheap = self.scorer.score(profile=profile, record=record_cheap)
+        score_expensive = self.scorer.score(profile=profile, record=record_expensive)
+        assert score_cheap["dimensions"]["family"] > score_expensive["dimensions"]["family"]
+
+    def test_family_elderly_care_prefers_nearby(self):
+        """有赡养负担时，家乡省份院校 family 分高于远距离"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "family_info": {"home_province": "浙江", "has_elderly_care": True},
+        }
+        record_near = {"university_name": "A", "major_name": "CS", "min_rank": 5000, "university_province": "浙江"}
+        record_far = {"university_name": "B", "major_name": "CS", "min_rank": 5000, "university_province": "黑龙江"}
+        score_near = self.scorer.score(profile=profile, record=record_near)
+        score_far = self.scorer.score(profile=profile, record=record_far)
+        assert score_near["dimensions"]["family"] > score_far["dimensions"]["family"]
+
+    def test_city_home_province_proximity(self):
+        """无偏好城市时，家乡省份院校 city 分更高"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "family_info": {"home_province": "浙江"},
+        }
+        record_home = {"university_name": "A", "major_name": "CS", "min_rank": 5000, "university_province": "浙江"}
+        record_far = {"university_name": "B", "major_name": "CS", "min_rank": 5000, "university_province": "新疆"}
+        score_home = self.scorer.score(profile=profile, record=record_home)
+        score_far = self.scorer.score(profile=profile, record=record_far)
+        assert score_home["dimensions"]["city"] > score_far["dimensions"]["city"]
+
+    def test_family_reason_includes_home_province(self):
+        """推荐理由应包含家乡相关信息"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "family_info": {"home_province": "浙江", "tuition_max": 10000},
+        }
+        record = {"university_name": "A大学", "major_name": "计算机", "min_rank": 5000,
+                  "university_province": "浙江", "tuition_max": 6000}
+        score_result = self.scorer.score(profile=profile, record=record)
+        reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
+        assert "家乡" in reason or "学费" in reason

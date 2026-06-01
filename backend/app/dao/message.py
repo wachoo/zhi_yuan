@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import select, func
+from sqlalchemy import select, func, delete
 
 from app.models.recommendation import ChatMessage
 from app.models.chat_session import ChatSession
@@ -152,6 +152,124 @@ class MessageDAO:
                     custom_title=new_title,
                 )
                 db.add(session)
+
+            await db.commit()
+            return True
+
+    async def delete_qa_pair(
+        self, user_id: uuid.UUID, session_id: str, message_id: uuid.UUID
+    ) -> bool:
+        """删除一个 QA 对（用户问题 + 中间所有消息 + AI 回复），并清理空会话"""
+        async with async_session() as db:
+            # 1. 查找用户消息
+            result = await db.execute(
+                select(ChatMessage).where(
+                    ChatMessage.id == message_id,
+                    ChatMessage.user_id == user_id,
+                    ChatMessage.session_id == session_id,
+                    ChatMessage.role == "user",
+                )
+            )
+            user_msg = result.scalar_one_or_none()
+            if not user_msg:
+                return False
+
+            # 2. 查找下一条 user 消息的时间边界
+            next_user_result = await db.execute(
+                select(ChatMessage.created_at).where(
+                    ChatMessage.user_id == user_id,
+                    ChatMessage.session_id == session_id,
+                    ChatMessage.role == "user",
+                    ChatMessage.created_at > user_msg.created_at,
+                ).order_by(ChatMessage.created_at.asc()).limit(1)
+            )
+            next_user_time = next_user_result.scalar()
+
+            # 3. 查找该 QA 对的所有消息（从 user_msg 到 next_user_time 之间）
+            if next_user_time:
+                qa_messages_result = await db.execute(
+                    select(ChatMessage).where(
+                        ChatMessage.user_id == user_id,
+                        ChatMessage.session_id == session_id,
+                        ChatMessage.created_at >= user_msg.created_at,
+                        ChatMessage.created_at < next_user_time,
+                    )
+                )
+            else:
+                # 没有后续 user 消息，删除从 user_msg 开始的所有消息
+                qa_messages_result = await db.execute(
+                    select(ChatMessage).where(
+                        ChatMessage.user_id == user_id,
+                        ChatMessage.session_id == session_id,
+                        ChatMessage.created_at >= user_msg.created_at,
+                    )
+                )
+
+            qa_messages = qa_messages_result.scalars().all()
+
+            # 4. 删除所有 QA 相关消息（user + tool + system + assistant）
+            for msg in qa_messages:
+                await db.delete(msg)
+
+            await db.commit()
+
+            # 5. 检查会话是否为空，如果为空则删除 chat_sessions 记录
+            remaining_result = await db.execute(
+                select(func.count(ChatMessage.id)).where(
+                    ChatMessage.user_id == user_id,
+                    ChatMessage.session_id == session_id,
+                )
+            )
+            remaining_count = remaining_result.scalar()
+
+            if remaining_count == 0:
+                # 删除 chat_sessions 表中的记录
+                await db.execute(
+                    delete(ChatSession).where(
+                        ChatSession.user_id == user_id,
+                        ChatSession.session_id == session_id,
+                    )
+                )
+                await db.commit()
+
+            return True
+
+    async def delete_session(
+        self, user_id: uuid.UUID, session_id: str
+    ) -> bool:
+        """删除整个会话：所有 chat_messages + chat_sessions 记录"""
+        async with async_session() as db:
+            # 验证该 session 属于该用户（检查 chat_messages 或 chat_sessions）
+            msg_result = await db.execute(
+                select(ChatMessage.id).where(
+                    ChatMessage.user_id == user_id,
+                    ChatMessage.session_id == session_id,
+                ).limit(1)
+            )
+            session_result = await db.execute(
+                select(ChatSession).where(
+                    ChatSession.user_id == user_id,
+                    ChatSession.session_id == session_id,
+                )
+            )
+            if not msg_result.scalar_one_or_none() and not session_result.scalar_one_or_none():
+                return False
+
+            # 删除所有 chat_messages
+            await db.execute(
+                delete(ChatMessage).where(
+                    ChatMessage.user_id == user_id,
+                    ChatMessage.session_id == session_id,
+                )
+            )
+
+            # 删除 chat_sessions 记录
+            await db.execute(
+                delete(ChatSession).where(
+                    ChatSession.user_id == user_id,
+                    ChatSession.session_id == session_id,
+                )
+            )
 
             await db.commit()
             return True

@@ -67,7 +67,7 @@ class ChatService:
 
         reply = await self.llm.chat(messages, profile_summary, recommendation_summary, self.skill_id)
 
-        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", reply)
+        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", reply, self.skill_id)
 
         return {"session_id": self.session_id, "reply": reply}
 
@@ -84,4 +84,4 @@ class ChatService:
             full_reply.append(chunk)
             yield chunk
 
-        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", "".join(full_reply))
+        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", "".join(full_reply), self.skill_id)

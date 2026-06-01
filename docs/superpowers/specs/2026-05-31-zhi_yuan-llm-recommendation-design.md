@@ -188,9 +188,9 @@ Step 7 · 持久化 → Step 8 · 返回 RecommendResult
 #### 多角色技能系统 (SkillRegistry)
 
 | 技能 ID | 名称 | 风格 |
-|---------|------|------|
+|---------|-----|------|
 | `default` | 智愿顾问 | 专业、客观、数据驱动，9 条硬性规则 |
-| `zhangxuefeng` | 名师张视角 | 犀利务实，阶层意识，反鸡汤，含红/黄/绿情绪档位 |
+| `zhangxuefeng` | 名师张 | 犀利务实，阶层意识，反鸡汤，含红/黄/绿情绪档位 |
 
 每个 Skill 定义：
 - `system_prompt_template`：含 `{profile_summary}` 和 `{recommendation_summary}` 占位符

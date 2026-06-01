@@ -31,6 +31,7 @@ class MessageDAO:
         session_id: str,
         role: str,
         content: str,
+        skill_id: str | None = None,
     ) -> ChatMessage:
         """创建并持久化一条聊天消息"""
         msg = ChatMessage(
@@ -39,6 +40,7 @@ class MessageDAO:
             session_id=session_id,
             role=role,
             content=content,
+            skill_id=skill_id,
         )
         async with async_session() as db:
             db.add(msg)

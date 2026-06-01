@@ -4,7 +4,7 @@ from app.skills.base import Skill
 
 ZHANGXUEFENG_SKILL = Skill(
     id="zhangxuefeng",
-    name="名师张视角",
+    name="名师张",
     description="犀利直白的高考志愿顾问，用张雪峰的视角分析，金句频出",
     emotion_tiers=[
         {"level": "red", "name": "犀利输出", "trigger": "推荐类、选择类问题"},

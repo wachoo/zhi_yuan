@@ -15,6 +15,8 @@ class ChatMessageOut(BaseModel):
     session_id: str
     role: str
     content: str
+    skill_id: str | None = None
+    skill_name: str | None = None
     created_at: datetime
 
     class Config:

@@ -102,6 +102,8 @@ export interface ChatMessage {
   session_id: string;
   role: "user" | "assistant" | "system" | "tool";
   content: string;
+  skill_id: string | null;
+  skill_name: string | null;
   created_at: string;
 }
 

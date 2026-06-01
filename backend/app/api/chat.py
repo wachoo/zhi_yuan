@@ -53,7 +53,14 @@ async def get_session_messages(
     user: User = Depends(get_current_user),
 ):
     """获取指定会话的消息列表"""
-    return await ChatService.get_session_messages(user.id, session_id)
+    messages = await ChatService.get_session_messages(user.id, session_id)
+    # 为 assistant 消息补充 skill_name 显示名
+    for msg in messages:
+        if msg.skill_id:
+            skill = SkillRegistry.get(msg.skill_id)
+            if skill:
+                msg.skill_name = skill.name
+    return messages
 
 
 @router.post("")
@@ -75,9 +82,11 @@ async def chat_stream(
     user: User = Depends(get_current_user),
 ):
     svc = ChatService(user, session_id, skill_id=skill_id)
+    skill = SkillRegistry.get(skill_id)
+    skill_name = skill.name if skill else None
 
     async def generate():
-        yield f"data: {json.dumps({'session_id': svc.session_id})}\n\n"
+        yield f"data: {json.dumps({'session_id': svc.session_id, 'skill_name': skill_name})}\n\n"
         async for chunk in svc.chat_stream(message):
             yield f"data: {chunk}\n\n"
         yield "data: [DONE]\n\n"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Input, Button, List, Typography, Space, Avatar, Empty, Spin, Select } from "antd";
+import { Input, Button, List, Typography, Space, Avatar, Empty, Spin, Select, Tag } from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -70,6 +70,7 @@ function StreamingMarkdown({ content }: { content: string }) {
 interface DisplayMessage {
   role: "user" | "assistant";
   content: string;
+  skill_name?: string;
 }
 
 interface Skill {
@@ -93,6 +94,7 @@ export default function ChatPage() {
   const [editingTitle, setEditingTitle] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const streamSkillNameRef = useRef<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
@@ -114,7 +116,11 @@ export default function ChatPage() {
       );
       const displayMsgs: DisplayMessage[] = res.data
         .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+        .map((m) => ({
+          role: m.role as "user" | "assistant",
+          content: m.content,
+          skill_name: m.skill_name ?? undefined,
+        }));
       setMessages(displayMsgs);
       setCurrentSessionId(sessionId);
     } catch {
@@ -206,6 +212,7 @@ export default function ChatPage() {
 
     const controller = new AbortController();
     abortRef.current = controller;
+    streamSkillNameRef.current = null;
 
     try {
       const params = new URLSearchParams({ message: userMsg });
@@ -254,17 +261,22 @@ export default function ChatPage() {
 
           if (data === "[DONE]") continue;
 
-          if (data.startsWith("{")) {
-            try {
-              const parsed = JSON.parse(data);
+          // 统一尝试 JSON 解析，区分元数据和文本内容
+          try {
+            const parsed = JSON.parse(data);
+            if (typeof parsed === "object" && parsed !== null) {
               if (parsed.session_id) {
                 setCurrentSessionId(parsed.session_id);
                 loadSessions();
               }
-            } catch {
-              // 忽略
+              if (parsed.skill_name) {
+                streamSkillNameRef.current = parsed.skill_name;
+              }
             }
+            // 合法 JSON → 元数据，跳过
             continue;
+          } catch {
+            // 非 JSON → 当作普通文本内容累积
           }
 
           accumulated += data;
@@ -299,6 +311,17 @@ export default function ChatPage() {
       setLoading(false);
       setStreaming(false);
       abortRef.current = null;
+      // 将流式期间捕获的 skill_name 写入最后一条 assistant 消息
+      if (streamSkillNameRef.current) {
+        const name = streamSkillNameRef.current;
+        setMessages((prev) => {
+          const next = [...prev];
+          if (next.length > 0 && next[next.length - 1].role === "assistant") {
+            next[next.length - 1] = { ...next[next.length - 1], skill_name: name };
+          }
+          return next;
+        });
+      }
     }
   };
 
@@ -460,16 +483,6 @@ export default function ChatPage() {
                 )}
               </div>
             </div>
-            <Select
-              value={currentSkillId}
-              onChange={setCurrentSkillId}
-              style={{ width: 140 }}
-              size="small"
-              options={skills.map((s) => ({
-                value: s.id,
-                label: s.name,
-              }))}
-            />
           </div>
 
           {/* Messages */}
@@ -528,9 +541,16 @@ export default function ChatPage() {
                         />
                       }
                       title={
-                        <Text strong style={{ fontSize: 13 }}>
-                          {msg.role === "user" ? "我" : "智愿AI"}
-                        </Text>
+                        <Space size={6}>
+                          <Text strong style={{ fontSize: 13 }}>
+                            {msg.role === "user" ? "我" : "智愿AI"}
+                          </Text>
+                          {msg.role === "assistant" && msg.skill_name && (
+                            <Tag style={{ borderRadius: 4, fontSize: 11, lineHeight: "18px", margin: 0 }}>
+                              {msg.skill_name}
+                            </Tag>
+                          )}
+                        </Space>
                       }
                       description={
                         msg.role === "assistant" ? (
@@ -604,6 +624,18 @@ export default function ChatPage() {
                   发送
                 </Button>
               )}
+            </div>
+            <div style={{ marginTop: 8 }}>
+              <Select
+                value={currentSkillId}
+                onChange={setCurrentSkillId}
+                style={{ width: 160 }}
+                size="small"
+                options={skills.map((s) => ({
+                  value: s.id,
+                  label: s.name,
+                }))}
+              />
             </div>
           </div>
         </div>

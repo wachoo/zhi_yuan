@@ -99,16 +99,21 @@ class RecommendService:
                     dislikes=dislikes, interests=interests, major_names=major_names
                 )
                 llm_dislikes = llm_result.get("dislikes", [])
-                expanded_set = set(dislikes)
-                # 新格式：LLM 直接返回专业名称列表
-                if isinstance(llm_dislikes, list):
-                    expanded_set.update(llm_dislikes)
-                # 兼容旧格式：字典格式
-                elif isinstance(llm_dislikes, dict):
-                    for keywords in llm_dislikes.values():
-                        expanded_set.update(keywords)
-                expanded_dislikes = list(expanded_set)
-                logger.info(f"LLM expanded dislikes: {expanded_dislikes}")
+                # LLM 返回空结果（静默失败），降级到硬编码扩展
+                if not llm_dislikes:
+                    logger.warning("LLM returned empty dislikes, falling back to hardcoded expansion")
+                    expanded_dislikes = _expand_dislikes(dislikes)
+                else:
+                    expanded_set = set(dislikes)
+                    # 新格式：LLM 直接返回专业名称列表
+                    if isinstance(llm_dislikes, list):
+                        expanded_set.update(llm_dislikes)
+                    # 兼容旧格式：字典格式
+                    elif isinstance(llm_dislikes, dict):
+                        for keywords in llm_dislikes.values():
+                            expanded_set.update(keywords)
+                    expanded_dislikes = list(expanded_set)
+                    logger.info(f"LLM expanded dislikes: {expanded_dislikes}")
             except Exception as e:
                 logger.warning(f"LLM semantic expansion failed, using fallback: {e}")
                 expanded_dislikes = _expand_dislikes(dislikes)

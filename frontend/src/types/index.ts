@@ -65,6 +65,7 @@ export interface RecommendItem {
   min_rank: number | null;
   rank_ratio: number | null;
   adapter_score: number | null;
+  reason: string | null;
 }
 
 export interface RecommendResult {

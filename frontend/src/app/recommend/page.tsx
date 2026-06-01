@@ -107,6 +107,7 @@ function RecommendContent() {
       title: "适配度",
       dataIndex: "adapter_score",
       key: "adapter_score",
+      width: 120,
       render: (score: number) => score ? (
         <Progress
           percent={score}
@@ -114,6 +115,21 @@ function RecommendContent() {
           strokeColor={score >= 80 ? "var(--zy-accent)" : score >= 60 ? "var(--zy-secondary)" : "var(--zy-text-muted)"}
         />
       ) : "-",
+    },
+    {
+      title: "推荐理由",
+      dataIndex: "reason",
+      key: "reason",
+      render: (reason: string | null) =>
+        reason ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {reason.split("；").map((r, i) => (
+              <Tag key={i} style={{ borderRadius: 4, margin: 0, fontSize: 12 }}>{r}</Tag>
+            ))}
+          </div>
+        ) : (
+          <Text type="secondary">—</Text>
+        ),
     },
   ];
 

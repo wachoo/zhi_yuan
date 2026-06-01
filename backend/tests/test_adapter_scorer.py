@@ -101,3 +101,61 @@ class TestAdapterScorer:
         score = self.scorer.score(profile=profile, record=record)
         # "计算机"匹配major_name(+25), "编程"不匹配"计算机科学与技术"(-0), 基础50, 总计75
         assert score["dimensions"]["personality"] == 75.0
+
+
+class TestGenerateReason:
+    def setup_method(self):
+        self.scorer = AdapterScorer()
+
+    def test_reason_with_city_match(self):
+        """城市匹配时应生成城市相关理由"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "family_info": {"prefer_city": ["上海"], "tuition_max": 10000},
+        }
+        record = {"university_name": "A大学", "major_name": "计算机", "min_rank": 5000, "city": "上海", "tuition_max": 6000}
+        score_result = self.scorer.score(profile=profile, record=record)
+        reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
+        assert "上海" in reason
+
+    def test_reason_with_interest_match(self):
+        """兴趣匹配时应生成兴趣相关理由"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "personality": {"interests": ["计算机"]},
+        }
+        record = {"university_name": "A大学", "major_name": "计算机科学与技术", "min_rank": 5000}
+        score_result = self.scorer.score(profile=profile, record=record)
+        reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
+        assert "计算机" in reason
+
+    def test_reason_with_values_match(self):
+        """职业价值观匹配时应生成相关理由"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "values_info": {"career_values": ["高薪"]},
+        }
+        record = {"university_name": "A大学", "major_name": "计算机科学", "min_rank": 5000}
+        score_result = self.scorer.score(profile=profile, record=record)
+        reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
+        assert "高薪" in reason
+
+    def test_reason_fallback_when_no_profile(self):
+        """无画像信息时应返回兜底理由"""
+        profile = {"basic_info": {"rank": 5000}}
+        record = {"university_name": "A大学", "major_name": "计算机", "min_rank": 5000}
+        score_result = self.scorer.score(profile=profile, record=record)
+        reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
+        assert isinstance(reason, str)
+        assert len(reason) > 0
+
+    def test_reason_with_ability_match(self):
+        """学科优势匹配时应生成相关理由"""
+        profile = {
+            "basic_info": {"score": 620, "rank": 5000, "province": "浙江", "subject_type": "综合改革"},
+            "ability": {"strong_subjects": ["数学", "物理"]},
+        }
+        record = {"university_name": "A大学", "major_name": "计算机科学", "min_rank": 5000}
+        score_result = self.scorer.score(profile=profile, record=record)
+        reason = self.scorer.generate_reason(profile=profile, record=record, score_result=score_result)
+        assert "数学" in reason or "物理" in reason

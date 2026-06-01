@@ -16,6 +16,7 @@ class RecommendItem(BaseModel):
     min_rank: int | None
     rank_ratio: float | None
     adapter_score: float | None
+    reason: str | None = None
 
 
 class RecommendResult(BaseModel):

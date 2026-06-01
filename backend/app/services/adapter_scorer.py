@@ -122,6 +122,85 @@ class AdapterScorer:
                 score += 25.0
         return min(100, max(0, score))
 
+    # 维度中文名映射
+    DIMENSION_LABELS = {
+        "basic": "分数匹配",
+        "family": "学费承受",
+        "city": "城市偏好",
+        "personality": "兴趣契合",
+        "ability": "学科优势",
+        "values": "职业价值观",
+    }
+
+    def generate_reason(self, profile: dict, record: dict, score_result: dict) -> str:
+        """根据评分维度明细生成推荐理由"""
+        dimensions = score_result["dimensions"]
+        weights = score_result["weights"]
+
+        # 按「加权贡献」降序排列，取 Top 维度作为理由依据
+        contributions = []
+        for dim, score in dimensions.items():
+            w = weights.get(dim, 0)
+            if w > 0 and score > 0:
+                contributions.append((dim, score, w, score * w))
+        contributions.sort(key=lambda x: x[3], reverse=True)
+
+        parts: list[str] = []
+        for dim, score, w, _ in contributions[:3]:
+            label = self.DIMENSION_LABELS.get(dim, dim)
+            detail = self._dimension_detail(profile, record, dim, score)
+            if detail:
+                parts.append(detail)
+            elif score >= 80:
+                parts.append(f"{label}度高")
+            elif score >= 60:
+                parts.append(f"{label}较好")
+
+        if not parts:
+            return "综合评分推荐"
+
+        return "；".join(parts)
+
+    def _dimension_detail(self, profile: dict, record: dict, dim: str, score: float) -> str | None:
+        """为单个维度生成具体描述"""
+        if dim == "basic":
+            return None  # 分数匹配太泛，不单独描述
+
+        if dim == "city":
+            family = profile.get("family_info") or {}
+            prefer_cities = family.get("prefer_city", [])
+            record_city = record.get("city", "")
+            uni_province = record.get("university_province", "")
+            matched = [c for c in prefer_cities if c == record_city or c == uni_province]
+            if matched:
+                return f"位于偏好城市{'/'.join(matched)}"
+
+        if dim == "personality":
+            personality = profile.get("personality") or {}
+            interests = personality.get("interests", [])
+            major_name = record.get("major_name", "")
+            matched = [i for i in interests if (i in major_name or major_name in i)]
+            if matched:
+                return f"专业与兴趣{'/'.join(matched)}相关"
+
+        if dim == "ability":
+            ability = profile.get("ability") or {}
+            strong = ability.get("strong_subjects", [])
+            if strong and score > 50:
+                return f"与擅长学科{'/'.join(strong)}匹配"
+
+        if dim == "values":
+            values = profile.get("values_info") or {}
+            career_values = values.get("career_values", [])
+            if career_values and score > 50:
+                return f"符合{'/'.join(career_values)}的职业追求"
+
+        if dim == "family":
+            if score >= 75:
+                return "学费在承受范围内"
+
+        return None
+
     def _compute_weights(self, profile: dict) -> dict:
         filled = []
         if profile.get("basic_info"):

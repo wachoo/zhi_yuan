@@ -125,12 +125,15 @@ class RecommendService:
         tier = user.membership_tier
         categorized = engine.limit_for_tier(categorized, tier=tier, max_per_group=8 if tier == MembershipTier.free else 999)
 
-        # 6. 评分
+        # 6. 评分 + 生成推荐理由
         scorer = AdapterScorer()
         for group in ["rush", "stable", "safe"]:
             for item in categorized[group]:
-                score = scorer.score(profile=profile_dict, record=item)
-                item["adapter_score"] = score["total"]
+                score_result = scorer.score(profile=profile_dict, record=item)
+                item["adapter_score"] = score_result["total"]
+                item["reason"] = scorer.generate_reason(
+                    profile=profile_dict, record=item, score_result=score_result
+                )
 
         # 7. 持久化
         rec = Recommendation(
@@ -139,7 +142,7 @@ class RecommendService:
             input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type},
             result={k: [{"university_name": i["university_name"], "major_name": i["major_name"],
                           "min_rank": i.get("min_rank"), "rank_ratio": i.get("rank_ratio"),
-                          "adapter_score": i.get("adapter_score")} for i in v]
+                          "adapter_score": i.get("adapter_score"), "reason": i.get("reason")} for i in v]
                     for k, v in categorized.items()},
             tier=tier,
         )
@@ -153,6 +156,7 @@ class RecommendService:
                 min_rank=i.get("min_rank"),
                 rank_ratio=i.get("rank_ratio"),
                 adapter_score=i.get("adapter_score"),
+                reason=i.get("reason"),
             ) for i in items]
 
         return RecommendResult(

@@ -522,3 +522,57 @@ a,
     padding: 20px;
   }
 }
+
+/* ============================================
+   Settings Layout (GitHub-style)
+   ============================================ */
+.zy-settings-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 0;
+}
+
+.zy-settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--zy-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+  line-height: 1.5;
+}
+
+.zy-settings-nav-item:hover {
+  background: var(--zy-muted);
+  color: var(--zy-text);
+}
+
+.zy-settings-nav-active {
+  background: var(--zy-primary) !important;
+  color: #fff !important;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .zy-settings-sidebar {
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+  }
+
+  .zy-settings-nav-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}

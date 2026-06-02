@@ -20,7 +20,7 @@ class ProfileService:
 
     # 各维度内的字段定义
     DIMENSION_FIELDS = {
-        "basic_info": ["score", "rank", "province", "subject_type", "exam_type"],
+        "basic_info": ["score", "rank", "province", "subject_type", "exam_type", "professional_score"],
         "family_info": [
             "income_range", "tuition_max", "prefer_city", "parent_industry",
             "parent_education", "hukou_type", "has_siblings", "has_elderly_care",

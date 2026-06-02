@@ -42,6 +42,7 @@ class ProfileBasicInfo(BaseModel):
     province: str
     subject_type: str
     exam_type: str | None = None
+    professional_score: int | None = Field(None, ge=0, description="艺术/体育类专业分")
 
 
 class ProfileFamilyInfo(BaseModel):

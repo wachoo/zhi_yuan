@@ -67,6 +67,7 @@ export default function ProfilePage() {
           initialValues.province = data.basic_info.province;
           initialValues.subject_type = data.basic_info.subject_type;
           initialValues.exam_type = data.basic_info.exam_type;
+          initialValues.professional_score = (data.basic_info as Record<string, unknown>).professional_score;
           setExamType(data.basic_info.exam_type);
         }
         if (data.personality) {
@@ -119,6 +120,7 @@ export default function ProfilePage() {
           province: values.province,
           subject_type: values.subject_type,
           exam_type: values.exam_type,
+          professional_score: values.professional_score,
         };
       }
 
@@ -277,6 +279,17 @@ export default function ProfilePage() {
               {examType === "艺术类" && <>艺术类考生需参加省统考或校考，可报考视觉传达设计、音乐学、美术学、表演、播音与主持艺术、舞蹈学、动画、广播电视编导等艺术类专业。</>}
               {examType === "体育类" && <>体育类考生需参加体育专业测试，可报考体育教育、运动训练、武术与民族传统体育等专业。部分院校体育教育也可通过普通类报考。</>}
             </div>
+          )}
+          {(examType === "艺术类" || examType === "体育类") && (
+            <Form.Item
+              name="professional_score"
+              label={examType === "艺术类" ? "艺考专业分" : "体育术科分"}
+              rules={[{ required: true, message: `请输入${examType === "艺术类" ? "艺考" : "体育术科"}专业分` }]}
+              extra={examType === "艺术类" ? "省级艺术类专业统考成绩（满分因省份而异，通常300分）" : "省级体育专业统考成绩（满分因省份而异，通常100-400分）"}
+              style={{ marginTop: 12 }}
+            >
+              <InputNumber min={0} max={400} style={{ width: "100%" }} placeholder="如：260" />
+            </Form.Item>
           )}
         </Card>
 

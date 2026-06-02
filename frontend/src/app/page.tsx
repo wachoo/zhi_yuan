@@ -74,9 +74,10 @@ const features = [
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
+  const [examType, setExamType] = useState("普通类");
   const router = useRouter();
 
-  const onFinish = async (values: { score: number; rank: number; province: string; subject_type: string; exam_type: string }) => {
+  const onFinish = async (values: { score: number; rank: number; province: string; subject_type: string; exam_type: string; professional_score?: number }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -96,6 +97,9 @@ export default function Home() {
         subject_type: values.subject_type,
         exam_type: values.exam_type || "普通类",
       });
+      if (values.professional_score) {
+        params.set("professional_score", String(values.professional_score));
+      }
       router.push(`/recommend?${params}`);
     } catch (err) {
       console.error(err);
@@ -229,11 +233,25 @@ export default function Home() {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="exam_type" label="报考科类‌" initialValue="普通类" rules={[{ required: true, message: "请选择报考科类‌" }]}>
-                <Select placeholder="选择报考科类‌" options={EXAM_TYPE_OPTIONS} />
+              <Form.Item name="exam_type" label="报考科类" initialValue="普通类" rules={[{ required: true, message: "请选择报考科类" }]}>
+                <Select
+                  placeholder="选择报考科类"
+                  options={EXAM_TYPE_OPTIONS}
+                  onChange={(val) => setExamType(val)}
+                />
               </Form.Item>
             </Col>
           </Row>
+          {(examType === "艺术类" || examType === "体育类") && (
+            <Form.Item
+              name="professional_score"
+              label={examType === "艺术类" ? "艺考专业分" : "体育术科分"}
+              rules={[{ required: true, message: `请输入${examType === "艺术类" ? "艺考" : "体育术科"}专业分` }]}
+              extra={examType === "艺术类" ? "省级艺术类专业统考成绩" : "省级体育专业统考成绩"}
+            >
+              <InputNumber min={0} max={400} style={{ width: "100%" }} placeholder="如：260" />
+            </Form.Item>
+          )}
           <Form.Item style={{ marginBottom: 0 }}>
             <Button
               type="primary"

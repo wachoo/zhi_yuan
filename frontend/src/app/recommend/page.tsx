@@ -22,6 +22,7 @@ function RecommendContent() {
   const province = params.get("province");
   const subject_type = params.get("subject_type");
   const exam_type = params.get("exam_type");
+  const professional_score = params.get("professional_score");
 
   useEffect(() => {
     const fetchAndRecommend = async () => {
@@ -30,6 +31,7 @@ function RecommendContent() {
       let pProvince = province;
       let pSubjectType = subject_type;
       let pExamType = exam_type;
+      let pProfessionalScore = professional_score;
 
       if (!pScore || !pRank || !pProvince || !pSubjectType || !pExamType) {
         let token = localStorage.getItem("token");
@@ -58,6 +60,7 @@ function RecommendContent() {
             pProvince = pProvince ?? basic.province ?? "";
             pSubjectType = pSubjectType ?? basic.subject_type ?? "";
             pExamType = pExamType ?? basic.exam_type ?? "普通类";
+            pProfessionalScore = pProfessionalScore ?? (basic.professional_score != null ? String(basic.professional_score) : null);
           }
         } catch (err: any) {
           if (err?.response?.status === 404) {
@@ -76,16 +79,25 @@ function RecommendContent() {
         return;
       }
 
+      if ((pExamType === "艺术类" || pExamType === "体育类") && !pProfessionalScore) {
+        setError(`${pExamType}考生请提供专业分，请先从首页填写信息`);
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
       try {
-        const payload = {
+        const payload: Record<string, unknown> = {
           score: Number(pScore),
           rank: Number(pRank),
           province: pProvince,
           subject_type: pSubjectType,
           exam_type: pExamType || "普通类",
         };
+        if (pProfessionalScore) {
+          payload.professional_score = Number(pProfessionalScore);
+        }
         const res = await api.post("/api/recommend", payload);
         setResult(res.data);
       } catch (err: any) {
@@ -97,7 +109,7 @@ function RecommendContent() {
       }
     };
     fetchAndRecommend();
-  }, [score, rank, province, subject_type, exam_type]);
+  }, [score, rank, province, subject_type, exam_type, professional_score]);
 
   const columns = [
     { title: "院校", dataIndex: "university_name", key: "university_name", render: (name: string) => <Text strong>{name}</Text> },

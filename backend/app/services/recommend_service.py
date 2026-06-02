@@ -54,9 +54,13 @@ class RecommendService:
         province = request.province if request.province is not None else basic.get("province", "")
         subject_type = request.subject_type if request.subject_type is not None else basic.get("subject_type", "")
         exam_type = request.exam_type if request.exam_type is not None else basic.get("exam_type", "普通类")
+        professional_score = request.professional_score if request.professional_score is not None else basic.get("professional_score")
 
         if not rank or not province or not subject_type or not exam_type:
             raise HTTPException(status_code=400, detail="请至少提供位次、省份、首选科目和报考科类")
+
+        if exam_type in ("艺术类", "体育类") and professional_score is None:
+            raise HTTPException(status_code=400, detail=f"{exam_type}考生请提供专业分")
 
         # 2. 查询录取数据
         raw_records = await AdmissionDAO().query_records_with_details(province, subject_type, exam_type)
@@ -145,7 +149,7 @@ class RecommendService:
         rec = Recommendation(
             id=uuid.uuid4(),
             user_id=user.id,
-            input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type},
+            input_snapshot={"rank": rank, "province": province, "subject_type": subject_type, "exam_type": exam_type, "professional_score": professional_score},
             result={k: [{"university_name": i["university_name"], "major_name": i["major_name"],
                           "min_rank": i.get("min_rank"), "rank_ratio": i.get("rank_ratio"),
                           "adapter_score": i.get("adapter_score"), "reason": i.get("reason")} for i in v]

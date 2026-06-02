@@ -82,6 +82,7 @@ export interface UserProfile {
     province: string;
     subject_type: string;
     exam_type: string | null;
+    professional_score: number | null;
   } | null;
   family_info: Record<string, unknown> | null;
   personality: Record<string, unknown> | null;

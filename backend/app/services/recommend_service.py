@@ -139,6 +139,7 @@ class RecommendService:
                 item["reason"] = scorer.generate_reason(
                     profile=profile_dict, record=item, score_result=score_result
                 )
+            categorized[group].sort(key=lambda x: x.get("adapter_score", 0), reverse=True)
 
         # 7. 持久化
         rec = Recommendation(

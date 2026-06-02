@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  Modal, Steps, Button, Radio, QRCode, Typography, Space, Result, message,
+  Modal, Steps, Button, Radio, QRCode, Typography, Space, Result, App,
 } from "antd";
 import {
   AlipayCircleOutlined,
@@ -27,6 +27,7 @@ interface PaymentModalProps {
 export default function PaymentModal({
   open, tier, tierName, amount, onClose, onSuccess,
 }: PaymentModalProps) {
+  const { message } = App.useApp();
   const [step, setStep] = useState(0);
   const [method, setMethod] = useState<PaymentMethod>(PaymentMethod.ALIPAY);
   const [order, setOrder] = useState<CreateOrderResponse | null>(null);
@@ -107,7 +108,7 @@ export default function PaymentModal({
       title={null}
       width={480}
       centered
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ padding: "16px 0" }}>
         <Steps

@@ -1,6 +1,6 @@
 "use client";
 
-import { Layout, Menu, Button, Dropdown, Avatar, Typography } from "antd";
+import { Layout, Menu, Button, Dropdown, Avatar } from "antd";
 import {
   HomeOutlined,
   SearchOutlined,
@@ -11,13 +11,11 @@ import {
   UserOutlined,
   LockOutlined,
   CrownOutlined,
-  SettingOutlined,
 } from "@ant-design/icons";
 import { useRouter, usePathname } from "next/navigation";
 import { logout } from "@/lib/api";
 
 const { Header, Content, Footer } = Layout;
-const { Text } = Typography;
 
 const menuItems = [
   { key: "/", icon: <HomeOutlined />, label: "首页" },

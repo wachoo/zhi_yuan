@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Form, Button, message, Space, Typography, Input } from "antd";
+import { Card, Form, Button, App, Space, Typography, Input } from "antd";
 import { LockOutlined } from "@ant-design/icons";
 import api, { logout } from "@/lib/api";
 
@@ -9,6 +9,7 @@ const { Text, Title } = Typography;
 const { Password } = Input;
 
 export default function AccountPage() {
+  const { message } = App.useApp();
   const [pwdForm] = Form.useForm();
   const [changingPwd, setChangingPwd] = useState(false);
 

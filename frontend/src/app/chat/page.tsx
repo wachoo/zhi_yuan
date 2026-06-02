@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Input, Button, Typography, Space, Avatar, Empty, Spin, Select, Tag, Modal, message } from "antd";
+import { Input, Button, Typography, Space, Avatar, Empty, Spin, Select, Tag, App } from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -81,6 +81,7 @@ interface Skill {
 }
 
 export default function ChatPage() {
+  const { modal, message } = App.useApp();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -167,7 +168,7 @@ export default function ChatPage() {
 
   const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
     e.stopPropagation();
-    Modal.confirm({
+    modal.confirm({
       title: "确认删除",
       content: "删除该会话及其所有对话记录？此操作不可恢复。",
       okText: "删除",
@@ -192,7 +193,7 @@ export default function ChatPage() {
     const msg = messages[msgIndex];
     if (!msg.id || !currentSessionId) return;
 
-    Modal.confirm({
+    modal.confirm({
       title: "确认删除",
       content: "删除该问答对？此操作不可恢复。",
       okText: "删除",

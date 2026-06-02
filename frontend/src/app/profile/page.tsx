@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import {
-  Card, Form, Select, Button, Progress, message, Space, Row, Col,
-  InputNumber, Input, Checkbox, Slider, Radio, Typography, Modal,
+  Card, Form, Select, Button, Progress, Space, Row, Col, Spin, App,
+  InputNumber, Input, Checkbox, Slider, Radio, Typography,
 } from "antd";
 import {
   UserOutlined,
@@ -45,6 +45,7 @@ const provinces = [
 ];
 
 export default function ProfilePage() {
+  const { modal, message } = App.useApp();
   const [form] = Form.useForm();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -162,7 +163,7 @@ export default function ProfilePage() {
   };
 
   const onSave = (values: Record<string, unknown>) => {
-    Modal.confirm({
+    modal.confirm({
       title: "确认保存",
       content: "是否保存当前个人详情？",
       okText: "确认",
@@ -171,9 +172,8 @@ export default function ProfilePage() {
     });
   };
 
-  if (loading) return <Card loading style={{ borderRadius: 12 }} />;
-
   return (
+    <Spin spinning={loading}>
     <Space orientation="vertical" size={24} style={{ width: "100%" }}>
       <div>
         <Title level={3} style={{ margin: "0 0 4px" }}>个人详情</Title>
@@ -509,5 +509,6 @@ export default function ProfilePage() {
         </Card>
       </Form>
     </Space>
+    </Spin>
   );
 }

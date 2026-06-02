@@ -27,5 +27,5 @@ class ChatMessage(Base):
     role: Mapped[str] = mapped_column(String(20), nullable=False)  # user/assistant/system/tool
     content: Mapped[str] = mapped_column(Text, nullable=False)
     tool_calls: Mapped[dict] = mapped_column(JSONB, nullable=True)
-    skill_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    advisor_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

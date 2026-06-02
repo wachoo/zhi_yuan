@@ -95,7 +95,7 @@ export interface ChatSession {
   session_id: string;
   title: string;
   message_count: number;
-  skill_id: string | null;
+  advisor_id: string | null;
   last_message_at: string | null;
 }
 
@@ -104,8 +104,8 @@ export interface ChatMessage {
   session_id: string;
   role: "user" | "assistant" | "system" | "tool";
   content: string;
-  skill_id: string | null;
-  skill_name: string | null;
+  advisor_id: string | null;
+  advisor_name: string | null;
   created_at: string;
 }
 

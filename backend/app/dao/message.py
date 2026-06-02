@@ -31,7 +31,7 @@ class MessageDAO:
         session_id: str,
         role: str,
         content: str,
-        skill_id: str | None = None,
+        advisor_id: str | None = None,
     ) -> ChatMessage:
         """创建并持久化一条聊天消息"""
         msg = ChatMessage(
@@ -40,7 +40,7 @@ class MessageDAO:
             session_id=session_id,
             role=role,
             content=content,
-            skill_id=skill_id,
+            advisor_id=advisor_id,
         )
         async with async_session() as db:
             db.add(msg)
@@ -51,21 +51,21 @@ class MessageDAO:
     async def list_sessions(self, user_id: uuid.UUID) -> list[dict]:
         """按 session_id 分组，返回每个会话的摘要信息（按最后消息时间倒序）"""
         async with async_session() as db:
-            # 主查询：按 session 聚合，LEFT JOIN chat_sessions 获取 skill_id
+            # 主查询：按 session 聚合，LEFT JOIN chat_sessions 获取 advisor_id
             result = await db.execute(
                 select(
                     ChatMessage.session_id,
                     func.count(ChatMessage.id).label("message_count"),
                     func.max(ChatMessage.created_at).label("last_message_at"),
                     ChatSession.custom_title,
-                    ChatSession.skill_id,
+                    ChatSession.advisor_id,
                 )
                 .outerjoin(
                     ChatSession,
                     (ChatSession.session_id == ChatMessage.session_id) & (ChatSession.user_id == ChatMessage.user_id),
                 )
                 .where(ChatMessage.user_id == user_id)
-                .group_by(ChatMessage.session_id, ChatSession.custom_title, ChatSession.skill_id)
+                .group_by(ChatMessage.session_id, ChatSession.custom_title, ChatSession.advisor_id)
                 .order_by(func.max(ChatMessage.created_at).desc())
             )
             sessions = result.all()
@@ -95,7 +95,7 @@ class MessageDAO:
                     "session_id": row.session_id,
                     "title": titles.get(row.session_id, "新对话"),
                     "message_count": row.message_count,
-                    "skill_id": row.skill_id,
+                    "advisor_id": row.advisor_id,
                     "last_message_at": row.last_message_at,
                 }
                 for row in sessions
@@ -117,19 +117,19 @@ class MessageDAO:
             )
             return list(result.scalars().all())
 
-    async def get_session_skill_id(self, user_id: uuid.UUID, session_id: str) -> str | None:
-        """获取会话的 skill_id（如果 ChatSession 记录存在）"""
+    async def get_session_advisor_id(self, user_id: uuid.UUID, session_id: str) -> str | None:
+        """获取会话的 advisor_id（如果 ChatSession 记录存在）"""
         async with async_session() as db:
             result = await db.execute(
-                select(ChatSession.skill_id).where(
+                select(ChatSession.advisor_id).where(
                     ChatSession.user_id == user_id,
                     ChatSession.session_id == session_id,
                 )
             )
             return result.scalar()
 
-    async def ensure_session(self, user_id: uuid.UUID, session_id: str, skill_id: str | None = None):
-        """确保 ChatSession 记录存在，首次设置 skill_id"""
+    async def ensure_session(self, user_id: uuid.UUID, session_id: str, advisor_id: str | None = None):
+        """确保 ChatSession 记录存在，首次设置 advisor_id"""
         async with async_session() as db:
             result = await db.execute(
                 select(ChatSession).where(
@@ -139,15 +139,15 @@ class MessageDAO:
             )
             session = result.scalar_one_or_none()
             if session:
-                # 已有记录但 skill_id 为空时补填
-                if session.skill_id is None and skill_id:
-                    session.skill_id = skill_id
+                # 已有记录但 advisor_id 为空时补填
+                if session.advisor_id is None and advisor_id:
+                    session.advisor_id = advisor_id
             else:
                 session = ChatSession(
                     id=uuid.uuid4(),
                     user_id=user_id,
                     session_id=session_id,
-                    skill_id=skill_id,
+                    advisor_id=advisor_id,
                 )
                 db.add(session)
             await db.commit()

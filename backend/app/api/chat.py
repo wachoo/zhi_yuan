@@ -8,7 +8,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.schemas.chat import ChatSessionOut, ChatMessageOut
 from app.services.chat_service import ChatService
-from app.skills import SkillRegistry
+from app.advisors import AdvisorRegistry
 
 router = APIRouter(prefix="/api/chat", tags=["AI对话"])
 
@@ -17,10 +17,10 @@ class ChatSessionRename(BaseModel):
     title: str
 
 
-@router.get("/skills")
-async def list_skills():
-    """获取可用的对话风格列表"""
-    return SkillRegistry.list()
+@router.get("/advisors")
+async def list_advisors():
+    """获取可用的 AI 顾问列表"""
+    return AdvisorRegistry.list()
 
 
 @router.get("/sessions", response_model=list[ChatSessionOut])
@@ -67,12 +67,12 @@ async def get_session_messages(
 ):
     """获取指定会话的消息列表"""
     messages = await ChatService.get_session_messages(user.id, session_id)
-    # 为 assistant 消息补充 skill_name 显示名
+    # 为 assistant 消息补充 advisor_name 显示名
     for msg in messages:
-        if msg.skill_id:
-            skill = SkillRegistry.get(msg.skill_id)
-            if skill:
-                msg.skill_name = skill.name
+        if msg.advisor_id:
+            advisor = AdvisorRegistry.get(msg.advisor_id)
+            if advisor:
+                msg.advisor_name = advisor.name
     return messages
 
 
@@ -100,10 +100,10 @@ async def delete_message(
 async def chat(
     message: str,
     session_id: str | None = None,
-    skill_id: str = "default",
+    advisor_id: str = "default",
     user: User = Depends(get_current_user),
 ):
-    svc = ChatService(user, session_id, skill_id=skill_id)
+    svc = ChatService(user, session_id, advisor_id=advisor_id)
     return await svc.chat(message)
 
 
@@ -111,22 +111,22 @@ async def chat(
 async def chat_stream(
     message: str,
     session_id: str | None = None,
-    skill_id: str = "default",
+    advisor_id: str = "default",
     user: User = Depends(get_current_user),
 ):
-    svc = ChatService(user, session_id, skill_id=skill_id)
+    svc = ChatService(user, session_id, advisor_id=advisor_id)
 
     # 限流检查必须在流开始前执行，以便返回正常的 HTTP 429
     await svc.user_svc.check_daily_chat_limit(user)
 
-    # 解析会话继承的 skill_id（已有会话会覆盖客户端传入值）
-    await svc._resolve_skill_id()
+    # 解析会话继承的 advisor_id（已有会话会覆盖客户端传入值）
+    await svc._resolve_advisor_id()
     await svc._ensure_session()
-    skill = SkillRegistry.get(svc.skill_id)
-    skill_name = skill.name if skill else None
+    advisor = AdvisorRegistry.get(svc.advisor_id)
+    advisor_name = advisor.name if advisor else None
 
     async def generate():
-        yield f"data: {json.dumps({'session_id': svc.session_id, 'skill_id': svc.skill_id, 'skill_name': skill_name})}\n\n"
+        yield f"data: {json.dumps({'session_id': svc.session_id, 'advisor_id': svc.advisor_id, 'advisor_name': advisor_name})}\n\n"
         async for chunk in svc.chat_stream(message):
             yield f"data: {chunk}\n\n"
         yield "data: [DONE]\n\n"

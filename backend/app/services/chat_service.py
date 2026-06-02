@@ -17,7 +17,7 @@ class ChatService:
         self,
         user: User,
         session_id: str | None = None,
-        skill_id: str = "default",
+        advisor_id: str = "default",
         user_svc: UserService | None = None,
         rec_svc: RecommendService | None = None,
         msg_dao: MessageDAO | None = None,
@@ -26,7 +26,7 @@ class ChatService:
     ):
         self.user = user
         self.session_id = session_id or str(uuid.uuid4())
-        self.skill_id = skill_id
+        self.advisor_id = advisor_id
         self.user_svc = user_svc or UserService()
         self.rec_svc = rec_svc or RecommendService()
         self.msg_dao = msg_dao or MessageDAO()
@@ -57,19 +57,19 @@ class ChatService:
         history = [{"role": m.role, "content": m.content} for m in history_msgs]
         return history + [{"role": "user", "content": message}]
 
-    async def _resolve_skill_id(self):
-        """如果会话已有 skill_id，使用会话的（覆盖客户端传入值）"""
+    async def _resolve_advisor_id(self):
+        """如果会话已有 advisor_id，使用会话的（覆盖客户端传入值）"""
         if self.session_id:
-            session_skill = await self.msg_dao.get_session_skill_id(self.user.id, self.session_id)
-            if session_skill:
-                self.skill_id = session_skill
+            session_advisor = await self.msg_dao.get_session_advisor_id(self.user.id, self.session_id)
+            if session_advisor:
+                self.advisor_id = session_advisor
 
     async def _ensure_session(self):
-        """确保 ChatSession 记录存在并写入 skill_id"""
-        await self.msg_dao.ensure_session(self.user.id, self.session_id, self.skill_id)
+        """确保 ChatSession 记录存在并写入 advisor_id"""
+        await self.msg_dao.ensure_session(self.user.id, self.session_id, self.advisor_id)
 
     async def chat(self, message: str) -> dict:
-        await self._resolve_skill_id()
+        await self._resolve_advisor_id()
         await self._ensure_session()
         await self.user_svc.update_daily_chat(self.user, self.session_id)
 
@@ -78,14 +78,14 @@ class ChatService:
 
         await self.msg_dao.save_message(self.user.id, self.session_id, "user", message)
 
-        reply = await self.llm.chat(messages, profile_summary, recommendation_summary, self.skill_id)
+        reply = await self.llm.chat(messages, profile_summary, recommendation_summary, self.advisor_id)
 
-        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", reply, self.skill_id)
+        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", reply, self.advisor_id)
 
         return {"session_id": self.session_id, "reply": reply}
 
     async def chat_stream(self, message: str):
-        # skill_id 已由 API 层在流开始前解析完毕，此处直接执行业务逻辑
+        # advisor_id 已由 API 层在流开始前解析完毕，此处直接执行业务逻辑
         await self.user_svc.update_daily_chat(self.user, self.session_id)
 
         profile_summary, recommendation_summary = await self._gather_context()
@@ -94,8 +94,8 @@ class ChatService:
         await self.msg_dao.save_message(self.user.id, self.session_id, "user", message)
 
         full_reply = []
-        async for chunk in self.llm.chat_stream(messages, profile_summary, recommendation_summary, self.skill_id, max_tool_rounds=80):
+        async for chunk in self.llm.chat_stream(messages, profile_summary, recommendation_summary, self.advisor_id, max_tool_rounds=80):
             full_reply.append(chunk)
             yield chunk
 
-        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", "".join(full_reply), self.skill_id)
+        await self.msg_dao.save_message(self.user.id, self.session_id, "assistant", "".join(full_reply), self.advisor_id)

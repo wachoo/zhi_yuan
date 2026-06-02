@@ -71,10 +71,10 @@ interface DisplayMessage {
   id?: string;
   role: "user" | "assistant";
   content: string;
-  skill_name?: string;
+  advisor_name?: string;
 }
 
-interface Skill {
+interface Advisor {
   id: string;
   name: string;
   description: string;
@@ -90,28 +90,28 @@ export default function ChatPage() {
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [currentSkillId, setCurrentSkillId] = useState("default");
+  const [advisors, setAdvisors] = useState<Advisor[]>([]);
+  const [currentAdvisorId, setCurrentAdvisorId] = useState("default");
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const [sessionSkills, setSessionSkills] = useState<Record<string, string>>({});
+  const [sessionAdvisors, setSessionAdvisors] = useState<Record<string, string>>({});
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
-  const streamSkillNameRef = useRef<string | null>(null);
+  const streamAdvisorNameRef = useRef<string | null>(null);
 
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
     try {
       const res = await api.get<ChatSession[]>("/api/chat/sessions");
       setSessions(res.data);
-      // Populate sessionSkills from server-side persisted skill_id
-      const skillsMap: Record<string, string> = {};
+      // Populate sessionAdvisors from server-side persisted advisor_id
+      const advisorsMap: Record<string, string> = {};
       for (const s of res.data) {
-        if (s.skill_id) {
-          skillsMap[s.session_id] = s.skill_id;
+        if (s.advisor_id) {
+          advisorsMap[s.session_id] = s.advisor_id;
         }
       }
-      setSessionSkills((prev) => ({ ...skillsMap, ...prev }));
+      setSessionAdvisors((prev) => ({ ...advisorsMap, ...prev }));
     } catch {
       // 静默处理
     } finally {
@@ -131,14 +131,14 @@ export default function ChatPage() {
           id: m.id,
           role: m.role as "user" | "assistant",
           content: m.content,
-          skill_name: m.skill_name ?? undefined,
+          advisor_name: m.advisor_name ?? undefined,
         }));
       setMessages(displayMsgs);
       setCurrentSessionId(sessionId);
-      // Restore skill from session's persisted skill_id
+      // Restore advisor from session's persisted advisor_id
       const session = sessions.find((s) => s.session_id === sessionId);
-      if (session?.skill_id) {
-        setCurrentSkillId(session.skill_id);
+      if (session?.advisor_id) {
+        setCurrentAdvisorId(session.advisor_id);
       }
     } catch {
       setMessages([]);
@@ -152,15 +152,15 @@ export default function ChatPage() {
   }, [loadSessions]);
 
   useEffect(() => {
-    const loadSkills = async () => {
+    const loadAdvisors = async () => {
       try {
-        const res = await api.get<Skill[]>("/api/chat/skills");
-        setSkills(res.data);
+        const res = await api.get<Advisor[]>("/api/chat/advisors");
+        setAdvisors(res.data);
       } catch {
-        setSkills([{ id: "default", name: "智愿顾问", description: "" }]);
+        setAdvisors([{ id: "default", name: "智愿顾问", description: "" }]);
       }
     };
-    loadSkills();
+    loadAdvisors();
   }, []);
 
   useEffect(() => {
@@ -281,16 +281,16 @@ export default function ChatPage() {
 
     const controller = new AbortController();
     abortRef.current = controller;
-    streamSkillNameRef.current = null;
+    streamAdvisorNameRef.current = null;
 
     try {
       const params = new URLSearchParams({ message: userMsg });
       if (currentSessionId) params.set("session_id", currentSessionId);
-      // Use session's saved skill, or current selection for new sessions
-      const skillId = currentSessionId && sessionSkills[currentSessionId]
-        ? sessionSkills[currentSessionId]
-        : currentSkillId;
-      params.set("skill_id", skillId);
+      // Use session's saved advisor, or current selection for new sessions
+      const advisorId = currentSessionId && sessionAdvisors[currentSessionId]
+        ? sessionAdvisors[currentSessionId]
+        : currentAdvisorId;
+      params.set("advisor_id", advisorId);
 
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -348,18 +348,18 @@ export default function ChatPage() {
             if (typeof parsed === "object" && parsed !== null) {
               if (parsed.session_id) {
                 setCurrentSessionId(parsed.session_id);
-                // Save server-resolved skill_id for this session
-                if (parsed.skill_id) {
-                  setSessionSkills((prev) => ({
+                // Save server-resolved advisor_id for this session
+                if (parsed.advisor_id) {
+                  setSessionAdvisors((prev) => ({
                     ...prev,
-                    [parsed.session_id]: parsed.skill_id,
+                    [parsed.session_id]: parsed.advisor_id,
                   }));
-                  setCurrentSkillId(parsed.skill_id);
+                  setCurrentAdvisorId(parsed.advisor_id);
                 }
                 loadSessions();
               }
-              if (parsed.skill_name) {
-                streamSkillNameRef.current = parsed.skill_name;
+              if (parsed.advisor_name) {
+                streamAdvisorNameRef.current = parsed.advisor_name;
               }
             }
             // 合法 JSON → 元数据，跳过
@@ -401,13 +401,13 @@ export default function ChatPage() {
       setLoading(false);
       setStreaming(false);
       abortRef.current = null;
-      // 将流式期间捕获的 skill_name 写入最后一条 assistant 消息
-      if (streamSkillNameRef.current) {
-        const name = streamSkillNameRef.current;
+      // 将流式期间捕获的 advisor_name 写入最后一条 assistant 消息
+      if (streamAdvisorNameRef.current) {
+        const name = streamAdvisorNameRef.current;
         setMessages((prev) => {
           const next = [...prev];
           if (next.length > 0 && next[next.length - 1].role === "assistant") {
-            next[next.length - 1] = { ...next[next.length - 1], skill_name: name };
+            next[next.length - 1] = { ...next[next.length - 1], advisor_name: name };
           }
           return next;
         });
@@ -612,23 +612,23 @@ export default function ChatPage() {
                   可以帮我查询院校、专业、录取分数等信息，试试问我吧
                 </Text>
 
-                {skills.length > 0 && (
+                {advisors.length > 0 && (
                   <div style={{
                     display: "flex",
                     flexWrap: "wrap",
                     justifyContent: "center",
                     gap: 16,
                   }}>
-                    {skills.map((skill) => (
+                    {advisors.map((advisor) => (
                       <div
-                        key={skill.id}
-                        onClick={() => setCurrentSkillId(skill.id)}
+                        key={advisor.id}
+                        onClick={() => setCurrentAdvisorId(advisor.id)}
                         style={{
                           cursor: "pointer",
                           padding: "16px 20px",
                           borderRadius: 12,
-                          border: currentSkillId === skill.id ? "2px solid var(--zy-primary)" : "1px solid var(--zy-border)",
-                          background: currentSkillId === skill.id ? "rgba(37, 99, 235, 0.04)" : "var(--zy-surface)",
+                          border: currentAdvisorId === advisor.id ? "2px solid var(--zy-primary)" : "1px solid var(--zy-border)",
+                          background: currentAdvisorId === advisor.id ? "rgba(37, 99, 235, 0.04)" : "var(--zy-surface)",
                           transition: "all 0.2s",
                           width: 140,
                           textAlign: "center",
@@ -636,7 +636,7 @@ export default function ChatPage() {
                       >
                         <Avatar
                           style={{
-                            background: currentSkillId === skill.id
+                            background: currentAdvisorId === advisor.id
                               ? "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))"
                               : "var(--zy-text-muted)",
                             marginBottom: 8,
@@ -645,10 +645,10 @@ export default function ChatPage() {
                           icon={<RobotOutlined />}
                         />
                         <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
-                          {skill.name}
+                          {advisor.name}
                         </div>
                         <div style={{ fontSize: 12, color: "var(--zy-text-secondary)", lineHeight: 1.5 }}>
-                          {skill.description}
+                          {advisor.description}
                         </div>
                       </div>
                     ))}
@@ -674,9 +674,9 @@ export default function ChatPage() {
                           <Text strong style={{ fontSize: 13 }}>
                             {msg.role === "user" ? "我" : "智愿AI"}
                           </Text>
-                          {msg.role === "assistant" && msg.skill_name && (
+                          {msg.role === "assistant" && msg.advisor_name && (
                             <Tag style={{ borderRadius: 4, fontSize: 11, lineHeight: "18px", margin: 0 }}>
-                              {msg.skill_name}
+                              {msg.advisor_name}
                             </Tag>
                           )}
                         </Space>

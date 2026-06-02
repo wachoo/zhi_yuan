@@ -22,8 +22,17 @@ class UserService:
             f"分数: {b.get('score', '未知')}, "
             f"位次: {b.get('rank', '未知')}, "
             f"省份: {b.get('province', '未知')}, "
-            f"科类: {b.get('subject_type', '未知')}"
+            f"首选科目: {b.get('subject_type', '未知')}"
         )
+
+        # 报考科类
+        exam_type = b.get('exam_type', '普通类')
+        summary += f", 报考科类: {exam_type}"
+
+        # 艺术/体育类专业分
+        professional_score = b.get('professional_score')
+        if exam_type in ('艺术类', '体育类') and professional_score is not None:
+            summary += f", 专业分: {professional_score}"
         
         # 添加兴趣和厌恶信息
         if profile.personality:

@@ -51,15 +51,21 @@ class MessageDAO:
     async def list_sessions(self, user_id: uuid.UUID) -> list[dict]:
         """按 session_id 分组，返回每个会话的摘要信息（按最后消息时间倒序）"""
         async with async_session() as db:
-            # 主查询：按 session 聚合
+            # 主查询：按 session 聚合，LEFT JOIN chat_sessions 获取 skill_id
             result = await db.execute(
                 select(
                     ChatMessage.session_id,
                     func.count(ChatMessage.id).label("message_count"),
                     func.max(ChatMessage.created_at).label("last_message_at"),
+                    ChatSession.custom_title,
+                    ChatSession.skill_id,
+                )
+                .outerjoin(
+                    ChatSession,
+                    (ChatSession.session_id == ChatMessage.session_id) & (ChatSession.user_id == ChatMessage.user_id),
                 )
                 .where(ChatMessage.user_id == user_id)
-                .group_by(ChatMessage.session_id)
+                .group_by(ChatMessage.session_id, ChatSession.custom_title, ChatSession.skill_id)
                 .order_by(func.max(ChatMessage.created_at).desc())
             )
             sessions = result.all()
@@ -67,16 +73,8 @@ class MessageDAO:
             # 获取每个会话的标题：优先 chat_sessions.custom_title，其次首条用户消息
             titles = {}
             for row in sessions:
-                # 先查 chat_sessions 的 custom_title
-                session_result = await db.execute(
-                    select(ChatSession.custom_title).where(
-                        ChatSession.user_id == user_id,
-                        ChatSession.session_id == row.session_id,
-                    )
-                )
-                custom_title = session_result.scalar()
-                if custom_title:
-                    titles[row.session_id] = custom_title
+                if row.custom_title:
+                    titles[row.session_id] = row.custom_title
                 else:
                     # 回退到首条用户消息
                     title_result = await db.execute(
@@ -97,6 +95,7 @@ class MessageDAO:
                     "session_id": row.session_id,
                     "title": titles.get(row.session_id, "新对话"),
                     "message_count": row.message_count,
+                    "skill_id": row.skill_id,
                     "last_message_at": row.last_message_at,
                 }
                 for row in sessions
@@ -117,6 +116,41 @@ class MessageDAO:
                 .limit(limit)
             )
             return list(result.scalars().all())
+
+    async def get_session_skill_id(self, user_id: uuid.UUID, session_id: str) -> str | None:
+        """获取会话的 skill_id（如果 ChatSession 记录存在）"""
+        async with async_session() as db:
+            result = await db.execute(
+                select(ChatSession.skill_id).where(
+                    ChatSession.user_id == user_id,
+                    ChatSession.session_id == session_id,
+                )
+            )
+            return result.scalar()
+
+    async def ensure_session(self, user_id: uuid.UUID, session_id: str, skill_id: str | None = None):
+        """确保 ChatSession 记录存在，首次设置 skill_id"""
+        async with async_session() as db:
+            result = await db.execute(
+                select(ChatSession).where(
+                    ChatSession.user_id == user_id,
+                    ChatSession.session_id == session_id,
+                )
+            )
+            session = result.scalar_one_or_none()
+            if session:
+                # 已有记录但 skill_id 为空时补填
+                if session.skill_id is None and skill_id:
+                    session.skill_id = skill_id
+            else:
+                session = ChatSession(
+                    id=uuid.uuid4(),
+                    user_id=user_id,
+                    session_id=session_id,
+                    skill_id=skill_id,
+                )
+                db.add(session)
+            await db.commit()
 
     async def rename_session(
         self, user_id: uuid.UUID, session_id: str, new_title: str

@@ -55,8 +55,8 @@ class RecommendService:
         subject_type = request.subject_type if request.subject_type is not None else basic.get("subject_type", "")
         exam_type = request.exam_type if request.exam_type is not None else basic.get("exam_type", "普通类")
 
-        if not rank or not province or not subject_type:
-            raise HTTPException(status_code=400, detail="请至少提供位次、省份和科类")
+        if not rank or not province or not subject_type or not exam_type:
+            raise HTTPException(status_code=400, detail="请至少提供位次、省份、首选科目和报考科类")
 
         # 2. 查询录取数据
         raw_records = await AdmissionDAO().query_records_with_details(province, subject_type, exam_type)

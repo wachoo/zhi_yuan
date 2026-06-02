@@ -7,6 +7,7 @@ class ChatSessionOut(BaseModel):
     session_id: str
     title: str
     message_count: int
+    skill_id: str | None = None
     last_message_at: datetime | None = None
 
 

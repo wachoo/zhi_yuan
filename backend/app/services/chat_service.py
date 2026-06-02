@@ -57,7 +57,20 @@ class ChatService:
         history = [{"role": m.role, "content": m.content} for m in history_msgs]
         return history + [{"role": "user", "content": message}]
 
+    async def _resolve_skill_id(self):
+        """如果会话已有 skill_id，使用会话的（覆盖客户端传入值）"""
+        if self.session_id:
+            session_skill = await self.msg_dao.get_session_skill_id(self.user.id, self.session_id)
+            if session_skill:
+                self.skill_id = session_skill
+
+    async def _ensure_session(self):
+        """确保 ChatSession 记录存在并写入 skill_id"""
+        await self.msg_dao.ensure_session(self.user.id, self.session_id, self.skill_id)
+
     async def chat(self, message: str) -> dict:
+        await self._resolve_skill_id()
+        await self._ensure_session()
         await self.user_svc.update_daily_chat(self.user, self.session_id)
 
         profile_summary, recommendation_summary = await self._gather_context()
@@ -72,6 +85,7 @@ class ChatService:
         return {"session_id": self.session_id, "reply": reply}
 
     async def chat_stream(self, message: str):
+        # skill_id 已由 API 层在流开始前解析完毕，此处直接执行业务逻辑
         await self.user_svc.update_daily_chat(self.user, self.session_id)
 
         profile_summary, recommendation_summary = await self._gather_context()

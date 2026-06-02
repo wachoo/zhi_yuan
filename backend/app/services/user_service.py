@@ -50,6 +50,18 @@ class UserService:
             "completeness": profile.completeness,
         }
 
+    async def check_daily_chat_limit(self, user, free_daily_limit: int = FREE_DAILY_LIMIT):
+        """仅检查每日对话限流（不持久化），超限抛出 429"""
+        today = date.today().isoformat()
+        if user.membership_tier == MembershipTier.free:
+            current = getattr(user, "daily_chat_count", 0)
+            last_date = getattr(user, "last_chat_date", None)
+            if last_date == today and current >= free_daily_limit:
+                raise HTTPException(
+                    status_code=429,
+                    detail=f"今日免费对话次数已用完（{free_daily_limit}次/天），升级会员可解锁无限对话",
+                )
+
     async def update_daily_chat(self, user, session_id: str, free_daily_limit: int = FREE_DAILY_LIMIT):
         """限流检查 + 持久化每日对话计数"""
         today = date.today().isoformat()

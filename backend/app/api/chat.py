@@ -115,11 +115,18 @@ async def chat_stream(
     user: User = Depends(get_current_user),
 ):
     svc = ChatService(user, session_id, skill_id=skill_id)
-    skill = SkillRegistry.get(skill_id)
+
+    # 限流检查必须在流开始前执行，以便返回正常的 HTTP 429
+    await svc.user_svc.check_daily_chat_limit(user)
+
+    # 解析会话继承的 skill_id（已有会话会覆盖客户端传入值）
+    await svc._resolve_skill_id()
+    await svc._ensure_session()
+    skill = SkillRegistry.get(svc.skill_id)
     skill_name = skill.name if skill else None
 
     async def generate():
-        yield f"data: {json.dumps({'session_id': svc.session_id, 'skill_name': skill_name})}\n\n"
+        yield f"data: {json.dumps({'session_id': svc.session_id, 'skill_id': svc.skill_id, 'skill_name': skill_name})}\n\n"
         async for chunk in svc.chat_stream(message):
             yield f"data: {chunk}\n\n"
         yield "data: [DONE]\n\n"

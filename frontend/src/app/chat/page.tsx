@@ -94,6 +94,7 @@ export default function ChatPage() {
   const [currentSkillId, setCurrentSkillId] = useState("default");
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const [sessionSkills, setSessionSkills] = useState<Record<string, string>>({});
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamSkillNameRef = useRef<string | null>(null);
@@ -101,8 +102,16 @@ export default function ChatPage() {
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
     try {
-      const res = await api.get("/api/chat/sessions");
+      const res = await api.get<ChatSession[]>("/api/chat/sessions");
       setSessions(res.data);
+      // Populate sessionSkills from server-side persisted skill_id
+      const skillsMap: Record<string, string> = {};
+      for (const s of res.data) {
+        if (s.skill_id) {
+          skillsMap[s.session_id] = s.skill_id;
+        }
+      }
+      setSessionSkills((prev) => ({ ...skillsMap, ...prev }));
     } catch {
       // 静默处理
     } finally {
@@ -126,12 +135,17 @@ export default function ChatPage() {
         }));
       setMessages(displayMsgs);
       setCurrentSessionId(sessionId);
+      // Restore skill from session's persisted skill_id
+      const session = sessions.find((s) => s.session_id === sessionId);
+      if (session?.skill_id) {
+        setCurrentSkillId(session.skill_id);
+      }
     } catch {
       setMessages([]);
     } finally {
       setHistoryLoading(false);
     }
-  }, []);
+  }, [sessions]);
 
   useEffect(() => {
     loadSessions();
@@ -272,7 +286,11 @@ export default function ChatPage() {
     try {
       const params = new URLSearchParams({ message: userMsg });
       if (currentSessionId) params.set("session_id", currentSessionId);
-      params.set("skill_id", currentSkillId);
+      // Use session's saved skill, or current selection for new sessions
+      const skillId = currentSessionId && sessionSkills[currentSessionId]
+        ? sessionSkills[currentSessionId]
+        : currentSkillId;
+      params.set("skill_id", skillId);
 
       const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -292,7 +310,15 @@ export default function ChatPage() {
       }
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        let errMsg = `HTTP ${response.status}`;
+        try {
+          const errBody = await response.json();
+          if (errBody.detail) errMsg = errBody.detail;
+        } catch { /* ignore json parse failure */ }
+        if (response.status === 429) {
+          errMsg += "\n\n[前往会员中心升级 >>](/profile/membership)";
+        }
+        throw new Error(errMsg);
       }
 
       const reader = response.body?.getReader();
@@ -322,6 +348,14 @@ export default function ChatPage() {
             if (typeof parsed === "object" && parsed !== null) {
               if (parsed.session_id) {
                 setCurrentSessionId(parsed.session_id);
+                // Save server-resolved skill_id for this session
+                if (parsed.skill_id) {
+                  setSessionSkills((prev) => ({
+                    ...prev,
+                    [parsed.session_id]: parsed.skill_id,
+                  }));
+                  setCurrentSkillId(parsed.skill_id);
+                }
                 loadSessions();
               }
               if (parsed.skill_name) {
@@ -349,13 +383,14 @@ export default function ChatPage() {
       if (err instanceof Error && err.name === "AbortError") {
         // 用户主动取消
       } else {
+        const errMsg = err instanceof Error ? err.message : "抱歉，发生了错误，请重试。";
         setMessages((prev) => {
           const next = [...prev];
           if (next.length > 0 && next[next.length - 1].role === "assistant") {
             if (!next[next.length - 1].content) {
               next[next.length - 1] = {
                 ...next[next.length - 1],
-                content: "抱歉，发生了错误，请重试。",
+                content: errMsg,
               };
             }
           }
@@ -555,7 +590,7 @@ export default function ChatPage() {
                 <Spin />
               </div>
             ) : messages.length === 0 ? (
-              <div style={{ textAlign: "center", padding: 48 }}>
+              <div style={{ textAlign: "center", padding: "48px 24px" }}>
                 <div style={{
                   width: 72,
                   height: 72,
@@ -573,9 +608,52 @@ export default function ChatPage() {
                 <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
                   你好！我是智愿AI顾问
                 </Text>
-                <Text type="secondary">
-                  可以帮你查询院校、专业、录取分数等信息，试试问我吧
+                <Text type="secondary" style={{ display: "block", marginBottom: 32 }}>
+                  可以帮我查询院校、专业、录取分数等信息，试试问我吧
                 </Text>
+
+                {skills.length > 0 && (
+                  <div style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    gap: 16,
+                  }}>
+                    {skills.map((skill) => (
+                      <div
+                        key={skill.id}
+                        onClick={() => setCurrentSkillId(skill.id)}
+                        style={{
+                          cursor: "pointer",
+                          padding: "16px 20px",
+                          borderRadius: 12,
+                          border: currentSkillId === skill.id ? "2px solid var(--zy-primary)" : "1px solid var(--zy-border)",
+                          background: currentSkillId === skill.id ? "rgba(37, 99, 235, 0.04)" : "var(--zy-surface)",
+                          transition: "all 0.2s",
+                          width: 140,
+                          textAlign: "center",
+                        }}
+                      >
+                        <Avatar
+                          style={{
+                            background: currentSkillId === skill.id
+                              ? "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))"
+                              : "var(--zy-text-muted)",
+                            marginBottom: 8,
+                          }}
+                          size={48}
+                          icon={<RobotOutlined />}
+                        />
+                        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+                          {skill.name}
+                        </div>
+                        <div style={{ fontSize: 12, color: "var(--zy-text-secondary)", lineHeight: 1.5 }}>
+                          {skill.description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div>
@@ -686,18 +764,7 @@ export default function ChatPage() {
                 </Button>
               )}
             </div>
-            <div style={{ marginTop: 8 }}>
-              <Select
-                value={currentSkillId}
-                onChange={setCurrentSkillId}
-                style={{ width: 160 }}
-                size="small"
-                options={skills.map((s) => ({
-                  value: s.id,
-                  label: s.name,
-                }))}
-              />
-            </div>
+
           </div>
         </div>
       </div>

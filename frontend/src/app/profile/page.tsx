@@ -231,12 +231,12 @@ export default function ProfilePage() {
               </Form.Item>
             </Col>
             <Col xs={12} sm={6}>
-              <Form.Item name="subject_type" label="科类" rules={[{ required: true, message: "请选择科类" }]}>
-                <Select placeholder="选择科类" options={SUBJECT_TYPE_OPTIONS} />
+              <Form.Item name="subject_type" label="首选科目" rules={[{ required: true, message: "请选择首选科目" }]}>
+                <Select placeholder="选择首选科目" options={SUBJECT_TYPE_OPTIONS} />
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name="exam_type" label="考试科类" style={{ marginBottom: 0 }}>
+          <Form.Item name="exam_type" label="报考科类" rules={[{ required: true, message: "请选择报考科类" }]} style={{ marginBottom: 0 }}>
             <Radio.Group
               onChange={(e) => setExamType(e.target.value)}
               style={{ display: "flex", flexDirection: "column", gap: 8 }}

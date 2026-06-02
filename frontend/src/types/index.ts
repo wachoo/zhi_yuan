@@ -94,6 +94,7 @@ export interface ChatSession {
   session_id: string;
   title: string;
   message_count: number;
+  skill_id: string | null;
   last_message_at: string | null;
 }
 

@@ -31,7 +31,7 @@ function RecommendContent() {
       let pSubjectType = subject_type;
       let pExamType = exam_type;
 
-      if (!pScore || !pRank || !pProvince || !pSubjectType) {
+      if (!pScore || !pRank || !pProvince || !pSubjectType || !pExamType) {
         let token = localStorage.getItem("token");
         if (!token) {
           try {
@@ -70,8 +70,8 @@ function RecommendContent() {
         }
       }
 
-      if (!pScore || !pRank || !pProvince || !pSubjectType) {
-        setError("缺少必要参数（分数、位次、省份、科类），请先从首页填写信息");
+      if (!pScore || !pRank || !pProvince || !pSubjectType || !pExamType) {
+        setError("缺少必要参数（分数、位次、省份、首选科目、报考科类），请先从首页填写信息");
         setLoading(false);
         return;
       }

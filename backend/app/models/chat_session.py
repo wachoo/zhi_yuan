@@ -14,4 +14,5 @@ class ChatSession(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
     session_id: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     custom_title: Mapped[str] = mapped_column(String(100), nullable=True)
+    skill_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

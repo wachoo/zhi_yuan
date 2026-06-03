@@ -1,25 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { Form, Input, Button, Tabs, App, Typography } from "antd";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { Form, Input, Button, Tabs, App, Typography, Spin } from "antd";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AimOutlined } from "@ant-design/icons";
-import api from "@/lib/api";
+import api, { setTokens } from "@/lib/api";
 
 const { Title, Text } = Typography;
 
-export default function LoginPage() {
+function LoginContent() {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/";
 
   const onLogin = async (values: { phone: string; password: string }) => {
     setLoading(true);
     try {
       const res = await api.post("/api/auth/login", values);
-      localStorage.setItem("token", res.data.access_token);
+      setTokens(res.data.access_token, res.data.refresh_token);
       message.success("登录成功");
-      router.push("/");
+      router.push(redirectTo);
     } catch {
       message.error("登录失败，请检查手机号和密码");
     } finally {
@@ -31,9 +33,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const res = await api.post("/api/auth/register", values);
-      localStorage.setItem("token", res.data.access_token);
+      setTokens(res.data.access_token, res.data.refresh_token);
       message.success("注册成功");
-      router.push("/");
+      router.push(redirectTo);
     } catch {
       message.error("注册失败，该手机号可能已注册");
     } finally {
@@ -180,5 +182,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<Spin size="large" style={{ display: "block", margin: "100px auto" }} />}>
+      <LoginContent />
+    </Suspense>
   );
 }

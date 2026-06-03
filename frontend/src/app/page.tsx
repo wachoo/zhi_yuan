@@ -82,11 +82,17 @@ export default function Home() {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        const res = await api.post("/api/auth/register", {
-          phone: "13800138000",
-          password: "test123",
-        }).catch(() => api.post("/api/auth/login", { phone: "13800138000", password: "test123" }));
-        localStorage.setItem("token", res.data.access_token);
+        const params = new URLSearchParams();
+        params.set("score", String(values.score));
+        params.set("rank", String(values.rank));
+        params.set("province", values.province);
+        params.set("subject_type", values.subject_type);
+        params.set("exam_type", values.exam_type || "普通类");
+        if (values.professional_score) {
+          params.set("professional_score", String(values.professional_score));
+        }
+        router.push(`/login?redirect=/recommend?${encodeURIComponent(params.toString())}`);
+        return;
       }
 
       await api.put("/api/profile", { basic_info: values });

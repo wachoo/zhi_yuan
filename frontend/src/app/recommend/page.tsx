@@ -1,7 +1,17 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { Card, Table, Tag, Typography, Space, Progress, Spin, Alert, Button } from "antd";
+import {
+  Card,
+  Table,
+  Tag,
+  Typography,
+  Space,
+  Progress,
+  Spin,
+  Alert,
+  Button,
+} from "antd";
 import { DownloadOutlined, ArrowLeftOutlined } from "@ant-design/icons";
 import { useSearchParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
@@ -10,13 +20,6 @@ import AppLayout from "@/components/Layout";
 import { RecommendResult } from "@/types";
 
 const { Title, Text } = Typography;
-
-const provinces = [
-  "北京", "天津", "上海", "重庆", "河北", "山西", "辽宁", "吉林", "黑龙江",
-  "江苏", "浙江", "安徽", "福建", "江西", "山东", "河南", "湖北", "湖南",
-  "广东", "海南", "四川", "贵州", "云南", "陕西", "甘肃", "青海", "内蒙古",
-  "广西", "西藏", "宁夏", "新疆",
-];
 
 function RecommendContent() {
   const params = useSearchParams();
@@ -44,7 +47,12 @@ function RecommendContent() {
       if (!pScore || !pRank || !pProvince || !pSubjectType || !pExamType) {
         const token = localStorage.getItem("token");
         if (!token) {
-          router.push("/login?redirect=" + encodeURIComponent(window.location.pathname + window.location.search));
+          router.push(
+            "/login?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search,
+              ),
+          );
           return;
         }
         try {
@@ -56,10 +64,15 @@ function RecommendContent() {
             pProvince = pProvince ?? basic.province ?? "";
             pSubjectType = pSubjectType ?? basic.subject_type ?? "";
             pExamType = pExamType ?? basic.exam_type ?? "普通类";
-            pProfessionalScore = pProfessionalScore ?? (basic.professional_score != null ? String(basic.professional_score) : null);
+            pProfessionalScore =
+              pProfessionalScore ??
+              (basic.professional_score != null
+                ? String(basic.professional_score)
+                : null);
           }
-        } catch (err: any) {
-          if (err?.response?.status === 404) {
+        } catch (err: unknown) {
+          const axiosErr = err as { response?: { status?: number } };
+          if (axiosErr?.response?.status === 404) {
             setError("暂无用户画像，请先从首页填写信息");
           } else {
             setError("获取画像失败，请从首页重新提交");
@@ -70,13 +83,18 @@ function RecommendContent() {
       }
 
       if (!pScore || !pRank || !pProvince || !pSubjectType || !pExamType) {
-        setError("缺少必要参数（分数、位次、省份、首选科目、报考科类）请先从首页填写信息");
+        setError(
+          "缺少必要参数（分数、位次、省份、首选科目、报考科类），请先从首页填写信息",
+        );
         setLoading(false);
         return;
       }
 
-      if ((pExamType === "艺术类" || pExamType === "体育类") && !pProfessionalScore) {
-        setError(`${pExamType}考生请提供专业分"请先从首页填写信息`);
+      if (
+        (pExamType === "艺术类" || pExamType === "体育类") &&
+        !pProfessionalScore
+      ) {
+        setError(`${pExamType}考生请提供专业分，请先从首页填写信息`);
         setLoading(false);
         return;
       }
@@ -96,33 +114,65 @@ function RecommendContent() {
         }
         const res = await api.post("/api/recommend", payload);
         setResult(res.data);
-      } catch (err: any) {
-        const status = err?.response?.status;
-        const detail = err?.response?.data?.detail || err?.message || "未知错误";
+      } catch (err: unknown) {
+        const axiosErr = err as {
+          response?: { status?: number; data?: { detail?: string } };
+          message?: string;
+        };
+        const status = axiosErr?.response?.status;
+        const detail =
+          axiosErr?.response?.data?.detail || axiosErr?.message || "未知错误";
         setError(`请求失败 (${status || "网络错误"}): ${detail}`);
       } finally {
         setLoading(false);
       }
     };
     fetchAndRecommend();
-  }, [score, rank, province, subject_type, exam_type, professional_score]);
+  }, [
+    score,
+    rank,
+    province,
+    subject_type,
+    exam_type,
+    professional_score,
+    router,
+  ]);
 
   const columns = [
-    { title: "院校", dataIndex: "university_name", key: "university_name", render: (name: string) => <Text strong>{name}</Text> },
+    {
+      title: "院校",
+      dataIndex: "university_name",
+      key: "university_name",
+      render: (name: string) => <Text strong>{name}</Text>,
+    },
     { title: "专业", dataIndex: "major_name", key: "major_name" },
-    { title: "历年最低位次", dataIndex: "min_rank", key: "min_rank", render: (r: number) => r ? r.toLocaleString() : "-" },
+    {
+      title: "历年最低位次",
+      dataIndex: "min_rank",
+      key: "min_rank",
+      render: (r: number) => (r ? r.toLocaleString() : "-"),
+    },
     {
       title: "适配度",
       dataIndex: "adapter_score",
       key: "adapter_score",
       width: 120,
-      render: (score: number) => score ? (
-        <Progress
-          percent={score}
-          size="small"
-          strokeColor={score >= 80 ? "var(--zy-accent)" : score >= 60 ? "var(--zy-secondary)" : "var(--zy-text-muted)"}
-        />
-      ) : "-",
+      render: (score: number) =>
+        score ? (
+          <Progress
+            percent={score}
+            size="small"
+            strokeColor={
+              score >= 80
+                ? "var(--zy-accent)"
+                : score >= 60
+                  ? "var(--zy-secondary)"
+                  : "var(--zy-text-muted)"
+            }
+          />
+        ) : (
+          "-"
+        ),
     },
     {
       title: "推荐理由",
@@ -132,7 +182,9 @@ function RecommendContent() {
         reason ? (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
             {reason.split("；").map((r, i) => (
-              <Tag key={i} style={{ borderRadius: 4, margin: 0, fontSize: 12 }}>{r}</Tag>
+              <Tag key={i} style={{ borderRadius: 4, margin: 0, fontSize: 12 }}>
+                {r}
+              </Tag>
             ))}
           </div>
         ) : (
@@ -164,23 +216,39 @@ function RecommendContent() {
     }
   };
 
-  const isEmpty = result && result.rush.length === 0 && result.stable.length === 0 && result.safe.length === 0;
+  const isEmpty =
+    result &&
+    result.rush.length === 0 &&
+    result.stable.length === 0 &&
+    result.safe.length === 0;
 
   return (
     <AppLayout>
       <Space orientation="vertical" size="large" style={{ width: "100%" }}>
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <div>
             <Button
               type="text"
               icon={<ArrowLeftOutlined />}
               onClick={() => router.push("/")}
-              style={{ padding: 0, marginBottom: 8, color: "var(--zy-text-secondary)" }}
+              style={{
+                padding: 0,
+                marginBottom: 8,
+                color: "var(--zy-text-secondary)",
+              }}
             >
               返回首页
             </Button>
-            <Title level={3} style={{ margin: 0 }}>推荐方案</Title>
+            <Title level={3} style={{ margin: 0 }}>
+              推荐方案
+            </Title>
           </div>
           {result && !isEmpty && (
             <Button
@@ -196,24 +264,31 @@ function RecommendContent() {
         </div>
 
         {/* Profile completeness */}
-        {result?.profile_completeness !== undefined && result.profile_completeness < 0.4 && (
-          <Card style={{ borderRadius: 12, border: "1px solid var(--zy-border)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-              <Progress
-                type="circle"
-                percent={Math.round(result.profile_completeness * 100)}
-                size={60}
-                strokeColor="var(--zy-primary)"
-              />
-              <div>
-                <Text strong>完善个人详情"获得更精准的推荐</Text>
-                <br />
-                <Text type="secondary">当前画像完整度较低"前往个人中心补充更多信息</Text>
+        {result?.profile_completeness !== undefined &&
+          result.profile_completeness < 0.4 && (
+            <Card
+              style={{ borderRadius: 12, border: "1px solid var(--zy-border)" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <Progress
+                  type="circle"
+                  percent={Math.round(result.profile_completeness * 100)}
+                  size={60}
+                  strokeColor="var(--zy-primary)"
+                />
+                <div>
+                  <Text strong>完善个人详情，获得更精准的推荐</Text>
+                  <br />
+                  <Text type="secondary">
+                    当前画像完整度较低，前往个人中心补充更多信息
+                  </Text>
+                </div>
+                <Button type="link" onClick={() => router.push("/profile")}>
+                  去完善
+                </Button>
               </div>
-              <Button type="link" onClick={() => router.push("/profile")}>去完善</Button>
-            </div>
-          </Card>
-        )}
+            </Card>
+          )}
 
         {/* Error */}
         {error && (
@@ -224,7 +299,11 @@ function RecommendContent() {
             description={
               <Space orientation="vertical">
                 <span>{error}</span>
-                <Button type="link" onClick={() => router.push("/")} style={{ padding: 0 }}>
+                <Button
+                  type="link"
+                  onClick={() => router.push("/")}
+                  style={{ padding: 0 }}
+                >
                   返回首页重新提交
                 </Button>
               </Space>
@@ -249,9 +328,20 @@ function RecommendContent() {
           className="zy-category-card zy-rush"
           title={
             <Space>
-              <Tag color="error" style={{ borderRadius: 4, fontWeight: 600, padding: "2px 10px" }}>冲</Tag>
+              <Tag
+                color="error"
+                style={{
+                  borderRadius: 4,
+                  fontWeight: 600,
+                  padding: "2px 10px",
+                }}
+              >
+                冲
+              </Tag>
               <Text strong>冲刺院校</Text>
-              <Text type="secondary" style={{ fontSize: 13 }}>录取概率较低"但值得一试</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                录取概率较低，但值得一试
+              </Text>
             </Space>
           }
         >
@@ -269,9 +359,20 @@ function RecommendContent() {
           className="zy-category-card zy-stable"
           title={
             <Space>
-              <Tag color="processing" style={{ borderRadius: 4, fontWeight: 600, padding: "2px 10px" }}>稳</Tag>
+              <Tag
+                color="processing"
+                style={{
+                  borderRadius: 4,
+                  fontWeight: 600,
+                  padding: "2px 10px",
+                }}
+              >
+                稳
+              </Tag>
               <Text strong>稳妥院校</Text>
-              <Text type="secondary" style={{ fontSize: 13 }}>录取概率较高"重点考虑</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                录取概率较高，重点考虑
+              </Text>
             </Space>
           }
         >
@@ -289,9 +390,20 @@ function RecommendContent() {
           className="zy-category-card zy-safe"
           title={
             <Space>
-              <Tag color="success" style={{ borderRadius: 4, fontWeight: 600, padding: "2px 10px" }}>保</Tag>
+              <Tag
+                color="success"
+                style={{
+                  borderRadius: 4,
+                  fontWeight: 600,
+                  padding: "2px 10px",
+                }}
+              >
+                保
+              </Tag>
               <Text strong>保底院校</Text>
-              <Text type="secondary" style={{ fontSize: 13 }}>基本可以确保录取</Text>
+              <Text type="secondary" style={{ fontSize: 13 }}>
+                基本可以确保录取
+              </Text>
             </Space>
           }
         >
@@ -310,7 +422,11 @@ function RecommendContent() {
 
 export default function RecommendPage() {
   return (
-    <Suspense fallback={<Spin size="large" style={{ display: "block", margin: "100px auto" }} />}>
+    <Suspense
+      fallback={
+        <Spin size="large" style={{ display: "block", margin: "100px auto" }} />
+      }
+    >
       <RecommendContent />
     </Suspense>
   );

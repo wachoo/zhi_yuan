@@ -30,7 +30,8 @@ export const zhiYuanTheme: ThemeConfig = {
     colorTextQuaternary: "#CBD5E1",
 
     // 排版
-    fontFamily: '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif',
+    fontFamily:
+      '"Noto Sans SC", "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif',
     fontSize: 14,
     fontSizeHeading1: 30,
     fontSizeHeading2: 24,
@@ -44,7 +45,8 @@ export const zhiYuanTheme: ThemeConfig = {
     borderRadiusSM: 6,
 
     // 阴影
-    boxShadow: "0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04)",
+    boxShadow:
+      "0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04)",
     boxShadowSecondary: "0 4px 12px rgba(15, 23, 42, 0.08)",
 
     // 间距

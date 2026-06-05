@@ -6,7 +6,8 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -37,9 +38,10 @@ function onRefreshFailed(err: unknown) {
  * and fetchWithAuth. If a refresh is already in progress, waits for it.
  */
 async function refreshToken(): Promise<string> {
-  const refreshTokenValue = typeof window !== "undefined"
-    ? localStorage.getItem("refresh_token")
-    : null;
+  const refreshTokenValue =
+    typeof window !== "undefined"
+      ? localStorage.getItem("refresh_token")
+      : null;
 
   if (!refreshTokenValue) {
     throw new Error("No refresh token available");
@@ -103,7 +105,7 @@ api.interceptors.response.use(
       logout();
       return Promise.reject(refreshErr);
     }
-  }
+  },
 );
 
 // ── Public helpers ──
@@ -128,7 +130,8 @@ export async function logout() {
   // 尝试通知后端吊销 token
   if (accessToken) {
     try {
-      const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const baseURL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       await axios.post(
         `${baseURL}/api/auth/logout`,
         { refresh_token: refreshTokenValue },
@@ -150,8 +153,12 @@ export async function logout() {
  * 与 axios interceptor 共享同一个 refresh 并发锁，避免多个并发 refresh
  * 触发 token 轮换的盗用检测。
  */
-export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+export async function fetchWithAuth(
+  url: string,
+  options: RequestInit = {},
+): Promise<Response> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const headers = new Headers(options.headers || {});
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);

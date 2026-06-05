@@ -1,7 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Input, Button, Typography, Space, Avatar, Empty, Spin, Select, Tag, App } from "antd";
+import {
+  Input,
+  Button,
+  Typography,
+  Space,
+  Avatar,
+  Empty,
+  Spin,
+  Tag,
+  App,
+} from "antd";
 import {
   UserOutlined,
   RobotOutlined,
@@ -94,7 +104,9 @@ export default function ChatPage() {
   const [currentAdvisorId, setCurrentAdvisorId] = useState("default");
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const [sessionAdvisors, setSessionAdvisors] = useState<Record<string, string>>({});
+  const [sessionAdvisors, setSessionAdvisors] = useState<
+    Record<string, string>
+  >({});
   const listRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const streamAdvisorNameRef = useRef<string | null>(null);
@@ -119,37 +131,57 @@ export default function ChatPage() {
     }
   }, []);
 
-  const loadSessionMessages = useCallback(async (sessionId: string) => {
-    setHistoryLoading(true);
-    try {
-      const res = await api.get<ChatMessage[]>(
-        `/api/chat/sessions/${sessionId}/messages`
-      );
-      const displayMsgs: DisplayMessage[] = res.data
-        .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({
-          id: m.id,
-          role: m.role as "user" | "assistant",
-          content: m.content,
-          advisor_name: m.advisor_name ?? undefined,
-        }));
-      setMessages(displayMsgs);
-      setCurrentSessionId(sessionId);
-      // Restore advisor from session's persisted advisor_id
-      const session = sessions.find((s) => s.session_id === sessionId);
-      if (session?.advisor_id) {
-        setCurrentAdvisorId(session.advisor_id);
+  const loadSessionMessages = useCallback(
+    async (sessionId: string) => {
+      setHistoryLoading(true);
+      try {
+        const res = await api.get<ChatMessage[]>(
+          `/api/chat/sessions/${sessionId}/messages`,
+        );
+        const displayMsgs: DisplayMessage[] = res.data
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({
+            id: m.id,
+            role: m.role as "user" | "assistant",
+            content: m.content,
+            advisor_name: m.advisor_name ?? undefined,
+          }));
+        setMessages(displayMsgs);
+        setCurrentSessionId(sessionId);
+        // Restore advisor from session's persisted advisor_id
+        const session = sessions.find((s) => s.session_id === sessionId);
+        if (session?.advisor_id) {
+          setCurrentAdvisorId(session.advisor_id);
+        }
+      } catch {
+        setMessages([]);
+      } finally {
+        setHistoryLoading(false);
       }
-    } catch {
-      setMessages([]);
-    } finally {
-      setHistoryLoading(false);
-    }
-  }, [sessions]);
+    },
+    [sessions],
+  );
 
   useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+    (async () => {
+      setSessionsLoading(true);
+      try {
+        const res = await api.get<ChatSession[]>("/api/chat/sessions");
+        setSessions(res.data);
+        const advisorsMap: Record<string, string> = {};
+        for (const s of res.data) {
+          if (s.advisor_id) {
+            advisorsMap[s.session_id] = s.advisor_id;
+          }
+        }
+        setSessionAdvisors((prev) => ({ ...advisorsMap, ...prev }));
+      } catch {
+        // 静默处理
+      } finally {
+        setSessionsLoading(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const loadAdvisors = async () => {
@@ -180,7 +212,10 @@ export default function ChatPage() {
     loadSessionMessages(sessionId);
   };
 
-  const handleDeleteSession = async (e: React.MouseEvent, sessionId: string) => {
+  const handleDeleteSession = async (
+    e: React.MouseEvent,
+    sessionId: string,
+  ) => {
     e.stopPropagation();
     modal.confirm({
       title: "确认删除",
@@ -215,7 +250,9 @@ export default function ChatPage() {
       cancelText: "取消",
       onOk: async () => {
         try {
-          await api.delete(`/api/chat/sessions/${currentSessionId}/messages/${msg.id}`);
+          await api.delete(
+            `/api/chat/sessions/${currentSessionId}/messages/${msg.id}`,
+          );
           // 从本地状态移除该 user 消息和紧随的 assistant 消息
           setMessages((prev) => {
             const next = [...prev];
@@ -257,8 +294,8 @@ export default function ChatPage() {
       await api.put(`/api/chat/sessions/${targetId}`, { title: newTitle });
       setSessions((prev) =>
         prev.map((s) =>
-          s.session_id === targetId ? { ...s, title: newTitle } : s
-        )
+          s.session_id === targetId ? { ...s, title: newTitle } : s,
+        ),
       );
     } catch {
       // 失败时静默处理
@@ -287,13 +324,16 @@ export default function ChatPage() {
       const params = new URLSearchParams({ message: userMsg });
       if (currentSessionId) params.set("session_id", currentSessionId);
       // Use session's saved advisor, or current selection for new sessions
-      const advisorId = currentSessionId && sessionAdvisors[currentSessionId]
-        ? sessionAdvisors[currentSessionId]
-        : currentAdvisorId;
+      const advisorId =
+        currentSessionId && sessionAdvisors[currentSessionId]
+          ? sessionAdvisors[currentSessionId]
+          : currentAdvisorId;
       params.set("advisor_id", advisorId);
 
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
       const response = await fetch(`${baseUrl}/api/chat/stream?${params}`, {
         method: "POST",
@@ -314,7 +354,9 @@ export default function ChatPage() {
         try {
           const errBody = await response.json();
           if (errBody.detail) errMsg = errBody.detail;
-        } catch { /* ignore json parse failure */ }
+        } catch {
+          /* ignore json parse failure */
+        }
         if (response.status === 429) {
           errMsg += "\n\n[前往会员中心升级 >>](/profile/membership)";
         }
@@ -373,7 +415,10 @@ export default function ChatPage() {
           setMessages((prev) => {
             const next = [...prev];
             if (next.length > 0 && next[next.length - 1].role === "assistant") {
-              next[next.length - 1] = { ...next[next.length - 1], content: snapshot };
+              next[next.length - 1] = {
+                ...next[next.length - 1],
+                content: snapshot,
+              };
             }
             return next;
           });
@@ -383,7 +428,8 @@ export default function ChatPage() {
       if (err instanceof Error && err.name === "AbortError") {
         // 用户主动取消
       } else {
-        const errMsg = err instanceof Error ? err.message : "抱歉，发生了错误，请重试。";
+        const errMsg =
+          err instanceof Error ? err.message : "抱歉，发生了错误，请重试。";
         setMessages((prev) => {
           const next = [...prev];
           if (next.length > 0 && next[next.length - 1].role === "assistant") {
@@ -407,7 +453,10 @@ export default function ChatPage() {
         setMessages((prev) => {
           const next = [...prev];
           if (next.length > 0 && next[next.length - 1].role === "assistant") {
-            next[next.length - 1] = { ...next[next.length - 1], advisor_name: name };
+            next[next.length - 1] = {
+              ...next[next.length - 1],
+              advisor_name: name,
+            };
           }
           return next;
         });
@@ -425,7 +474,9 @@ export default function ChatPage() {
       <div style={{ display: "flex", height: "calc(100vh - 200px)", gap: 16 }}>
         {/* Sidebar */}
         <div className="zy-chat-sidebar" style={{ width: 280, flexShrink: 0 }}>
-          <div style={{ padding: 16, borderBottom: "1px solid var(--zy-border)" }}>
+          <div
+            style={{ padding: 16, borderBottom: "1px solid var(--zy-border)" }}
+          >
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -467,8 +518,17 @@ export default function ChatPage() {
                           : "3px solid transparent",
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", width: "100%", gap: 10 }}>
-                      <MessageOutlined style={{ color: "var(--zy-text-muted)", flexShrink: 0 }} />
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        width: "100%",
+                        gap: 10,
+                      }}
+                    >
+                      <MessageOutlined
+                        style={{ color: "var(--zy-text-muted)", flexShrink: 0 }}
+                      />
                       {editingSessionId === session.session_id ? (
                         <>
                           <Input
@@ -492,7 +552,11 @@ export default function ChatPage() {
                             style={{ flex: 1 }}
                           />
                           <CheckOutlined
-                            style={{ color: "var(--zy-primary)", flexShrink: 0, cursor: "pointer" }}
+                            style={{
+                              color: "var(--zy-primary)",
+                              flexShrink: 0,
+                              cursor: "pointer",
+                            }}
                             onMouseDown={(e) => {
                               e.preventDefault();
                               handleRenameCommit();
@@ -506,7 +570,10 @@ export default function ChatPage() {
                               ellipsis
                               style={{
                                 display: "block",
-                                fontWeight: session.session_id === currentSessionId ? 600 : 400,
+                                fontWeight:
+                                  session.session_id === currentSessionId
+                                    ? 600
+                                    : 400,
                                 fontSize: 14,
                               }}
                             >
@@ -518,13 +585,25 @@ export default function ChatPage() {
                           </div>
                           <EditOutlined
                             className="anticon-edit"
-                            style={{ color: "var(--zy-text-muted)", flexShrink: 0, cursor: "pointer", fontSize: 13 }}
+                            style={{
+                              color: "var(--zy-text-muted)",
+                              flexShrink: 0,
+                              cursor: "pointer",
+                              fontSize: 13,
+                            }}
                             onClick={(e) => handleRenameStart(e, session)}
                           />
                           <DeleteOutlined
                             className="anticon-delete"
-                            style={{ color: "var(--zy-text-muted)", flexShrink: 0, cursor: "pointer", fontSize: 13 }}
-                            onClick={(e) => handleDeleteSession(e, session.session_id)}
+                            style={{
+                              color: "var(--zy-text-muted)",
+                              flexShrink: 0,
+                              cursor: "pointer",
+                              fontSize: 13,
+                            }}
+                            onClick={(e) =>
+                              handleDeleteSession(e, session.session_id)
+                            }
                           />
                         </>
                       )}
@@ -550,23 +629,34 @@ export default function ChatPage() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div style={{
-                width: 36,
-                height: 36,
-                background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
-                borderRadius: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-              }}>
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  background:
+                    "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                  borderRadius: 10,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "white",
+                }}
+              >
                 <RobotOutlined />
               </div>
               <div>
-                <Text strong style={{ fontSize: 15 }}>AI志愿顾问</Text>
+                <Text strong style={{ fontSize: 15 }}>
+                  AI志愿顾问
+                </Text>
                 {currentSessionId && (
-                  <Text type="secondary" style={{ fontSize: 12, display: "block" }}>
-                    {sessions.find((s) => s.session_id === currentSessionId)?.title}
+                  <Text
+                    type="secondary"
+                    style={{ fontSize: 12, display: "block" }}
+                  >
+                    {
+                      sessions.find((s) => s.session_id === currentSessionId)
+                        ?.title
+                    }
                   </Text>
                 )}
               </div>
@@ -591,34 +681,45 @@ export default function ChatPage() {
               </div>
             ) : messages.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px 24px" }}>
-                <div style={{
-                  width: 72,
-                  height: 72,
-                  background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
-                  borderRadius: 20,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 20px",
-                  color: "white",
-                  fontSize: 32,
-                }}>
+                <div
+                  style={{
+                    width: 72,
+                    height: 72,
+                    background:
+                      "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                    borderRadius: 20,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    margin: "0 auto 20px",
+                    color: "white",
+                    fontSize: 32,
+                  }}
+                >
                   <RobotOutlined />
                 </div>
-                <Text strong style={{ fontSize: 16, display: "block", marginBottom: 8 }}>
+                <Text
+                  strong
+                  style={{ fontSize: 16, display: "block", marginBottom: 8 }}
+                >
                   你好！我是智愿AI顾问
                 </Text>
-                <Text type="secondary" style={{ display: "block", marginBottom: 32 }}>
+                <Text
+                  type="secondary"
+                  style={{ display: "block", marginBottom: 32 }}
+                >
                   可以帮我查询院校、专业、录取分数等信息，试试问我吧
                 </Text>
 
                 {advisors.length > 0 && (
-                  <div style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    justifyContent: "center",
-                    gap: 16,
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      gap: 16,
+                    }}
+                  >
                     {advisors.map((advisor) => (
                       <div
                         key={advisor.id}
@@ -627,8 +728,14 @@ export default function ChatPage() {
                           cursor: "pointer",
                           padding: "16px 20px",
                           borderRadius: 12,
-                          border: currentAdvisorId === advisor.id ? "2px solid var(--zy-primary)" : "1px solid var(--zy-border)",
-                          background: currentAdvisorId === advisor.id ? "rgba(37, 99, 235, 0.04)" : "var(--zy-surface)",
+                          border:
+                            currentAdvisorId === advisor.id
+                              ? "2px solid var(--zy-primary)"
+                              : "1px solid var(--zy-border)",
+                          background:
+                            currentAdvisorId === advisor.id
+                              ? "rgba(37, 99, 235, 0.04)"
+                              : "var(--zy-surface)",
                           transition: "all 0.2s",
                           width: 140,
                           textAlign: "center",
@@ -636,18 +743,31 @@ export default function ChatPage() {
                       >
                         <Avatar
                           style={{
-                            background: currentAdvisorId === advisor.id
-                              ? "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))"
-                              : "var(--zy-text-muted)",
+                            background:
+                              currentAdvisorId === advisor.id
+                                ? "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))"
+                                : "var(--zy-text-muted)",
                             marginBottom: 8,
                           }}
                           size={48}
                           icon={<RobotOutlined />}
                         />
-                        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            fontSize: 14,
+                            marginBottom: 4,
+                          }}
+                        >
                           {advisor.name}
                         </div>
-                        <div style={{ fontSize: 12, color: "var(--zy-text-secondary)", lineHeight: 1.5 }}>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "var(--zy-text-secondary)",
+                            lineHeight: 1.5,
+                          }}
+                        >
                           {advisor.description}
                         </div>
                       </div>
@@ -658,15 +778,30 @@ export default function ChatPage() {
             ) : (
               <div>
                 {messages.map((msg, msgIndex) => (
-                  <div key={msg.id ?? msgIndex} style={{ display: "flex", gap: 12, padding: "10px 0", alignItems: "flex-start" }}>
+                  <div
+                    key={msg.id ?? msgIndex}
+                    style={{
+                      display: "flex",
+                      gap: 12,
+                      padding: "10px 0",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <Avatar
                       style={{
-                        background: msg.role === "user"
-                          ? "var(--zy-primary)"
-                          : "linear-gradient(135deg, #1E3A5F, #2563EB)",
+                        background:
+                          msg.role === "user"
+                            ? "var(--zy-primary)"
+                            : "linear-gradient(135deg, #1E3A5F, #2563EB)",
                         flexShrink: 0,
                       }}
-                      icon={msg.role === "user" ? <UserOutlined /> : <RobotOutlined />}
+                      icon={
+                        msg.role === "user" ? (
+                          <UserOutlined />
+                        ) : (
+                          <RobotOutlined />
+                        )
+                      }
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ marginBottom: 4 }}>
@@ -675,7 +810,14 @@ export default function ChatPage() {
                             {msg.role === "user" ? "我" : "智愿AI"}
                           </Text>
                           {msg.role === "assistant" && msg.advisor_name && (
-                            <Tag style={{ borderRadius: 4, fontSize: 11, lineHeight: "18px", margin: 0 }}>
+                            <Tag
+                              style={{
+                                borderRadius: 4,
+                                fontSize: 11,
+                                lineHeight: "18px",
+                                margin: 0,
+                              }}
+                            >
                               {msg.advisor_name}
                             </Tag>
                           )}
@@ -693,14 +835,16 @@ export default function ChatPage() {
                             </div>
                           )
                         ) : (
-                          <div style={{
-                            background: "var(--zy-surface)",
-                            padding: "12px 16px",
-                            borderRadius: "4px 12px 12px 12px",
-                            border: "1px solid var(--zy-border)",
-                            display: "inline-block",
-                            maxWidth: "80%",
-                          }}>
+                          <div
+                            style={{
+                              background: "var(--zy-surface)",
+                              padding: "12px 16px",
+                              borderRadius: "4px 12px 12px 12px",
+                              border: "1px solid var(--zy-border)",
+                              display: "inline-block",
+                              maxWidth: "80%",
+                            }}
+                          >
                             <Text>{msg.content}</Text>
                           </div>
                         )}
@@ -709,7 +853,13 @@ export default function ChatPage() {
                     {msg.role === "user" && msg.id && !streaming && (
                       <DeleteOutlined
                         className="anticon-delete"
-                        style={{ color: "var(--zy-text-muted)", cursor: "pointer", fontSize: 13, flexShrink: 0, marginTop: 4 }}
+                        style={{
+                          color: "var(--zy-text-muted)",
+                          cursor: "pointer",
+                          fontSize: 13,
+                          flexShrink: 0,
+                          marginTop: 4,
+                        }}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteMessage(msgIndex);
@@ -723,11 +873,13 @@ export default function ChatPage() {
           </div>
 
           {/* Input area */}
-          <div style={{
-            padding: "16px 24px",
-            borderTop: "1px solid var(--zy-border)",
-            background: "var(--zy-surface)",
-          }}>
+          <div
+            style={{
+              padding: "16px 24px",
+              borderTop: "1px solid var(--zy-border)",
+              background: "var(--zy-surface)",
+            }}
+          >
             <div style={{ display: "flex", gap: 12, alignItems: "flex-end" }}>
               <TextArea
                 value={input}
@@ -764,7 +916,6 @@ export default function ChatPage() {
                 </Button>
               )}
             </div>
-
           </div>
         </div>
       </div>

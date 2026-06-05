@@ -91,15 +91,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               size={28}
               icon={<UserOutlined />}
               style={{
-                background: "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
+                background:
+                  "linear-gradient(135deg, var(--zy-primary), var(--zy-secondary))",
               }}
             />
           </Button>
         </Dropdown>
       </Header>
-      <Content className="zy-content">
-        {children}
-      </Content>
+      <Content className="zy-content">{children}</Content>
       <Footer className="zy-footer">
         智愿 &copy; 2026 — 所有推荐结果仅供参考，请结合多方信息综合决策
       </Footer>

@@ -1,11 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import {
-  UserOutlined,
-  LockOutlined,
-  CrownOutlined,
-} from "@ant-design/icons";
+import { UserOutlined, LockOutlined, CrownOutlined } from "@ant-design/icons";
 import AppLayout from "@/components/Layout";
 
 const sidebarItems = [
@@ -14,7 +10,11 @@ const sidebarItems = [
   { key: "/profile/membership", icon: <CrownOutlined />, label: "会员中心" },
 ];
 
-export default function ProfileLayout({ children }: { children: React.ReactNode }) {
+export default function ProfileLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -38,7 +38,9 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
               borderBottom: "1px solid var(--zy-border-light)",
             }}
           >
-            <div style={{ fontWeight: 600, fontSize: 15, color: "var(--zy-text)" }}>
+            <div
+              style={{ fontWeight: 600, fontSize: 15, color: "var(--zy-text)" }}
+            >
               个人中心
             </div>
           </div>
@@ -61,9 +63,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
         </div>
 
         {/* Right content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {children}
-        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
       </div>
     </AppLayout>
   );

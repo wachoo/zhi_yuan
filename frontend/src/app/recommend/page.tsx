@@ -295,7 +295,7 @@ function RecommendContent() {
           <Alert
             type="error"
             showIcon
-            message="获取推荐失败"
+            title="获取推荐失败"
             description={
               <Space orientation="vertical">
                 <span>{error}</span>
@@ -317,7 +317,7 @@ function RecommendContent() {
           <Alert
             type="warning"
             showIcon
-            message="暂无推荐结果"
+            title="暂无推荐结果"
             description="当前条件下未找到匹配的院校，请尝试调整分数或位次后重新查询。"
             style={{ borderRadius: 12 }}
           />

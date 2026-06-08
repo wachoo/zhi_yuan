@@ -27,9 +27,12 @@ backend/.env.prod
 .vscode/
 *.swp
 
+
 # OS
 .DS_Store
 Thumbs.db
 
 # Docker
 docker-compose.override.yml
+
+scripts/

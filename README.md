@@ -719,3 +719,9 @@ MIT License
 ## 联系方式
 
 如有问题或建议，请提交 Issue 或联系开发团队。
+
+### 智愿项目开放群
+
+欢迎加入飞书群聊，交流项目使用与志愿问题：
+
+🔗 https://applink.feishu.cn/client/chat/chatter/add_by_link?link_token=cb3j66ba-492e-47b2-bc13-39939abfe3f7

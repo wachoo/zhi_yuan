@@ -11,6 +11,10 @@
 - **AI顾问**：提供24小时在线的智能对话，解答志愿填报相关问题
 - **数据驱动**：所有推荐基于真实录取数据，AI仅负责解读和建议
 
+<p align="center">
+  <img src="docs/screenshots/homepage.png" alt="智愿首页截图" width="800" />
+</p>
+
 ### 核心功能
 
 | 功能模块 | 说明 |

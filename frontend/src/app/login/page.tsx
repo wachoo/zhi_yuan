@@ -18,11 +18,16 @@ function LoginContent() {
   const onLogin = async (values: { phone: string; password: string }) => {
     setLoading(true);
     try {
+      console.log("[DEBUG] Login request:", values);
       const res = await api.post("/api/auth/login", values);
+      console.log("[DEBUG] Login response:", res.data);
       setTokens(res.data.access_token, res.data.refresh_token);
       message.success("登录成功");
       router.push(redirectTo);
-    } catch {
+    } catch (err: any) {
+      console.error("[DEBUG] Login error:", err);
+      console.error("[DEBUG] Error response:", err.response?.data);
+      console.error("[DEBUG] Error status:", err.response?.status);
       message.error("登录失败，请检查手机号和密码");
     } finally {
       setLoading(false);
